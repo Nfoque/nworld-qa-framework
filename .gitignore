@@ -1,5 +1,9 @@
 .DS_Store
-.claude/
+
+# Ignore .claude/ contents (local settings, transcripts, etc.) EXCEPT
+# project-level skills, which we DO version-control so the team shares them.
+.claude/*
+!.claude/skills/
 
 # Client meeting transcripts and per-client analysis stay local — repo is public.
 # Only clients/README.md is committed (workflow documentation).

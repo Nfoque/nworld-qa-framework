@@ -34,6 +34,12 @@ Hallazgos clave extraídos de `news/` y `references/`. Cada entrada cita su orig
 - **Por qué importa:** Si `nworld-qa-framework` corre como agente (con tool use), necesita reference trajectories, no solo assertions sobre el output final.
 - **Decisión/acción:** Adoptar. Reference trajectory por test case = artefacto de primera clase.
 
+### El eje de la pirámide cambia para LLMs (coste/aislamiento → determinismo)
+- **Origen:** Kapoor — *Pyramids and Diamonds* (ancla no-LLM, 2022) leído contra los artículos "AI Testing Pyramid rewritten" de 2026.
+- **Qué:** La pirámide/diamante clásica ordena tipos de test por un eje implícito de **coste/velocidad/aislamiento** (unit barato/rápido/aislado ↔ E2E caro/lento/realista). Cuando la capa bajo test es un LLM, ese eje deja de ser el dominante: el coste de ejecución importa menos que el **determinismo del output**. La "forma" se reorganiza por **tipo de propiedad evaluada** (structural → semantic → behavioral), no por tipo de test.
+- **Por qué importa:** Evita importar la pirámide clásica acríticamente al framework. La unidad de organización de nuestra suite no es unit/integration/E2E sino capas de propiedad (enlaza con [[patterns#properties-over-content]] y la arquitectura por capas de Kshirsagar).
+- **Decisión/acción:** Hipótesis a validar. No adoptar la pirámide clásica como taxonomía; explorar una "pirámide de propiedades" (structural ancha y barata en la base, behavioral estrecha y cara arriba) como modelo mental propio.
+
 ### Sequenced layered architecture (no big-bang)
 - **Origen:** Kshirsagar — 3 Pipelines.
 - **Qué:** Cada capa de assertion (structural → semantic → regression) entrega valor de forma independiente. CI signal en día 3, no día 14.

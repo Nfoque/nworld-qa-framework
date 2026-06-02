@@ -27,3 +27,16 @@ https://genbounty.medium.com/launch-an-ai-bug-bounty-program-before-your-users-f
 https://medium.com/@srinib100/safety-and-validation-engineering-will-become-the-bridge-between-ai-engineering-and-ai-governance-f26a96034b5c
 https://medium.com/@banusencan/hands-on-fintech-ai-final-part-what-llm-testing-changed-about-the-way-i-think-as-a-qa-93616035db26
 https://medium.com/@mdpman/google-auto-diagnose-llm-%EA%B8%B0%EB%B0%98%EC%9D%98-%ED%86%B5%ED%95%A9-%ED%85%8C%EC%8A%A4%ED%8A%B8-%EC%8B%A4%ED%8C%A8-%EC%9E%90%EB%8F%99-%EC%A7%84%EB%8B%A8-%EC%95%84%ED%82%A4%ED%85%8D%EC%B2%98-%EB%B6%84%EC%84%9D-9567a654d732
+https://elamir.medium.com/test-driven-ai-building-deterministic-ci-cd-evaluations-for-genkit-in-go-f4d26f457e5f
+https://medium.com/@alakap2026/title-how-i-built-a-pytest-framework-to-test-llms-on-red-hat-openshift-ai-and-what-i-learned-c94315f72fad
+https://medium.com/@ArpitChoubey9/the-ai-testing-pyramid-has-been-rewritten-why-tomorrows-sdet-must-test-intelligence-not-just-8380beab9735
+https://medium.com/@perltim4/what-are-the-top-10-cloud-testing-services-companies-for-enterprises-in-2026-26a4713dd86b
+https://medium.com/@ArpitChoubey9/rest-apis-decoded-the-6-hidden-principles-every-api-tester-sdet-must-master-9feb02d36c81
+https://appstekcorp.medium.com/what-is-agentic-quality-engineering-how-does-agentic-ai-work-in-test-automation-2c92792eac7b
+https://medium.com/ai-qa-nexus/playwright-chronicles-crafting-elegant-automation-in-js-ts-from-scratch-part-24-automating-44aea668d4e7
+https://manishsaini74.medium.com/reliability-is-the-new-quality-df77e750c4da
+https://medium.com/@mayvinr/your-tests-pass-nobody-can-read-them-thats-a-problem-e16f2f8f2f72
+https://medium.com/@unlock.parveen/postman-vs-readyapi-vs-insomnia-vs-total-shift-left-an-honest-api-testing-tool-comparison-bdb1c17e85af
+https://medium.com/@pasan62nanayakkara/the-architecture-of-selenium-webdriver-8746c513ba72
+https://aiqualityengineer.cc/the-test-automation-debt-nobody-tracks-ee88f23b6f48
+https://testrig.medium.com/the-principles-behind-effective-data-driven-testing-bc267e505490

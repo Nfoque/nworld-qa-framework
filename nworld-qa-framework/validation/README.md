@@ -12,10 +12,17 @@ results to Jira XRay (via API or JUnit XML export).
 ```typescript
 // e2e/reporters/xray-reporter.ts
 class XRayReporter implements Reporter {
+  private results = new Map<string, "PASS" | "FAIL">();
+
   onTestEnd(test: TestCase, result: TestResult) {
     const xrayTag = test.parent.title.match(/@XRAY-(\S+)/)?.[1];
     if (xrayTag) {
-      this.results.set(xrayTag, result.status === "passed" ? "PASS" : "FAIL");
+      const currentStatus = result.status === "passed" ? "PASS" : "FAIL";
+      const previousStatus = this.results.get(xrayTag);
+      this.results.set(
+        xrayTag,
+        previousStatus === "FAIL" || currentStatus === "FAIL" ? "FAIL" : "PASS"
+      );
     }
   }
 
@@ -25,7 +32,7 @@ class XRayReporter implements Reporter {
 }
 ```
 
-**Status:** Full design in ADR 13. Implementation pending.
+**Status:** Full design in `xray-reporter.md`. Implementation pending.
 
 ## Verify Pipeline
 

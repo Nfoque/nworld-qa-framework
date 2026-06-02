@@ -57,15 +57,15 @@ test.describe("{xray-tag}{Feature Name}", () => {
        route.fulfill({ status: 500 })
      );
      await page.goto("/{route}");
-     await expect(page.getByText("Something went wrong")).toBeVisible();
+     await expect(page.getByRole("alert")).toBeVisible();
    });
    ```
 
 5. If there are Jira acceptance criteria, generate one test per criterion with a
    descriptive name that reflects the AC.
 
-6. Mark with `// TODO: review — low confidence` any assertion where the testId
-   is inferred (not found literally in the component).
+6. Mark with `// TODO: review — low confidence` any locator/assertion not directly
+   backed by extracted context (e.g., fallback `getByRole()` without testId evidence).
 
 7. Report what was created and how to run it:
    ```

@@ -44,7 +44,7 @@ nworld-qa-framework/
   architecture/
     adr-001-framework-form.md     ← Decision: skill-first (+ model appendix)
     adr-002-playwright-setup.md   ← Playwright multi-env + XRay
-    adr-003-openapi-context.md    ← OpenAPI as generation input
+    adr-003-openapi-driven.md     ← OpenAPI as generation input
   parsers/
     openapi/                      ← Extracts endpoints, schemas, errors from spec
     source-code/                  ← Extracts testIds, interactions, routes from component

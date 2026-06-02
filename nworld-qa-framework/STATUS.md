@@ -10,7 +10,7 @@
 |---|---|---|
 | PoC: Playwright multi-env setup | ADR 13 (E2E testing) | `architecture/adr-002-playwright-setup.md` |
 | Prompt Protocol v1 | Skill `create-e2e-spec` | `protocol/prompt-templates/generate-e2e-spec.md` |
-| Parser: OpenAPI → test context | ADR 10 (OpenAPI-driven) | `parsers/openapi/README.md` + `architecture/adr-003-openapi-context.md` |
+| Parser: OpenAPI → test context | ADR 10 (OpenAPI-driven) | `parsers/openapi/README.md` + `architecture/adr-003-openapi-driven.md` |
 | XRay/Jira tag integration | ADR 13 (XRay reporter) | `validation/xray-reporter.md` |
 | Generation protocol v0.1 | PLAN + full pipeline | `protocol/v0.1-generation-protocol.md` |
 | Parser: Source Code (partial) | Skill `create-e2e-spec` (reads components) | `parsers/source-code/README.md` |

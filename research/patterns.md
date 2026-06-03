@@ -24,6 +24,7 @@ norma del dominio, es un *patrón* y vive aquí.
 - **Matiz nuevo (Pattnaik):** sus 3 capas no son fases secuenciales sino **dimensiones de calidad apiladas por dependencia**: serving (¿responde?) → output quality (¿es buena la respuesta?) → pipeline (¿el RAG trae lo correcto?). Sugiere que "3 capas" admite dos lecturas — pipeline temporal *y* stack de fiabilidad. La capa de **serving/infra (200/latencia/schema) es un Layer 0** que el resto del corpus asume implícito y nunca testea explícitamente.
 - **Descripción:** Múltiples autores convergen en arquitecturas de **tres etapas especializadas**, donde cada etapa tiene un rol claro y la siguiente consume el output de la anterior con un contrato bien definido. No es coincidencia — refleja una descomposición natural del problema: *audit/discover → transform/generate → validate/regression*.
 - **Implicación para nworld-qa-framework:** Adoptar la descomposición como esqueleto. **Tres responsabilidades ortogonales en lugar de un agente monolítico que hace todo**. El nombre puede ser otro (no obsesionarse con que sean "3"), pero la separación de fases sí.
+- **Materializado en:** `nworld-qa-framework/protocol/v0.1-generation-protocol.md` (pipeline: parse → assemble → generate)
 
 ### Golden dataset / ground truth como inversión obligatoria
 - **Apariciones:**
@@ -41,6 +42,7 @@ norma del dominio, es un *patrón* y vive aquí.
   - Garvanand — LLM-as-Judge con thresholds + rationale
 - **Descripción:** Los outputs útiles de un LLM en contexto QA **nunca** son solo el juicio — son juicio + confidence + cita verificable (al ground truth, a un caso similar, o a una referencia). Permite routing automático y auditoría.
 - **Implicación para nworld-qa-framework:** **Schema obligatorio** para outputs LLM en el framework: `{judgment, confidence, rationale, references[]}`. No aceptar outputs raw como API pública.
+- **Materializado en:** `nworld-qa-framework/protocol/v0.1-generation-protocol.md` (regla de calidad #2: confidence + rationale)
 
 ### Build-time vs run-time separation
 - **Apariciones:**
@@ -49,6 +51,7 @@ norma del dominio, es un *patrón* y vive aquí.
   - Kshirsagar — 3 Pipelines (eval semantic depende de external judge → no bloquea; structural/regression sí bloquean)
 - **Descripción:** Lo que asiste al QA durante el diseño del test **no debe** estar en el path de ejecución del test en CI. Hay una frontera dura entre herramientas de exploración (LLM en loop con el ingeniero) y herramientas de regresión (deterministas, reproducibles, en pipeline).
 - **Implicación para nworld-qa-framework:** Probable división en dos paquetes/binarios: uno con dependencias pesadas (LLM, MCP) para uso interactivo, otro ligero y determinista para CI. **No mezclar.**
+- **Materializado en:** `nworld-qa-framework/architecture/adr-001-framework-form.md` (skill-first = build-time; Playwright CLI = run-time)
 
 ### OpenAI-compatible API como capa de portabilidad
 - **Apariciones:**
@@ -57,6 +60,7 @@ norma del dominio, es un *patrón* y vive aquí.
   - Singh — stack genérico ("LLM: GPT / Claude" intercambiables a nivel de capa)
 - **Descripción:** El ecosistema converge en la spec OpenAI como interface común. Modelos locales (Ollama, LM Studio), gateways (LiteLLM), observability tools — todos hablan ese protocolo.
 - **Implicación para nworld-qa-framework:** Construir contra esta interface, NO contra el SDK específico de Anthropic. Si necesitamos features Claude-specific (caching, citations, computer use), exponerlas como extensiones de la interface base, no como acoplamiento directo. **Esta decisión es load-bearing** — la portabilidad local/cloud depende de ella.
+- **Materializado en:** `nworld-qa-framework/architecture/adr-001-framework-form.md` (apéndice: selección de modelo)
 
 ### Tool stack convergente (eval & observability)
 - **Apariciones:**
@@ -81,6 +85,7 @@ norma del dominio, es un *patrón* y vive aquí.
 - **Nota de consolidación (2026-06-02):** ya son **5 fuentes independientes** convergiendo en "score, don't assert". Deja de ser insight emergente — es la norma del dominio. Cualquier API de assertions del framework que ofrezca igualdad literal como ciudadano de primera clase está mal diseñada.
 - **Descripción:** Tres autores, tres ángulos, misma idea: **no compares contenido literal — declara qué propiedad esperas y asserta sobre ella**. El "content" cambia entre runs sin perder corrección; la "property" se mantiene si el modelo hace su trabajo.
 - **Implicación para nworld-qa-framework:** API de assertions del framework debe nudgear hacia property declarations, no string equality. Probable: tipos de assertion explícitos (`assertGrounded`, `assertReferencesEntity`, `assertWithinLengthBounds`, `assertSimilarTo(baseline, threshold)`).
+- **Materializado en:** `nworld-qa-framework/protocol/v0.1-generation-protocol.md` (regla de calidad #1), `nworld-qa-framework/protocol/prompt-templates/generate-e2e-spec.md`
 
 ### Negative-retrieval test (fake-fact injection)
 - **Apariciones:**

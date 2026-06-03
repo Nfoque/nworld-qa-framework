@@ -1,39 +1,42 @@
-# NWorld QA Framework — Espacio de Investigación
+# nworld-qa-framework — Research workspace
 
-Este workspace es el laboratorio para diseñar y construir **`nworld-qa-framework`**:
-un framework de automatización de testing de software impulsado por LLMs (especialmente Claude).
+Research and design workspace for **nworld-qa-framework**: a framework for automatic
+E2E test generation with Playwright, assisted by LLM.
 
-## Estructura
+For the product design (pipeline, principles, ADRs), see
+[nworld-qa-framework/README.md](nworld-qa-framework/README.md).
 
-| Carpeta | Propósito |
-|---|---|
-| `news/` | Noticias, artículos y publicaciones sobre QA automation + LLMs. Materia prima. |
-| `references/` | Repositorios externos que estudiamos para extraer ideas, patrones y código. |
-| `clients/` | Transcripciones de reuniones por cliente/proyecto + análisis. **Gitignored** (datos sensibles) — solo `clients/README.md` se sube. |
-| `research/` | Síntesis: lo que destilamos de `news/`, `references/` y `clients/`. `insights.md` y `patterns.md` desde literatura, `client-signals.md` (sanitized) desde mercado real. |
-| `nworld-qa-framework/` | El framework propio. Aquí aterrizan las decisiones finales. |
-
-## Flujo de trabajo
+## Organization
 
 ```
-       ┌─ news/        ─┐
-       ├─ references/  ─┤
-       │                 ├──►  research/  ──►  nworld-qa-framework/
-       └─ clients/     ──┘     (destilado)       (producto)
-        (mercado real,        insights.md
-         gitignored)          patterns.md
-                              client-signals.md
+.
+├── research/                    Research synthesis
+│   ├── insights.md                 Key findings with decision/action
+│   ├── patterns.md                 Recurring patterns across sources
+│   └── client-signals.md          Market signals (sanitized)
+│
+├── news/                        Articles and publications on QA + LLMs
+│
+├── references/                  External repos studied (code, ADRs, postmortems)
+│
+├── clients/                     Transcripts and analysis per client (gitignored)
+│
+└── nworld-qa-framework/        The framework — final product
 ```
 
-Dos fuentes de input:
+## Research -> product flow
 
-1. **Literatura** (`news/` + `references/`) — qué dice el ecosistema. Destila a `insights.md` + `patterns.md`.
-2. **Mercado real** (`clients/`) — qué nos piden los clientes. Sanitized, destila a `client-signals.md`.
+```
+news/ + references/  ──►  research/insights.md   ──►  nworld-qa-framework/
+                          research/patterns.md
+clients/ (gitignored) ──► research/client-signals.md
+```
 
-Cuando una decisión de diseño se traza a entradas en ambos lados, es señal fuerte.
+Each design decision in the framework traces back to an entry in `research/`. If it also
+has backing from client signals, that is a strong signal. Without a trace, the decision does not go in.
 
-## Convenciones
+## Conventions
 
-- Cada artículo o repo añadido lleva una **nota breve** en el README de índice de su carpeta: qué es, por qué nos interesa, qué se puede destilar.
-- `research/` no es un repo más: es nuestra opinión consolidada.
-- `nworld-qa-framework/` se mantiene limpio — sólo entra lo que ya pasó por `research/`.
+- Each article or repo added includes a brief note in its folder's index README.
+- `research/` is consolidated opinion, not just another index.
+- `nworld-qa-framework/` is kept clean — only what has already gone through `research/` goes in.

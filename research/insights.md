@@ -21,12 +21,14 @@ Hallazgos clave extraídos de `news/` y `references/`. Cada entrada cita su orig
 - **Qué:** Regression exige determinismo; exploratory es no-determinista. LLMs encajan en el segundo, no en el primero. Sanaev reformula la misma frontera como "build-time inspector vs run-time executor".
 - **Por qué importa:** Es la frontera arquitectónica del framework. Lo que cruza esta línea sin cuidado se vuelve flakiness estructural.
 - **Decisión/acción:** Adoptar como principio rector. Posicionamiento candidato: "LLM-driven exploration + human-curated regression suite".
+- **Materializado en:** `nworld-qa-framework/architecture/adr-001-framework-form.md`, `nworld-qa-framework/architecture/adr-002-playwright-setup.md`
 
 ### Properties over content (el unlock conceptual)
 - **Origen:** Kshirsagar — 3 Pipelines. Reforzado por Kshirsagar PromptFoo (criteria-based expected outputs) y Garvanand (trajectory > output).
 - **Qué:** Outputs LLM son no-deterministas en frasing, **no en propiedades**. Asertar sobre propiedades estructurales/semánticas/de regresión hace al sistema testeable.
 - **Por qué importa:** Define qué tipo de assertions tienen sentido. Cualquier comparación de string exacta es trampa.
 - **Decisión/acción:** Adoptar. Todo assertion del framework debe ser sobre una propiedad declarada explícitamente, no sobre contenido literal.
+- **Materializado en:** `nworld-qa-framework/protocol/v0.1-generation-protocol.md` (regla de calidad #1)
 
 ### Trajectory eval ≠ output eval (para agentes)
 - **Origen:** Garvanand.
@@ -55,12 +57,14 @@ Hallazgos clave extraídos de `news/` y `references/`. Cada entrada cita su orig
 - **Qué:** El agente etiqueta su propia incertidumbre. Confidence ≥85% auto; 60-84% review humano; <60% manual con context notes.
 - **Por qué importa:** Define cómo se distribuye el trabajo entre LLM y humano sin tener que decidirlo a priori para cada caso.
 - **Decisión/acción:** Adoptar. Cada output del framework que requiera juicio debe llevar confidence + rationale.
+- **Materializado en:** `nworld-qa-framework/protocol/v0.1-generation-protocol.md` (regla de calidad #2)
 
 ### Static analysis + LLM fallback (no LLM-everywhere)
 - **Origen:** Kshirsagar — 3 Agents XPath (Archaeologist = static, Refactor Engine = LLM, Validator = static).
 - **Qué:** Determinismo donde se puede (clasificación con reglas, validación por parallel execution). LLM solo donde hay ambigüedad real.
 - **Por qué importa:** Reduce coste, latencia, y superficie de no-determinismo.
 - **Decisión/acción:** Adoptar como regla de diseño: justificar cada uso de LLM contra alternativa determinista.
+- **Materializado en:** `nworld-qa-framework/protocol/v0.1-generation-protocol.md` (regla de calidad #3), `nworld-qa-framework/parsers/README.md`
 
 ### AI Fallback en aserciones
 - **Origen:** Kastner postmortem.
@@ -89,24 +93,28 @@ Hallazgos clave extraídos de `news/` y `references/`. Cada entrada cita su orig
 - **Qué:** Si construyes contra la OpenAI API spec, local (Ollama) y cloud (OpenAI/Anthropic/etc.) son intercambiables a nivel de config, no de código.
 - **Por qué importa:** Para clientes enterprise/regulated, el framework DEBE poder correr 100% local. Acoplarse al SDK de Anthropic directamente cierra esa puerta.
 - **Decisión/acción:** Adoptar. Diseñar el framework contra una interface OpenAI-compatible. Wrap el SDK de Anthropic detrás de ella si hace falta.
+- **Materializado en:** `nworld-qa-framework/architecture/adr-001-framework-form.md` (apéndice: selección de modelo)
 
 ### Local-first como requirement enterprise (no workaround)
 - **Origen:** Kshirsagar — Local LLM Pipeline.
 - **Qué:** En banca/seguros/salud el primer review de seguridad pregunta "¿dónde van los datos?" y si la respuesta es "API externa", la conversación termina ahí.
 - **Por qué importa:** Posicionamiento de mercado. Si `nworld-qa-framework` no corre local, queda fuera del segmento más sólido.
 - **Decisión/acción:** Adoptar como constraint NF #1. Cualquier feature debe poder funcionar con modelo local (aunque sea con downgrade de calidad).
+- **Materializado en:** `nworld-qa-framework/architecture/adr-001-framework-form.md` (apéndice: selección de modelo)
 
 ### Modelo elegido por tarea, no por organización
 - **Origen:** Kshirsagar — Local LLM Pipeline.
 - **Qué:** No hay "el mejor modelo" — hay matriz tarea × tamaño × hardware constraint. Llama 3 8B vale para structured JSON, Mistral 7B para clasificación, Llama 3 70B Q4 para RAG multi-chunk.
 - **Por qué importa:** Evita el lock-in tipo "el framework solo funciona con Opus" (anti-patrón observado en Kastner).
 - **Decisión/acción:** Adoptar. Matriz declarativa de modelo recomendado por tipo de task en el framework.
+- **Materializado en:** `nworld-qa-framework/architecture/adr-001-framework-form.md` (apéndice: selección de modelo)
 
 ### Versión del modelo como parte del contrato
 - **Origen:** Kastner postmortem.
 - **Qué:** El framework de Kastner depende explícitamente de Opus 4.6 — Sonnet rompe structured output.
 - **Por qué importa:** Cambiar de modelo es breaking, no un bump. Hay que versionar matriz modelo × feature.
 - **Decisión/acción:** Adoptar matriz de compatibilidad declarativa. Cada release del framework declara qué features están validadas contra qué modelos.
+- **Materializado en:** `nworld-qa-framework/architecture/adr-001-framework-form.md` (apéndice: selección de modelo)
 
 ### PromptFoo + DeepEval/RAGAS como stack combinable
 - **Origen:** Kshirsagar — PromptFoo. Reforzado por Garvanand (tooling landscape).
@@ -147,6 +155,7 @@ Hallazgos clave extraídos de `news/` y `references/`. Cada entrada cita su orig
 - **Qué:** Pipelines que dependen de servicios externos inestables (judge model API) generan warning, no bloquean merge. Pipelines deterministas sí bloquean.
 - **Por qué importa:** Sin esto, un outage del judge model provider para el merge de la organización.
 - **Decisión/acción:** Adoptar. Circuit breaker + severity routing en cada gate del framework.
+- **Materializado en:** `nworld-qa-framework/architecture/adr-002-playwright-setup.md` (mock bloquea, pre advierte)
 
 ### Living dataset — cada prod failure = nuevo golden case
 - **Origen:** Kshirsagar — PromptFoo. Reforzado por Garvanand.
@@ -169,3 +178,4 @@ Hallazgos clave extraídos de `news/` y `references/`. Cada entrada cita su orig
 - **Qué:** Playwright MCP es para el QA inspeccionando la app en su IDE. Playwright CLI corre el test final en CI sin MCP.
 - **Por qué importa:** No acoplar producción del test runner a un protocolo de inspección. Esa frontera define qué pertenece a `nworld-qa-framework-cli` vs. a un eventual `nworld-qa-framework-explorer`.
 - **Decisión/acción:** Adoptar como separación de paquete/binary.
+- **Materializado en:** `nworld-qa-framework/architecture/adr-001-framework-form.md` (skill-first = build-time; Playwright CLI = run-time)

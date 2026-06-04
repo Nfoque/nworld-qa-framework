@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QAAP — Demo Hub</title>
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Instrument Sans', system-ui, sans-serif;
+    background: #F3F3F3;
+    color: #100D25;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-font-smoothing: antialiased;
+  }
+  .hub {
+    max-width: 720px;
+    width: 100%;
+    padding: 40px 24px;
+  }
+  .hub-header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+  .hub-logo {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 16px;
+  }
+  .hub-title {
+    font-family: 'Sora', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin-bottom: 4px;
+  }
+  .hub-subtitle {
+    font-size: 14px;
+    color: #82858D;
+    font-weight: 500;
+  }
+  .hub-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+  }
+  .demo-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px 20px;
+    background: #fff;
+    border: 1px solid #E1E1E1;
+    border-radius: 12px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.15s;
+  }
+  .demo-card:hover {
+    border-color: #217BEE;
+    box-shadow: 0 2px 8px rgba(16,13,37,0.06);
+    transform: translateY(-1px);
+  }
+  .demo-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: #F3F3F3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .demo-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 4px;
+  }
+  .demo-logo span {
+    font-family: 'Sora', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: #217BEE;
+  }
+  .demo-info {
+    min-width: 0;
+  }
+  .demo-name {
+    font-weight: 600;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .demo-slug {
+    font-size: 11px;
+    color: #82858D;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .hub-footer {
+    text-align: center;
+    margin-top: 36px;
+    font-size: 11px;
+    color: #BFBFBF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .hub-footer img { height: 14px; opacity: 0.5; }
+</style>
+</head>
+<body>
+<div class="hub">
+  <div class="hub-header">
+    <img class="hub-logo" src="assets/nfq-logo.png" alt="NFQ">
+    <h1 class="hub-title">QAAP Demos</h1>
+    <p class="hub-subtitle">QA Automation Platform — Client Prototypes</p>
+  </div>
+
+  <div class="hub-grid">
+    <a class="demo-card" href="/nfq">
+      <div class="demo-logo"><img src="assets/nfq-logo.png" alt="NFQ"></div>
+      <div class="demo-info">
+        <div class="demo-name">NFQ</div>
+        <div class="demo-slug">nfq.qaap.dev</div>
+      </div>
+    </a>
+    <a class="demo-card" href="/iberia">
+      <div class="demo-logo"><img src="assets/iberia-logo.png" alt="Iberia"></div>
+      <div class="demo-info">
+        <div class="demo-name">Iberia</div>
+        <div class="demo-slug">iberia.qaap.dev</div>
+      </div>
+    </a>
+    <a class="demo-card" href="/ferrovial">
+      <div class="demo-logo"><img src="assets/ferrovial-logo.png" alt="Ferrovial"></div>
+      <div class="demo-info">
+        <div class="demo-name">Ferrovial</div>
+        <div class="demo-slug">ferrovial.qaap.dev</div>
+      </div>
+    </a>
+    <a class="demo-card" href="/booking">
+      <div class="demo-logo"><img src="assets/booking-logo.png" alt="Booking"></div>
+      <div class="demo-info">
+        <div class="demo-name">Booking.com</div>
+        <div class="demo-slug">booking.qaap.dev</div>
+      </div>
+    </a>
+    <a class="demo-card" href="/sacyr">
+      <div class="demo-logo"><img src="assets/sacyr-logo.png" alt="Sacyr"></div>
+      <div class="demo-info">
+        <div class="demo-name">Sacyr</div>
+        <div class="demo-slug">sacyr.qaap.dev</div>
+      </div>
+    </a>
+    <a class="demo-card" href="/oysho">
+      <div class="demo-logo"><img src="assets/oysho-logo.png" alt="Oysho"></div>
+      <div class="demo-info">
+        <div class="demo-name">Oysho</div>
+        <div class="demo-slug">oysho.qaap.dev</div>
+      </div>
+    </a>
+    <a class="demo-card" href="/veci">
+      <div class="demo-logo"><span>V</span></div>
+      <div class="demo-info">
+        <div class="demo-name">VECI</div>
+        <div class="demo-slug">veci.qaap.dev</div>
+      </div>
+    </a>
+    <a class="demo-card" href="/tecnicas">
+      <div class="demo-logo"><img src="assets/tecnicas-reunidas-logo.png" alt="Técnicas Reunidas"></div>
+      <div class="demo-info">
+        <div class="demo-name">Técnicas Reunidas</div>
+        <div class="demo-slug">tecnicas.qaap.dev</div>
+      </div>
+    </a>
+    <a class="demo-card" href="/prototype">
+      <div class="demo-logo"><span>Q</span></div>
+      <div class="demo-info">
+        <div class="demo-name">Base Prototype</div>
+        <div class="demo-slug">demo.qaap.dev</div>
+      </div>
+    </a>
+  </div>
+
+  <div class="hub-footer">
+    <span>Powered by</span>
+    <img src="assets/nfq-logo.png" alt="NFQ">
+    <span style="font-weight:700; color:#5D6066;">Nfq</span>
+  </div>
+</div>
+</body>
+</html>

@@ -9,3 +9,6 @@
 # Only clients/README.md is committed (workflow documentation).
 clients/*
 !clients/README.md
+
+# Local Netlify folder
+.netlify

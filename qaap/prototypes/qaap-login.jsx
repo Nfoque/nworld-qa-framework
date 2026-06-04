@@ -24,22 +24,29 @@ function LoginScreen({ onLogin }) {
         <div className="login-glow login-glow-2"></div>
       </div>
       <div className="login-card">
-        <div className="login-header">
-          <NfqMark size={52}></NfqMark>
-          <div style={{ display:'flex', flexDirection:'column', gap:2 }}>
-            <h1 style={{ fontSize:26, fontWeight:700, fontFamily:'var(--qaap-font-heading)', margin:0, color:'var(--qaap-text)', letterSpacing:'-0.03em', lineHeight:1 }}>QAAP</h1>
-            <p style={{ fontSize:11, color:'var(--qaap-text-tertiary)', margin:0, fontWeight:500 }}>QA Automation Platform</p>
-          </div>
+        <div className="login-header" style={{ flexDirection:'column', alignItems:'center', textAlign:'center', gap:4 }}>
+          <p style={{ fontSize:15, color:'var(--qaap-text-secondary)', margin:0, fontWeight:600, letterSpacing:'-0.01em' }}>QA Automation Platform</p>
         </div>
 
         <div className="login-tenant">
-          <div className="login-tenant-logo">
-            <span style={{ fontSize:18, fontWeight:700, fontFamily:'var(--qaap-font-heading)', color:'var(--qaap-primary)' }}>T</span>
-          </div>
-          <div>
-            <div style={{ fontSize:14, fontWeight:600, color:'var(--qaap-text)' }}>{QAAP_DATA.tenant.name}</div>
-            <div style={{ fontSize:11, color:'var(--qaap-text-tertiary)' }}>{QAAP_DATA.tenant.slug}.qaap.dev</div>
-          </div>
+          {QAAP_DATA.tenant.logo ? (
+            <React.Fragment>
+              <img src={QAAP_DATA.tenant.logo} alt={QAAP_DATA.tenant.name} style={{ height:24, maxWidth:140, objectFit:'contain', display:'block' }}></img>
+              <div style={{ marginLeft:'auto' }}>
+                <div style={{ fontSize:11, color:'var(--qaap-text-tertiary)', textAlign:'right' }}>{QAAP_DATA.tenant.slug}.qaap.dev</div>
+              </div>
+            </React.Fragment>
+          ) : (
+            <React.Fragment>
+              <div className="login-tenant-logo">
+                <span style={{ fontSize:18, fontWeight:700, fontFamily:'var(--qaap-font-heading)', color:'var(--qaap-primary)' }}>{QAAP_DATA.tenant.name.charAt(0)}</span>
+              </div>
+              <div>
+                <div style={{ fontSize:14, fontWeight:600, color:'var(--qaap-text)' }}>{QAAP_DATA.tenant.name}</div>
+                <div style={{ fontSize:11, color:'var(--qaap-text-tertiary)' }}>{QAAP_DATA.tenant.slug}.qaap.dev</div>
+              </div>
+            </React.Fragment>
+          )}
         </div>
 
         <div className="login-divider">

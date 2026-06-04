@@ -3,21 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QAAP — QA Automation Platform</title>
-<meta name="ext-resource-dependency" content="assets/nfq-logo.png" data-resource-id="nfqLogo" />
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<title>QAAP — Oysho QA Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ═══ Design Tokens ═══ */
 :root {
-  --qaap-font-heading: 'Sora', system-ui, sans-serif;
-  --qaap-font: 'Instrument Sans', system-ui, sans-serif;
+  --qaap-font-heading: 'Cormorant Garamond', Georgia, serif;
+  --qaap-font: 'DM Sans', system-ui, sans-serif;
   --qaap-font-mono: 'JetBrains Mono', monospace;
   --qaap-bg: #F3F3F3;
   --qaap-bg-card: #FFFFFF;
   --qaap-bg-sidebar: #FFFFFF;
   --qaap-bg-hover: #E1E1E1;
-  --qaap-bg-active: #EBF3FE;
+  --qaap-bg-active: #F0F0F0;
   --qaap-border: #E1E1E1;
   --qaap-grey-300: #BFBFBF;
   --qaap-border-light: #F3F3F3;
@@ -26,17 +26,17 @@
   --qaap-text: #100D25;
   --qaap-text-secondary: #5D6066;
   --qaap-text-tertiary: #82858D;
-  --qaap-primary: #217BEE;
-  --qaap-primary-light: #EBF3FE;
-  --qaap-primary-dark: #1860BE;
+  --qaap-primary: #1A1A1A;
+  --qaap-primary-light: #F0F0F0;
+  --qaap-primary-dark: #000000;
   --qaap-success: #16A34A;
   --qaap-success-light: #F0FDF4;
   --qaap-warning: #EC683E;
   --qaap-warning-light: #FFF5F0;
   --qaap-error: #D13B5F;
   --qaap-error-light: #FDF2F5;
-  --qaap-info: #217BEE;
-  --qaap-info-light: #EBF3FE;
+  --qaap-info: #1A1A1A;
+  --qaap-info-light: #F0F0F0;
   --qaap-radius-sm: 6px;
   --qaap-radius-md: 8px;
   --qaap-radius-lg: 12px;
@@ -562,8 +562,8 @@ input { font-family: inherit; }
 
 /* ═══ Login glows ═══ */
 .login-glow { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.15; pointer-events: none; }
-.login-glow-1 { width: 300px; height: 300px; background: #217BEE; top: 20%; left: 10%; }
-.login-glow-2 { width: 250px; height: 250px; background: #EC683E; bottom: 15%; right: 10%; }
+.login-glow-1 { width: 300px; height: 300px; background: #1A1A1A; top: 20%; left: 10%; }
+.login-glow-2 { width: 250px; height: 250px; background: #8B7355; bottom: 15%; right: 10%; }
 
 /* ═══ Schedules ═══ */
 .schedules-list { display: flex; flex-direction: column; gap: 10px; }
@@ -785,22 +785,6 @@ input { font-family: inherit; }
 .vertical-badge { font-size: 10px; font-weight: 500; color: var(--qaap-text-secondary); padding: 2px 7px; background: var(--qaap-bg); border-radius: 4px; }
 .platform-chip { font-size: 9px; font-weight: 600; padding: 1px 5px; background: var(--qaap-bg); border-radius: 3px; color: var(--qaap-text-tertiary); }
 </style>
-<template id="__bundler_thumbnail" data-bg-color="#F3F3F3">
-  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
-    <rect width="1200" height="800" fill="#F3F3F3"/>
-    <rect x="0" y="0" width="220" height="800" fill="#FFFFFF" stroke="#E1E1E1" stroke-width="1"/>
-    <rect x="20" y="20" width="32" height="32" rx="8" fill="#217BEE"/>
-    <text x="62" y="42" font-family="sans-serif" font-weight="700" font-size="18" fill="#100D25">QAAP</text>
-    <rect x="16" y="80" width="188" height="28" rx="6" fill="#EBF3FE"/>
-    <rect x="240" y="0" width="960" height="50" fill="#FFFFFF" stroke="#E1E1E1" stroke-width="1"/>
-    <rect x="240" y="70" width="220" height="90" rx="10" fill="#FFFFFF" stroke="#E1E1E1" stroke-width="1"/>
-    <rect x="480" y="70" width="220" height="90" rx="10" fill="#FFFFFF" stroke="#E1E1E1" stroke-width="1"/>
-    <rect x="720" y="70" width="220" height="90" rx="10" fill="#FFFFFF" stroke="#E1E1E1" stroke-width="1"/>
-    <rect x="960" y="70" width="220" height="90" rx="10" fill="#FFFFFF" stroke="#E1E1E1" stroke-width="1"/>
-    <rect x="240" y="180" width="940" height="400" rx="12" fill="#FFFFFF" stroke="#E1E1E1" stroke-width="1"/>
-    <text x="570" y="400" font-family="sans-serif" font-weight="900" font-size="60" fill="#217BEE" opacity="0.3">N</text>
-  </svg>
-</template>
 </head>
 <body>
 <div id="root"></div>
@@ -809,7 +793,7 @@ input { font-family: inherit; }
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 
-<script type="text/babel" src="qaap-data.jsx"></script>
+<script type="text/babel" src="oysho-data.jsx"></script>
 <script type="text/babel" src="qaap-ui.jsx"></script>
 <script type="text/babel" src="qaap-login.jsx"></script>
 <script type="text/babel" src="qaap-dashboard.jsx"></script>
@@ -825,6 +809,7 @@ input { font-family: inherit; }
 <script type="text/babel" src="qaap-llm-settings.jsx"></script>
 <script type="text/babel" src="qaap-branding.jsx"></script>
 <script type="text/babel" src="qaap-settings.jsx"></script>
+
 
 <script type="text/babel">
 function App() {

@@ -196,16 +196,17 @@ function Sidebar({ currentScreen, onNavigate }) {
   const isSettingsScreen = settingsItems.some(s => s.id === currentScreen);
   return (
     <aside className="sidebar">
-      <div className="sidebar-logo">
-        <NfqMark size={30}></NfqMark>
-        <div>
-          <div style={{ fontSize:15, fontWeight:700, fontFamily:'var(--qaap-font-heading)', color:'var(--qaap-text)', letterSpacing:'-0.02em' }}>QAAP</div>
-          <div style={{ fontSize:10, color:'var(--qaap-text-tertiary)', fontWeight:500 }}>by <span style={{ fontFamily:'var(--qaap-font-heading)', fontWeight:700 }}>Nfq</span></div>
+      <div className="sidebar-logo" style={{ flexDirection:'column', alignItems:'flex-start', gap:4 }}>
+        {QAAP_DATA.tenant.logo ? (
+          <img src={QAAP_DATA.tenant.logo} alt={QAAP_DATA.tenant.name} style={{ height:24, maxWidth:160, objectFit:'contain', display:'block' }}></img>
+        ) : (
+          <span style={{ fontSize:16, fontWeight:700, fontFamily:'var(--qaap-font-heading)', color:'var(--qaap-text)' }}>{QAAP_DATA.tenant.name}</span>
+        )}
+        <div style={{ fontSize:10, color:'var(--qaap-text-tertiary)', fontWeight:500 }}>QA Automation Platform</div>
+        <div style={{ display:'flex', alignItems:'center', gap:4, marginTop:2 }}>
+          <span style={{ fontSize:9, color:'var(--qaap-text-secondary)', fontWeight:500 }}>powered by</span>
+          <img src="assets/nfq-full-logo.png" alt="nfq" style={{ height:14, objectFit:'contain' }}></img>
         </div>
-      </div>
-      <div className="sidebar-tenant">
-        <span style={{ fontSize:11, color:'var(--qaap-text-tertiary)', textTransform:'uppercase', letterSpacing:'0.06em', fontWeight:600 }}>Tenant</span>
-        <span style={{ fontSize:13, fontWeight:600, color:'var(--qaap-text)' }}>{QAAP_DATA.tenant.name}</span>
       </div>
       <nav className="sidebar-nav">
         {navItems.map(item => (

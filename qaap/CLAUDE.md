@@ -96,6 +96,9 @@ Modular monolith with explicit module boundaries. Modules communicate async via 
 - **Confidence + rationale** as mandatory output format
 - **Living dataset**: Every production failure becomes a golden test case
 - **Build-time vs run-time separation**: LLM for exploration, deterministic for regression
+- **Strict convention contracts**: Prohibitive rules ("PROHIBITED", "ONLY") > descriptive guidelines ("prefer")
+- **Normalisation step**: Dedicated cheap LLM call to structure freeform input before the main pipeline
+- **Observation-based debug**: Screenshot + DOM state for fixing failures, not just error message inference
 
 ## Related Documentation
 
@@ -109,6 +112,6 @@ Modular monolith with explicit module boundaries. Modules communicate async via 
 ## Research Foundation
 
 QAAP's decisions trace back to consolidated research in the parent repo (`../research/`):
-- `insights.md` — 13+ articles distilled into architectural constraints
-- `patterns.md` — Recurring patterns across sources
+- `insights.md` — 13 articles distilled into architectural constraints
+- `patterns.md` — Recurring patterns across sources (12 patterns from 13 articles)
 - `client-signals.md` — Real client needs validating product direction

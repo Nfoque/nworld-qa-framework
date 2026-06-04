@@ -19,18 +19,44 @@ Given an existing `e2e/` directory, it extracts the project's conventions:
 
 ## Output (context for the prompt)
 
+The output MUST be formatted as a **strict convention contract**, not as descriptive statistics.
+Prohibitive rules ("PROHIBITED", "NEVER", "ONLY") produce ~95% LLM compliance.
+Descriptive guidelines ("prefer", "80% usage") produce ~70%.
+(Source: Nesvitii — MCP + Playwright + Jira E2E Automation, confirmed by Kastner postmortem)
+
+### Bad output (descriptive — ~70% compliance):
 ```
 Conventions detected in e2e/:
-- Import pattern: import { test, expect } from "@playwright/test"
-- Available helper: loginAsUser(page, role) in e2e/fixtures/helpers.ts
 - Preferred locator: getByTestId (80% usage), getByRole (15%), getByText (5%)
 - beforeEach pattern: navigate to route + wait for load
-- Existing specs: dashboard/home, catalog/list-products (do not duplicate)
+```
 
-Describe structure:
-- @XRAY-{KEY} as describe prefix
-- Test names in English, format "verb + expected result"
-- Tests grouped by type: render → interaction → error → edge cases
+### Good output (strict contract — ~95% compliance):
+```
+## SELECTORS
+- ONLY use data-testid attributes: page.getByTestId('submit-btn')
+- CSS class selectors: PROHIBITED
+- XPath: PROHIBITED
+- Text-based selectors: allowed ONLY as fallback for third-party components without data-testid
+
+## IMPORTS
+- ONLY use: import { test, expect } from "@playwright/test"
+- NEVER import from @playwright/test/lib or internal modules
+
+## HELPERS
+- Available: loginAsUser(page, role) in e2e/fixtures/helpers.ts
+- NEVER create new helper functions — use existing ones or write inline
+- NEVER use test.beforeEach() for auth — use the authed fixture
+
+## STRUCTURE
+- Describe prefix: @XRAY-{KEY}
+- Test names: English, format "verb + expected result"
+- Test grouping order: render → interaction → error → edge cases
+- ONE spec per component/feature — NEVER combine unrelated features
+
+## ALREADY COVERED (do not duplicate)
+- dashboard/home
+- catalog/list-products
 ```
 
 ## Output schema

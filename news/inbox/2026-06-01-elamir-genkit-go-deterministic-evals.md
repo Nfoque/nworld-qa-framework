@@ -3,56 +3,56 @@ title: "Test-Driven AI: Building Deterministic CI/CD Evaluations for Genkit in G
 author: ElAmir Mansour
 date: 2026-06-01
 url: https://elamir.medium.com/test-driven-ai-building-deterministic-ci-cd-evaluations-for-genkit-in-go-f4d26f457e5f
-status: ✅ destilado
+status: ✅ distilled
 relevance: ⭐⭐⭐
 ---
 
 # TL;DR
 
-Cómo meter evals de LLM **deterministas-en-resultado** dentro del loop de CI/CD usando Google Genkit + Go. La tesis: pasar de lógica booleana (`output == expected`) a **evaluación continua por umbral** (`score >= threshold`), con golden datasets como holdout y LLM-as-Judge puntuando contra un rubric. Conceptualmente sólido, pero el artículo es corto (3 min) y los snippets de Go están vacíos — es más manifiesto que tutorial.
+How to put **deterministic-in-outcome** LLM evals inside the CI/CD loop using Google Genkit + Go. The thesis: move from boolean logic (`output == expected`) to **threshold-based continuous evaluation** (`score >= threshold`), with golden datasets as holdout and LLM-as-Judge scoring against a rubric. Conceptually solid, but the article is short (3 min) and the Go snippets are empty — it's more manifesto than tutorial.
 
-> ⚠️ Los bloques de código `Go` del crudo vienen sin cuerpo (`func TestCodeGenerationAgent(t *testing.T) {}`). El valor está en el modelo mental, no en código copiable.
+> Warning: The `Go` code blocks from the raw source come without a body (`func TestCodeGenerationAgent(t *testing.T) {}`). The value is in the mental model, not in copy-paste code.
 
-## Idea central — del realm determinista al probabilístico
+## Core idea — from the deterministic realm to the probabilistic
 
-- El SWE vive en lo determinista: una línea de código → un output esperado → un unit test que lo prueba.
-- Los LLMs rompen el pipeline: cambiar un system prompt o que el provider suelte nueva versión del modelo desplaza el comportamiento del agente de forma sutil y peligrosa.
-- Exact string matching → tests frágiles e inútiles. La meta es **threshold-based continuous evaluation**.
+- The SWE lives in the deterministic: one line of code → one expected output → one unit test that verifies it.
+- LLMs break the pipeline: changing a system prompt or the provider releasing a new model version shifts the agent's behavior in subtle and dangerous ways.
+- Exact string matching → fragile and useless tests. The goal is **threshold-based continuous evaluation**.
 
-## El framing SWE vs ML (cita a *Building ML Powered Applications*, Ameisen)
+## The SWE vs ML framing (citing *Building ML Powered Applications*, Ameisen)
 
-- `software testing` chequea **lógica**.
-- `ML validation` evalúa **comportamiento contra una distribución** de outcomes esperados.
-- Puente entre ambos = 3 componentes:
-  1. **Proxy metrics** para cuantificar calidad.
-  2. **Golden datasets** como holdout sets.
-  3. **Continuous evaluation automatizada** dentro del CI/CD.
+- `software testing` checks **logic**.
+- `ML validation` evaluates **behavior against a distribution** of expected outcomes.
+- Bridge between both = 3 components:
+  1. **Proxy metrics** to quantify quality.
+  2. **Golden datasets** as holdout sets.
+  3. **Automated continuous evaluation** within CI/CD.
 
 ## Genkit + LLM-as-Judge
 
-- Genkit (Google) da un modo robusto de construir y **tracear** flows de AI.
-- En vez de comparar contra string exacto, un LLM secundario actúa de **juez** y puntúa al agente primario contra un rubric: `factual accuracy`, `toxicity`, `schema compliance`.
+- Genkit (Google) provides a robust way to build and **trace** AI flows.
+- Instead of comparing against an exact string, a secondary LLM acts as a **judge** and scores the primary agent against a rubric: `factual accuracy`, `toxicity`, `schema compliance`.
 
-## CI/CD gate concreto
+## Concrete CI/CD gate
 
-- Golden dataset en JSON (`input` / `context` / `expected_output`).
-- Lógica de eval en Go corre los casos.
-- Integrado en **GitHub Actions**: si `meanAccuracy` cae bajo el umbral, el runner lo interpreta como job failure y **bloquea el merge**.
+- Golden dataset in JSON (`input` / `context` / `expected_output`).
+- Eval logic in Go runs the cases.
+- Integrated into **GitHub Actions**: if `meanAccuracy` drops below the threshold, the runner interprets it as a job failure and **blocks the merge**.
 
-## Patrones / técnicas reusables
+## Reusable patterns / techniques
 
-1. **Score, don't assert** — el mismo unlock que ya aparece en otros artículos del inbox (Kshirsagar, Pattnaik). Convergencia fuerte del ecosistema.
-2. **Golden dataset como holdout set** — vocabulario ML aplicado a QA, no sólo "casos de prueba".
-3. **Eval como merge gate** — misma familia que "coverage gap como PR linter" ([[2026-06-01-amrutalohabare]]). El gate vive en GitHub Actions y bloquea por umbral, no por keyword.
+1. **Score, don't assert** — the same unlock that already appears in other articles in the inbox (Kshirsagar, Pattnaik). Strong ecosystem convergence.
+2. **Golden dataset as holdout set** — ML vocabulary applied to QA, not just "test cases".
+3. **Eval as merge gate** — same family as "coverage gap as PR linter" ([[2026-06-01-amrutalohabare]]). The gate lives in GitHub Actions and blocks by threshold, not by keyword.
 
-## Limitaciones (no admitidas)
+## Limitations (not acknowledged)
 
-- El threshold gate sufre el mismo problema que toda eval no-determinista: el score varía run-a-run, así que un umbral fijo genera flakiness en el propio gate. No menciona tracking de tendencia ni reintentos.
-- Genkit + Go es un stack de nicho; el patrón es portable pero el artículo no lo aísla del framework.
-- Cero detalle sobre cómo se construye/versiona el golden dataset (el trabajo real).
+- The threshold gate suffers the same problem as any non-deterministic eval: the score varies run-to-run, so a fixed threshold generates flakiness in the gate itself. No mention of trend tracking or retries.
+- Genkit + Go is a niche stack; the pattern is portable but the article doesn't isolate it from the framework.
+- Zero detail on how to build/version the golden dataset (the real work).
 
-## Qué destilamos a `research/`
+## What we distilled to `research/`
 
-→ Refuerza patrones ya registrados (no abre eje nuevo):
-- **"Score, don't assert"** ahora visto en 3+ fuentes independientes → promover a patrón consolidado.
-- **Eval-as-merge-gate** como variante de "QA gate en CI" — anotar el matiz del umbral flaky.
+→ Reinforces already registered patterns (does not open a new axis):
+- **"Score, don't assert"** now seen in 3+ independent sources → promote to consolidated pattern.
+- **Eval-as-merge-gate** as a variant of "QA gate in CI" — note the flaky threshold nuance.

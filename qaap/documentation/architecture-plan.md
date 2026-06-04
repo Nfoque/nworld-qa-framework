@@ -4,7 +4,7 @@
 
 NFQ quiere productizar su capacidad de QA como SaaS multi-tenant: **QAAP** (QA Automation Platform). El objetivo es permitir a expertos de QA automatizar la creacion y mantenimiento de planes de pruebas E2E usando LLMs, eliminando la necesidad de departamentos QA tradicionales. El producto debe ser deployable on-premise o en servidores NFQ, con SSO por cliente, branding por tenant, y soporte multi-LLM.
 
-El repositorio ya contiene investigacion consolidada (13+ articulos, client signals, patterns, 3 ADRs, un generation protocol v0.1, y parsers parciales en `research/` y `nworld-qa-framework/`) que informan las decisiones de arquitectura.
+El repositorio ya contiene investigacion consolidada (13+ articulos, client signals, patterns, 3 ADRs, un generation protocol v0.1, y parsers parciales en `research/` y `qa-framework/`) que informan las decisiones de arquitectura.
 
 ---
 

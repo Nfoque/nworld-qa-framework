@@ -1,111 +1,111 @@
-# Clients — Transcripciones de reuniones y análisis
+# Clients — Meeting Transcripts and Analysis
 
-Carpeta donde organizamos las **transcripciones de reuniones con clientes** y el
-análisis destilado de cada engagement. Lo usamos para alimentar dos cosas:
+Folder for organizing **client meeting transcripts** and the distilled analysis
+of each engagement. Used to feed two things:
 
-1. **Decisiones tácticas por proyecto** — qué necesita el cliente, qué de nuestro framework le sirve hoy, qué le falta.
-2. **Priorización del framework** — cuando la misma necesidad aparece en varios clientes, sube a `research/client-signals.md` y se vuelve un signal de roadmap.
+1. **Tactical decisions per project** — what the client needs, what our framework covers today, what's missing.
+2. **Framework prioritization** — when the same need appears across multiple clients, it gets promoted to `research/client-signals.md` and becomes a roadmap signal.
 
-## ⚠️ Privacidad
+## ⚠️ Privacy
 
-El repo `Nfoque/nworld-qa-framework` es **público en Nfoque**. Por seguridad:
+The repo `Nfoque/qa-framework` is **public within Nfoque**. For security:
 
-- **Todo el contenido bajo `clients/` está gitignored** (excepto este README).
-- Las transcripciones, los análisis por reunión, los nombres de clientes, **NO se suben al repo**.
-- Solo lo *sanitized* (cross-client, sin nombres) sube a `research/client-signals.md`.
+- **All content under `clients/` is gitignored** (except this README).
+- Transcripts, per-meeting analyses, and client names are **NOT pushed to the repo**.
+- Only *sanitized* (cross-client, no names) content goes to `research/client-signals.md`.
 
-Si abres una nueva carpeta de cliente, se queda local en tu máquina. Nadie más en NFQ la ve.
+If you create a new client folder, it stays local on your machine. No one else at NFQ sees it.
 
-## Estructura por cliente / proyecto
+## Structure per client / project
 
 ```
 clients/
-├── README.md                                ← este archivo (committable)
-└── <client-slug>/                           ← un cliente
-    └── <project-slug>/                      ← un engagement / proyecto concreto
-        ├── project-state.md                 ← snapshot vivo (rolling)
+├── README.md                                ← this file (committable)
+└── <client-slug>/                           ← a client
+    └── <project-slug>/                      ← a specific engagement / project
+        ├── project-state.md                 ← live snapshot (rolling)
         ├── transcripts/
-        │   ├── raw/                         ← drop zone — pega aquí Fathom JSON, texto crudo de Zoom, etc.
+        │   ├── raw/                         ← drop zone — paste Fathom JSON, raw Zoom text, etc.
         │   └── processed/                   ← slim/cleaned versions
         └── meetings/
-            └── YYYY-MM-DD-topic.md          ← un fichero por reunión, análisis estructurado
+            └── YYYY-MM-DD-topic.md          ← one file per meeting, structured analysis
 ```
 
-Slugs en kebab-case (`acme-bank`, `risk-platform-rev2`).
+Slugs in kebab-case (`acme-bank`, `risk-platform-rev2`).
 
-## Workflow de procesar una reunión
+## Meeting processing workflow
 
-1. **Tú** dejas la transcripción en `clients/<client>/<project>/transcripts/raw/`:
-   - **Fathom:** exporta el JSON o markdown desde Fathom, déjalo aquí.
-   - **Zoom / Teams / otros:** copia-pega el texto a un `.txt` o `.md` y déjalo aquí.
-2. **Tú me dices** "procesa la reunión X" (o "procesa transcripts de cliente Y").
-3. **Yo** hago:
-   - Si es Fathom raw → lo paso por el skill `rawlie-agentic-tooling:fathom-slim-transcript` (instalado en tu máquina) → versión slim a `transcripts/processed/`.
-   - Si es texto crudo → lo leo directamente.
-   - Extraigo **necesidades de testing** del cliente (functional / E2E / perf / security / LLM eval / RAG / agentic / etc.).
-   - Cruzo con `research/insights.md` y `research/patterns.md` para mapear: ¿qué de nuestro framework actual cubre cada necesidad?
-   - Identifico **gaps** = lo que el cliente pide y nuestro framework no cubre todavía.
-   - Genero `meetings/YYYY-MM-DD-topic.md` con el análisis estructurado.
-   - Actualizo `project-state.md` (estado rolling del engagement).
-4. **Si un gap se repite** en otro cliente, lo promociono (sanitizado) a `research/client-signals.md`.
+1. **You** drop the transcript in `clients/<client>/<project>/transcripts/raw/`:
+   - **Fathom:** export JSON or markdown from Fathom, leave it here.
+   - **Zoom / Teams / other:** copy-paste the text to a `.txt` or `.md` and leave it here.
+2. **You tell the assistant** "process meeting X" (or "process transcripts for client Y").
+3. **The assistant** will:
+   - If Fathom raw → run through the `rawlie-agentic-tooling:fathom-slim-transcript` skill (installed locally) → slim version to `transcripts/processed/`.
+   - If raw text → read directly.
+   - Extract **testing needs** from the client (functional / E2E / perf / security / LLM eval / RAG / agentic / etc.).
+   - Cross-reference with `research/insights.md` and `research/patterns.md` to map: what in our current framework covers each need?
+   - Identify **gaps** = what the client is asking for that our framework doesn't cover yet.
+   - Generate `meetings/YYYY-MM-DD-topic.md` with the structured analysis.
+   - Update `project-state.md` (rolling engagement state).
+4. **If a gap repeats** in another client, promote it (sanitized) to `research/client-signals.md`.
 
-## Plantilla per-reunión (`meetings/YYYY-MM-DD-topic.md`)
+## Per-meeting template (`meetings/YYYY-MM-DD-topic.md`)
 
 ```markdown
 ---
 client: <client-slug>
 project: <project-slug>
 date: YYYY-MM-DD
-attendees: [nombres]
+attendees: [names]
 duration_min: 60
-source: Fathom / Zoom / Teams / otro
-status: ✅ analizado
+source: Fathom / Zoom / Teams / other
+status: ✅ analyzed
 ---
 
-# Reunión: <topic>
+# Meeting: <topic>
 
-## Resumen ejecutivo (1-3 frases)
+## Executive summary (1-3 sentences)
 
-## Necesidades de testing identificadas
+## Testing needs identified
 
-| Tipo | Contexto literal del transcript | Volumen / urgencia |
+| Type | Literal context from transcript | Volume / urgency |
 |---|---|---|
 | ... | ... | ... |
 
-## Mapping al framework actual
+## Mapping to current framework
 
-| Necesidad | Cobertura | Anchor |
+| Need | Coverage | Anchor |
 |---|---|---|
 | ... | ✅ / ⚠️ / ❌ | `research/insights.md#...` |
 
-## Gaps detectados
+## Gaps detected
 
-- **Gap 1:** descripción — prioridad: alta/media/baja
+- **Gap 1:** description — priority: high/medium/low
 - ...
 
-## Decisiones / next steps acordados
+## Decisions / agreed next steps
 
-## Citas relevantes
+## Relevant quotes
 > "..."
 ```
 
-## Plantilla `project-state.md` (snapshot rolling)
+## `project-state.md` template (rolling snapshot)
 
 ```markdown
-# <Client> / <Project> — Estado
+# <Client> / <Project> — State
 
 ## Snapshot
-- Inicio: YYYY-MM-DD
-- Última reunión: YYYY-MM-DD
+- Start: YYYY-MM-DD
+- Last meeting: YYYY-MM-DD
 - Status: discovery / design / build / live
 
-## Necesidades de testing (consolidadas)
+## Testing needs (consolidated)
 
-## Cobertura por nworld-qa-framework
-- ✅ Lo que ya cubre
-- ⚠️ Parcial
+## Coverage by qa-framework
+- ✅ Covered
+- ⚠️ Partial
 - ❌ Gaps
 
-## Histórico
+## History
 - [YYYY-MM-DD — topic](meetings/YYYY-MM-DD-topic.md)
 ```

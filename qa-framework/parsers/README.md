@@ -10,14 +10,19 @@ for the generation prompt.
 |---|---|---|---|
 | **[Source Code](source-code/)** | Path to component or feature | testIds, interactions, routes, API calls | Partial — base in `create-e2e-spec` skill |
 | **[OpenAPI](openapi/)** | Backend YAML/JSON spec | endpoints, schemas, error responses | Partial — base in ADR 10 |
-| **[Jira/Story](jira/)** | Jira ticket key | acceptance criteria, flows | Placeholder — genuinely new |
-| **[Test Conventions](test-conventions/)** | Existing `e2e/` directory | patterns, imports, helpers, what's already covered | Partial — base in `verify` skill |
+| **[Jira/Story](jira/)** | Jira ticket key | assertions, preconditions, userRole, feature | Spec draft — normalisation step strategy defined |
+| **[Test Conventions](test-conventions/)** | Existing `e2e/` directory | strict convention contract (prohibitive rules) | Partial — base in `verify` skill |
 
 ## Design principle
 
-**Static analysis first** (`research/insights.md`): Parsers are deterministic. They extract
-information by reading files, AST parsing, or grep — they do not use an LLM. The LLM only
-intervenes in the generation phase, when it already has all the assembled context.
+**Static analysis first** (`research/insights.md`): Parsers are deterministic where possible.
+Source Code, OpenAPI, and Test Conventions parsers extract information by reading files,
+AST parsing, or grep — no LLM needed.
+
+**Exception: Jira/Story parser.** Jira ticket descriptions are freeform (Gherkin, bullets,
+prose — every engineer writes differently). This is where LLM use is justified: a dedicated,
+cheap normalisation call (classification task type) converts freeform text to structured JSON
+before the main pipeline sees it. See `jira/README.md` for details.
 
 ## Combined schema
 
@@ -27,13 +32,15 @@ The Context Assembler receives the output from all parsers in this structure:
 interface GenerationContext {
   sourceCode: SourceCodeContext;              // required
   openapi: OpenAPIContext | null;             // optional
-  jira: JiraContext | null;                   // optional
-  conventions: ConventionsContext | null;     // optional
+  jira: JiraContext | null;                   // optional (normalised JSON from LLM call)
+  conventions: ConventionsContext | null;     // optional (strict contract format)
+  domLive: DomLiveContext | null;             // optional (from DOM inspection step)
 }
 ```
 
 Each parser defines its schema in its own README. Only `sourceCode` is required —
 the others enrich the context but their absence does not block generation.
+`domLive` comes from the optional DOM inspection step (not a parser — see protocol).
 
 ## Context Assembler
 

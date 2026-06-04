@@ -3,38 +3,38 @@ title: "Testing Automation, What are Pyramids and Diamonds?"
 author: Ritesh Kapoor
 date: 2022-01-01
 url: https://ritesh-kapoor.medium.com/testing-automation-what-are-pyramids-and-diamonds-67494fec7c55
-status: ✅ destilado
+status: ✅ distilled
 relevance: ⭐⭐
 ---
 
 # TL;DR
 
-Artículo **fundacional, no-LLM (Ene 2022)**. Repaso de las 3 formas de distribuir esfuerzo de testing: **Pirámide** (Cohn — mucho unit, poco E2E), **Pirámide invertida / ice-cream cone** (anti-patrón: mucho manual/E2E), y **Diamante** (peso en integration). Lo dejaste en el inbox como **ancla conceptual** para contrastar con "The AI Testing Pyramid Has Been Rewritten" — la base que esos artículos de 2026 dan por reescrita.
+**Foundational, non-LLM article (Jan 2022)**. Overview of the 3 ways to distribute testing effort: **Pyramid** (Cohn — lots of unit, little E2E), **Inverted pyramid / ice-cream cone** (anti-pattern: lots of manual/E2E), and **Diamond** (weight on integration). It was left in the inbox as a **conceptual anchor** to contrast with "The AI Testing Pyramid Has Been Rewritten" — the baseline that those 2026 articles take as rewritten.
 
-## Las tres formas
+## The three shapes
 
-| Forma | Peso | Cuándo | Veredicto |
+| Shape | Weight | When | Verdict |
 |---|---|---|---|
-| **Pirámide** (Cohn, *Succeeding with Agile*) | base unit → integration → E2E (poco) → manual (mínimo) | default sano | estándar de la industria |
-| **Invertida / ice-cream cone** | mucho E2E+manual, poco unit | prototipos / PoC donde el suite es desechable | anti-patrón fuera de eso (caro, frágil, lento) |
-| **Diamante** | peso en **integration**, unit y E2E adelgazados | microservicios: testear interacción entre servicios da más confianza que unit | gana tracción en arquitecturas distribuidas |
+| **Pyramid** (Cohn, *Succeeding with Agile*) | base unit → integration → E2E (little) → manual (minimal) | healthy default | industry standard |
+| **Inverted / ice-cream cone** | lots of E2E+manual, little unit | prototypes / PoC where the suite is disposable | anti-pattern outside of that (expensive, fragile, slow) |
+| **Diamond** | weight on **integration**, unit and E2E slimmed down | microservices: testing interaction between services gives more confidence than unit | gaining traction in distributed architectures |
 
-Notas del autor:
-- En microservicios, los integration tests "valen más" que los unit — pero con **mocks** que representen servicios externos, no servicios reales (tests aislados).
-- E2E sigue siendo caro de desarrollar y mantener → minimizarlo (ecos del "Just say no to more E2E tests" de Google).
-- "No hay estrategia correcta o incorrecta; es lo que funcione para ti."
+Author's notes:
+- In microservices, integration tests "are worth more" than unit — but with **mocks** representing external services, not real services (isolated tests).
+- E2E remains expensive to develop and maintain → minimize it (echoes of Google's "Just say no to more E2E tests").
+- "There is no right or wrong strategy; it's whatever works for you."
 
-## Por qué importa para nosotros (el puente a 2026)
+## Why it matters for us (the bridge to 2026)
 
-- La tesis de los artículos AI-QA de 2026 ("la pirámide ha sido reescrita") presupone **esta** pirámide como punto de partida. Tener la base explícita evita aceptar el reframe sin contraste.
-- El **eje vertical histórico = coste/velocidad/aislamiento** (unit barato/rápido/aislado → E2E caro/lento/realista). La pregunta abierta del lab: **¿cuál es el eje cuando la capa que se testea es un LLM?** No es coste de ejecución sino **determinismo del output** — y ahí la "forma" deja de mapear a tipos de test y empieza a mapear a **tipos de propiedad evaluada** (structural / semantic / behavioral), como ya apuntaba Kshirsagar ([[2026-05-08-kshirsagar-three-pipelines-500-assertions]]).
+- The thesis of the 2026 AI-QA articles ("the pyramid has been rewritten") presupposes **this** pyramid as the starting point. Having the baseline explicit prevents accepting the reframe without contrast.
+- The **historical vertical axis = cost/speed/isolation** (unit cheap/fast/isolated → E2E expensive/slow/realistic). The open question for the lab: **what is the axis when the layer being tested is an LLM?** It is not execution cost but rather **output determinism** — and there the "shape" stops mapping to test types and starts mapping to **types of evaluated property** (structural / semantic / behavioral), as Kshirsagar already pointed out ([[2026-05-08-kshirsagar-three-pipelines-500-assertions]]).
 
-## Qué destilamos a `research/`
+## What we distilled to `research/`
 
-→ Contexto fundacional, no patrón accionable:
-- Anotar en `insights.md` la hipótesis: **"la pirámide de tests es un eje de coste/aislamiento; para LLMs el eje relevante es determinismo del output → la forma se reorganiza por tipo de propiedad, no por tipo de test."** Conecta el reframe de 2026 con su base de 2022.
+→ Foundational context, not an actionable pattern:
+- Noted in `insights.md` the hypothesis: **"the test pyramid is a cost/isolation axis; for LLMs the relevant axis is output determinism → the shape reorganizes by property type, not by test type."** Connects the 2026 reframe with its 2022 baseline.
 
-## Referencias del artículo (clásicos útiles)
+## References from the article (useful classics)
 
 - Fowler — [Test Pyramid](https://martinfowler.com/bliki/TestPyramid.html) · [Practical Test Pyramid](https://martinfowler.com/articles/practical-test-pyramid.html)
 - Google Testing Blog — [Just say no to more E2E tests](https://testing.googleblog.com/2015/04/just-say-no-to-more-end-to-end-tests.html)

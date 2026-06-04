@@ -3,35 +3,35 @@ title: "You Don't Have a Testing Problem. You Have a Vibes-Based Deployment Prob
 author: Garvanand
 date: 2026-05-03
 url: https://medium.com/@garvanand03/you-dont-have-a-testing-problem-you-have-a-vibes-based-deployment-problem-2f020b096057
-status: ✅ destilado
-relevance: ⭐⭐⭐⭐⭐ (pieza más conceptualmente importante del batch — define qué evaluar en sistemas agénticos)
+status: ✅ distilled
+relevance: ⭐⭐⭐⭐⭐ (most conceptually important piece of the batch — defines what to evaluate in agentic systems)
 ---
 
 # TL;DR
 
-Define la distinción **output evaluation vs. trajectory evaluation** — la razón por la que herramientas tradicionales de eval de LLM **no sirven para agentes**. Propone 4 axes de medición, código copiable de un evaluator mínimo, y los failure modes específicos del LLM-as-Judge.
+Defines the distinction **output evaluation vs. trajectory evaluation** — the reason why traditional LLM eval tools **do not work for agents**. Proposes 4 measurement axes, copyable code for a minimal evaluator, and the specific failure modes of LLM-as-Judge.
 
-## Tesis central
+## Core thesis
 
-> Los frameworks estándar de eval de LLM evalúan **outputs**, no **trayectorias**. Miden lo que el modelo dijo en step 3, no si el output de step 3 causó que step 7 fallara.
+> Standard LLM eval frameworks evaluate **outputs**, not **trajectories**. They measure what the model said at step 3, not whether the output of step 3 caused step 7 to fail.
 >
-> Un eval single-call responde: *is this response good?*
-> Un eval de agente tiene que responder: *did the agent pursue the right strategy, use the right tools, reason correctly at each step, and arrive at a useful outcome — across an entire multi-turn session?*
+> A single-call eval answers: *is this response good?*
+> An agent eval has to answer: *did the agent pursue the right strategy, use the right tools, reason correctly at each step, and arrive at a useful outcome — across an entire multi-turn session?*
 
-**Implicación:** un fallo en agentic systems ocurre típicamente **mid-execution**, no en el output final. Un wrong-tool en step 2 puede producir un final response que parece plausible. Output-only eval nunca lo atrapará.
+**Implication:** a failure in agentic systems typically occurs **mid-execution**, not in the final output. A wrong-tool at step 2 can produce a final response that looks plausible. Output-only eval will never catch it.
 
-## Los 4 axes que hay que medir
+## The 4 axes to measure
 
-| # | Axis | Qué cubre | Ejemplo de métrica |
+| # | Axis | What it covers | Example metric |
 |---|---|---|---|
-| 1 | **Output quality** | respuesta final correcta, grounded, formato OK | correctness, faithfulness, coherence |
-| 2 | **Tool selection accuracy** | ¿el agente eligió la tool correcta? | comparación contra reference trajectory |
-| 3 | **Step-level faithfulness** | cada paso intermedio es razonable | sampling representativo evaluado sistemáticamente |
-| 4 | **Regression across changes** | tras cambio de prompt/retrieval/modelo, ¿los core cases siguen pasando? | golden dataset run pre/post |
+| 1 | **Output quality** | final response correct, grounded, format OK | correctness, faithfulness, coherence |
+| 2 | **Tool selection accuracy** | did the agent choose the right tool? | comparison against reference trajectory |
+| 3 | **Step-level faithfulness** | each intermediate step is reasonable | representative sampling evaluated systematically |
+| 4 | **Regression across changes** | after a prompt/retrieval/model change, do core cases still pass? | golden dataset run pre/post |
 
-## El evaluator mínimo (golden cases + checks deterministas)
+## The minimal evaluator (golden cases + deterministic checks)
 
-Estructura del golden case:
+Golden case structure:
 ```python
 {
     "id": "tool_use_01",
@@ -42,56 +42,56 @@ Estructura del golden case:
 }
 ```
 
-**Checks deterministas (gratis y suficientes para mucho):**
+**Deterministic checks (free and sufficient for a lot):**
 - forbidden phrases (`should_not_contain`)
 - tool usage match (`expected_tools` vs `result["tool_calls"]`)
 - format compliance
 
-→ "Una golden dataset + script de comparación pre/post = **una tarde** de setup. Suficiente para catch la mayoría de regresiones."
+→ "A golden dataset + pre/post comparison script = **one afternoon** of setup. Enough to catch most regressions."
 
-## LLM-as-Judge: failure modes específicos
+## LLM-as-Judge: specific failure modes
 
-| Bias / pitfall | Mitigación |
+| Bias / pitfall | Mitigation |
 |---|---|
-| **Verbosity bias** — judges premian respuestas largas | prompt explícito a evaluar concisión |
-| **Self-serving bias** — usar misma model family como judge inflactaba scores | usar judge de otra family |
-| **Vague rubrics** ("is this good?") producen scores inútiles | criterios observables específicos, con anchors por nivel |
-| **Missing ground truth** | dar al judge la respuesta correcta para comparar, no scoring open-ended |
+| **Verbosity bias** — judges reward long responses | explicit prompt to evaluate conciseness |
+| **Self-serving bias** — using same model family as judge inflated scores | use a judge from a different family |
+| **Vague rubrics** ("is this good?") produce useless scores | specific observable criteria, with anchors per level |
+| **Missing ground truth** | give the judge the correct answer to compare against, not open-ended scoring |
 
-> "LLM-as-Judge es una herramienta, no ground truth. Validarla contra ratings humanos sobre un sample antes de scalear."
+> "LLM-as-Judge is a tool, not ground truth. Validate it against human ratings on a sample before scaling."
 
-## Patrones / técnicas reusables
+## Reusable patterns / techniques
 
-1. **Trajectory eval como categoría distinta.** Los frameworks de output eval NO sirven para agentes. Asunción default a evitar.
-2. **Reference trajectory por test case.** Define "qué tools y en qué orden esperarías ver" → compara contra eso. No es output match, es path match.
-3. **Deterministic evals son gratis y catchean mucho.** No empieces con LLM-as-Judge — empieza con forbidden phrases + tool usage + format.
-4. **Cada production failure es un nuevo golden case.** El dataset crece con la operación; estático es señal de abandono.
-5. **Latency y coste son ejes de eval.** Una respuesta 30% más accurate pero 4× más lenta y 3× más cara NO es mejora para muchos productos.
+1. **Trajectory eval as a distinct category.** Output eval frameworks DO NOT work for agents. Default assumption to avoid.
+2. **Reference trajectory per test case.** Define "which tools and in what order you would expect to see" → compare against that. It is not output match, it is path match.
+3. **Deterministic evals are free and catch a lot.** Do not start with LLM-as-Judge — start with forbidden phrases + tool usage + format.
+4. **Every production failure is a new golden case.** The dataset grows with operations; static is a sign of abandonment.
+5. **Latency and cost are eval axes.** A response that is 30% more accurate but 4x slower and 3x more expensive is NOT an improvement for many products.
 
-## Mitos que desmonta
+## Myths debunked
 
-- "Mis 5 ejemplos manuales son mi test suite" → 5 ejemplos no es suite, es ritual de comodidad.
-- "Evals son para escala, no early stage" → 15min de eval en día 1 ahorran días de debug en prod.
-- "Si benchmark sube, mi agente mejora" → overfit al golden dataset es real. Hay que ir añadiendo failures de prod.
-- "Accuracy es suficiente" → para clasificación sí; para agentes necesitas trajectory metrics.
+- "My 5 manual examples are my test suite" → 5 examples is not a suite, it is a comfort ritual.
+- "Evals are for scale, not early stage" → 15min of eval on day 1 saves days of debugging in prod.
+- "If benchmark goes up, my agent improves" → overfitting to the golden dataset is real. You need to keep adding prod failures.
+- "Accuracy is enough" → for classification yes; for agents you need trajectory metrics.
 
-## Stack 2026 (referencias para tooling)
+## 2026 Stack (tooling references)
 
 | Use case | Tool |
 |---|---|
-| Empezando / small team | DIY deterministic + Braintrust o Langfuse |
+| Starting out / small team | DIY deterministic + Braintrust or Langfuse |
 | LangChain / LangGraph | LangSmith (native) |
-| Hallucination foco | Galileo |
-| Production observability | Arize o Langfuse con trace logging |
+| Hallucination focus | Galileo |
+| Production observability | Arize or Langfuse with trace logging |
 
-## Qué destilamos a `research/`
+## What we distilled to `research/`
 
-→ Añadidos a `insights.md`:
-- **Trajectory eval ≠ output eval** — núcleo del diseño de eval para agentes.
-- **Reference trajectory** como artefacto de test.
-- **Deterministic-first eval strategy** (LLM-as-Judge solo cuando hace falta).
-- **LLM-as-Judge failure modes** (verbosity / self-serving / vague rubric / missing GT) como checklist.
+→ Added to `insights.md`:
+- **Trajectory eval ≠ output eval** — core of eval design for agents.
+- **Reference trajectory** as test artifact.
+- **Deterministic-first eval strategy** (LLM-as-Judge only when needed).
+- **LLM-as-Judge failure modes** (verbosity / self-serving / vague rubric / missing GT) as checklist.
 
-→ Añadidos a `patterns.md`:
-- "Tooling landscape converging on Langfuse/LangSmith/Arize/Galileo" — mencionado también por Singh y Kshirsagar.
-- "Eval suite es living document — cada prod failure ⇒ nuevo golden case" (patrón compartido con Kshirsagar #2).
+→ Added to `patterns.md`:
+- "Tooling landscape converging on Langfuse/LangSmith/Arize/Galileo" — also mentioned by Singh and Kshirsagar.
+- "Eval suite is a living document — every prod failure ⇒ new golden case" (pattern shared with Kshirsagar #2).

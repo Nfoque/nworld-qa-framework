@@ -4,81 +4,76 @@ author: Brent Kastner
 publication: Level Up Coding (Medium)
 published: 2026-02-23
 url: https://medium.com/@brentkastner/...
-related_repo: references/ai-qa-framework/  # ⚠️ es el mismo proyecto, no una referencia separada
-status: 🔍 en estudio
-relevance: ⭐⭐⭐⭐⭐ (muy alta — describe la motivación y los límites del repo que ya tenemos)
+related_repo: references/ai-qa-framework/  # ⚠️ this is the same project, not a separate reference
+status: 🔍 under review
+relevance: ⭐⭐⭐⭐⭐ (very high — describes the motivation and limits of the repo we already have)
 ---
 
-# Resumen
+# Summary
 
-Postmortem honesto de Brent Kastner sobre `ai-qa-framework`, su experimento open-source
-de QA totalmente autónomo con Claude Opus 4.6 + Playwright + Python. Conclusión del
-propio autor: **"kind of works"**, sirve para exploración pero no para regresión, y el
-equipo de QA "vuelve el lunes".
+Honest postmortem by Brent Kastner about `ai-qa-framework`, his open-source experiment of fully autonomous QA with Claude Opus 4.6 + Playwright + Python. The author's own conclusion: **"kind of works"**, useful for exploration but not for regression, and the QA team "is back on Monday".
 
-## Tesis central
+## Core thesis
 
-La distinción clave que el autor extrae del experimento:
+The key distinction the author extracts from the experiment:
 
-> **Regression testing demanda determinismo. Exploratory testing es intrínsecamente
-> no-determinista. Los LLMs encajan en el segundo, no en el primero.**
+> **Regression testing demands determinism. Exploratory testing is inherently non-deterministic. LLMs fit the second, not the first.**
 
-Pretender que un LLM gate-keepea un pipeline de CI/CD es prematuro porque la
-flakiness es estructural, no un bug a corregir.
+Pretending that an LLM gatekeeps a CI/CD pipeline is premature because flakiness is structural, not a bug to fix.
 
-## Arquitectura del experimento
+## Experiment architecture
 
-- **Input mínimo:** URL + credenciales opcionales + algunos hints.
-- **Pipeline:** crawl → extracción de links/CTAs/relations → generación de plan de tests → ejecución con Playwright → reporte.
-- **Modelo:** Claude Opus 4.6 (Sonnet rompe la fiabilidad del JSON estructurado — nota técnica explícita del autor).
-- **Volumen:** ~300s para generar plan de 50 tests con steps + criterios de aserción.
+- **Minimal input:** URL + optional credentials + some hints.
+- **Pipeline:** crawl → link/CTA/relation extraction → test plan generation → execution with Playwright → report.
+- **Model:** Claude Opus 4.6 (Sonnet breaks structured JSON reliability — explicit technical note from the author).
+- **Volume:** ~300s to generate a plan of 50 tests with steps + assertion criteria.
 
-## Patrones reusables (alto valor)
+## Reusable patterns (high value)
 
-1. **AI Fallback en aserciones.** Si Playwright no encuentra el selector esperado, escala al LLM con el estado de la página para emitir un juicio. Funciona "sorprendentemente bien".
-2. **Tipos de testing combinables por config.** Functional / visual / light security mezclados en una sola corrida.
-3. **Prompt logging.** Todo prompt + respuesta queda en `.qa-framework/` — transparencia obligatoria cuando construyes sobre algo no predecible.
-4. **Reports visuales con evidencia por step.** Playwright captura cada paso con su condición y evidencia.
+1. **AI Fallback in assertions.** If Playwright cannot find the expected selector, it escalates to the LLM with the page state to emit a judgment. Works "surprisingly well".
+2. **Testing types combinable by config.** Functional / visual / light security mixed in a single run.
+3. **Prompt logging.** Every prompt + response is stored in `.qa-framework/` — mandatory transparency when building on something unpredictable.
+4. **Visual reports with per-step evidence.** Playwright captures each step with its condition and evidence.
 
-## Limitaciones honestas (que el autor admite)
+## Honest limitations (acknowledged by the author)
 
-- **Flakiness estructural.** Incluso con hints abundantes, hay drift en qué tests se eligen. Inaceptable para gates de release.
-- **Velocidad.** Rápido frente a humano escribiendo, lento frente a suite ya escrita.
-- **No reemplaza al ingeniero.** El valor humano está en: decisiones arquitectónicas, enforcement de patrones, juicio sobre qué test es significativo vs. superficial, detectar "confidently producing slop".
+- **Structural flakiness.** Even with abundant hints, there is drift in which tests are chosen. Unacceptable for release gates.
+- **Speed.** Fast compared to a human writing, slow compared to an already-written suite.
+- **Does not replace the engineer.** Human value lies in: architectural decisions, pattern enforcement, judgment about which test is meaningful vs. superficial, detecting "confidently producing slop".
 
-## Propuesta de hybrid model (el autor)
+## Hybrid model proposal (the author's)
 
 ```
-LLM ─► exploración / descubrimiento de tests
+LLM ─► exploration / test discovery
             │
             ▼
-   Human curator ─► flag tests "core flow"
+   Human curator ─► flag "core flow" tests
             │
             ▼
-   Suite determinista regresión ◄── corre idéntica cada vez
+   Deterministic regression suite ◄── runs identically every time
 ```
 
-El LLM no escribe la suite de regresión: la *propone*. El humano decide qué entra.
+The LLM does not write the regression suite: it *proposes* it. The human decides what gets in.
 
-## Lo que se puede destilar a `research/`
+## What can be distilled to `research/`
 
-→ Pendiente de añadir como insights:
-1. Regression-vs-exploratory como criterio de diseño (no como detalle de implementación).
-2. AI Fallback como patrón táctico para aserciones frágiles.
-3. Prompt logging como requisito no-funcional desde día 1.
-4. Lock-in del modelo: el framework depende de Opus por fiabilidad de structured outputs — implica que **versión de modelo es parte del contrato**, no un parámetro intercambiable.
+→ Pending addition as insights:
+1. Regression-vs-exploratory as a design criterion (not as an implementation detail).
+2. AI Fallback as a tactical pattern for fragile assertions.
+3. Prompt logging as a non-functional requirement from day 1.
+4. Model lock-in: the framework depends on Opus for structured output reliability — this implies that **model version is part of the contract**, not an interchangeable parameter.
 
-## Lo que NO compramos
+## What we do NOT buy
 
-- La premisa del título ("I replaced my entire QA team") está pensada como clickbait — el propio autor lo desmonta al final ("they are all rejoining the team on Monday"). No debería influir en cómo nombramos o vendemos `nworld-qa-framework`.
-- La idea de que un LLM autónomo cubra "exploración" tiene techo bajo si la organización no prioriza testing exploratorio (el propio autor admite que ningún equipo de producto lo hace en serio).
+- The title premise ("I replaced my entire QA team") is designed as clickbait — the author himself dismantles it at the end ("they are all rejoining the team on Monday"). It should not influence how we name or sell `qa-framework`.
+- The idea that an autonomous LLM covers "exploration" has a low ceiling if the organization does not prioritize exploratory testing (the author himself admits no product team does it seriously).
 
-## Vínculo con el repo
+## Link with the repo
 
-El código vive en `references/ai-qa-framework/`. Cuando estudiemos su arquitectura, este artículo es el **mapa mental del autor** sobre por qué tomó cada decisión. Leerlos por separado pierde la mitad del valor.
+The code lives in `references/ai-qa-framework/`. When we study its architecture, this article is the **author's mental map** of why he made each decision. Reading them separately loses half the value.
 
-## Acciones
+## Actions
 
-- [ ] Auditar `references/ai-qa-framework/src/` con esta tesis en mente: ¿dónde está la frontera entre exploration y regression en el código?
-- [ ] Capturar los 4 insights destilados en `research/insights.md`.
-- [ ] Decidir si `nworld-qa-framework` se posiciona como "exploration + human-curated regression" o como otra cosa.
+- [ ] Audit `references/ai-qa-framework/src/` with this thesis in mind: where is the boundary between exploration and regression in the code?
+- [ ] Capture the 4 distilled insights in `research/insights.md`.
+- [ ] Decide whether `qa-framework` positions itself as "exploration + human-curated regression" or as something else.

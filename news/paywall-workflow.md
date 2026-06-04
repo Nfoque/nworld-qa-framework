@@ -1,56 +1,55 @@
-# Workflow para artículos de pago (Medium y similares)
+# Workflow for Paywalled Articles (Medium and similar)
 
-El asistente **no puede autenticarse** con tu cuenta de Medium. El RSS sólo da
-títulos + excerpts. Para que yo pueda leer el cuerpo completo de un post
-member-only, necesitas trasladar el contenido desde tu sesión logueada hasta
-un sitio que yo pueda leer.
+The assistant **cannot authenticate** with your Medium account. RSS only returns
+titles + excerpts. For the full body of a member-only post, you need to transfer
+the content from your logged-in session to a location the assistant can read.
 
-## Opciones, de mejor a peor
+## Options, best to worst
 
-### A. Save-as-markdown (recomendado) ⭐
+### A. Save-as-markdown (recommended) ⭐
 
-1. Instala [MarkDownload](https://github.com/deathau/markdownload) en tu navegador (Chrome/Firefox/Edge).
-2. Abre el post en Medium (con tu cuenta logueada, sin paywall).
-3. Click derecho → "Download Tab as Markdown".
-4. Guarda el `.md` en `news/inbox/raw/` (MarkDownload puede crear también una carpeta hermana con imágenes — déjala, yo la limpio).
-5. Cuando tengas varios acumulados, me dices: **"procesa el inbox"** y yo:
-   - Leo cada `.md`.
-   - Creo un resumen estructurado en `news/inbox/YYYY-MM-DD-slug.md`.
-   - Registro la entrada en el índice de `news/README.md`.
-   - Muevo el crudo a `news/inbox/raw/processed/`.
-   - **Borro la carpeta de imágenes hermana** (no la usamos en los resúmenes).
+1. Install [MarkDownload](https://github.com/deathau/markdownload) in your browser (Chrome/Firefox/Edge).
+2. Open the post in Medium (logged in, no paywall).
+3. Right-click → "Download Tab as Markdown".
+4. Save the `.md` to `news/inbox/raw/` (MarkDownload may also create a sibling folder with images — leave it, it gets cleaned up).
+5. When you have several accumulated, say: **"process the inbox"** and the assistant will:
+   - Read each `.md`.
+   - Create a structured summary at `news/inbox/YYYY-MM-DD-slug.md`.
+   - Register the entry in the `news/README.md` index.
+   - Move the raw file to `news/inbox/raw/processed/`.
+   - **Delete the sibling image folder** (not used in summaries).
 
-### B. Friend link (para uno suelto urgente)
+### B. Friend link (for a single urgent article)
 
-Medium permite a miembros generar un "friend link" que bypassa el paywall:
+Medium lets members generate a "friend link" that bypasses the paywall:
 
-1. En el post → botón Share → "Generate Friend Link" (o "Send a story").
-2. Me pasas esa URL en el chat.
-3. Yo la abro con `WebFetch` directamente.
+1. On the post → Share button → "Generate Friend Link" (or "Send a story").
+2. Pass that URL in the chat.
+3. The assistant opens it with `WebFetch` directly.
 
-### C. Copy-paste (lo más rápido, una vez)
+### C. Copy-paste (quickest, one-off)
 
-Abres el post, ⌘A + ⌘C, lo pegas en el chat. Yo lo proceso al vuelo.
+Open the post, ⌘A + ⌘C, paste in the chat. Processed on the fly.
 
 ### D. Print to PDF
 
-Si no quieres instalar nada:
+If you don't want to install anything:
 
-1. Print → Save as PDF en el navegador logueado.
-2. Guardas en `news/inbox/raw/`.
-3. Yo leo el PDF (formato menos limpio que markdown, pero funciona).
+1. Print → Save as PDF in the logged-in browser.
+2. Save to `news/inbox/raw/`.
+3. The assistant reads the PDF (less clean format than markdown, but works).
 
-## Estructura de `news/inbox/`
+## Structure of `news/inbox/`
 
 ```
 news/inbox/
-├── raw/                     # ← tú dejas aquí los .md/.pdf descargados
-│   └── processed/           # ← yo muevo aquí lo ya procesado
-└── YYYY-MM-DD-slug.md       # ← mis resúmenes estructurados
+├── raw/                     # ← you drop downloaded .md/.pdf here
+│   └── processed/           # ← already-processed files are moved here
+└── YYYY-MM-DD-slug.md       # ← structured summaries
 ```
 
-## Lo que NO funciona
+## What does NOT work
 
-- Pasarme tu usuario de Medium: no me autentico con tu cuenta.
-- Pasarme tus cookies de sesión: `WebFetch` no admite headers personalizados.
-- Pedirme que "lea tu lista de guardados": esa lista es privada y requiere login.
+- Passing your Medium credentials: the assistant does not authenticate with your account.
+- Passing your session cookies: `WebFetch` does not support custom headers.
+- Asking to "read your saved list": that list is private and requires login.

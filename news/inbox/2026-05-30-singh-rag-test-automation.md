@@ -3,33 +3,33 @@ title: "How RAG is Transforming Test Automation: From Failure Analysis to Autono
 author: Sanjay Singh
 date: 2026-05-30
 url: https://medium.com/@sanjay.singh.aus84/how-rag-is-transforming-test-automation-from-failure-analysis-to-autonomous-qa-0016fa865d7c
-status: ✅ destilado
-relevance: ⭐⭐⭐⭐ (conceptual, no implementación; útil como mapa de casos de uso)
+status: ✅ distilled
+relevance: ⭐⭐⭐⭐ (conceptual, no implementation; useful as a use-case map)
 ---
 
 # TL;DR
 
-Mapa conceptual de **casos de uso de RAG en QA automation**. No es implementación, es taxonomía. Tres use cases concretos: (1) reescritura de tests por cambio de requirement, (2) análisis de fallos con histórico, (3) creación automática de bugs con detección de duplicados.
+Conceptual map of **RAG use cases in QA automation**. Not an implementation, it's a taxonomy. Three concrete use cases: (1) test rewriting due to requirement change, (2) failure analysis with historical data, (3) automatic bug creation with duplicate detection.
 
-## Por qué RAG (no LLM puro)
+## Why RAG (not pure LLM)
 
-Un LLM sin RAG no sabe:
-- fallos históricos de tu suite
-- defects en Jira
-- requirements actuales y previos
+An LLM without RAG doesn't know:
+- historical failures of your suite
+- defects in Jira
+- current and previous requirements
 - API specs, logs, deployments, flaky patterns
 
-Con RAG, el modelo se vuelve **context-aware** sobre tu organización. Sin eso, los outputs son genéricos y propensos a alucinación.
+With RAG, the model becomes **context-aware** about your organization. Without it, outputs are generic and hallucination-prone.
 
-## Los 3 use cases (con valor descendente)
+## The 3 use cases (in descending value)
 
 ### 1. Requirement-based test script rewriting
-Cambia un requirement (ej. añade OTP al login). RAG retrieve: requirement nuevo + viejo + scripts existentes + locators + API contracts + Jira stories. LLM produce script actualizado.
+A requirement changes (e.g. adds OTP to login). RAG retrieves: new + old requirement + existing scripts + locators + API contracts + Jira stories. LLM produces updated script.
 
-### 2. AI-powered failed test analysis ⭐ (highest value enterprise)
-Cuando un test falla, RAG retrieve fallos históricos similares, RCAs previos, defectos relacionados, historia de deployments, infra incidents.
+### 2. AI-powered failed test analysis (highest value enterprise)
+When a test fails, RAG retrieves similar historical failures, previous RCAs, related defects, deployment history, infra incidents.
 
-Output ejemplo:
+Example output:
 ```
 Likely environment performance issue.
 Observed after deployment build 5.2.1.
@@ -37,18 +37,18 @@ Similar to DEF-1023.
 Confidence: 87%
 ```
 
-**Clasificación automática del fallo:**
+**Automatic failure classification:**
 - Product defect / Automation issue / Flaky test / Environment / Data / Infra / Third-party
 
-### 3. Automatic bug creation con duplicate detection
+### 3. Automatic bug creation with duplicate detection
 Pipeline:
 ```
 Test failure → RAG retrieves context → LLM RCA → Duplicate detection (e.g. 85% similarity with BUG-4312) → Auto-create Jira
 ```
 
-## Stack referenciado
+## Referenced stack
 
-| Capa | Herramientas |
+| Layer | Tools |
 |---|---|
 | Automation | Playwright / Selenium |
 | Language | TypeScript / Python |
@@ -59,22 +59,22 @@ Test failure → RAG retrieves context → LLM RCA → Duplicate detection (e.g.
 | Logs | ELK / Splunk |
 | Defect tracking | Jira |
 
-## Patrones / técnicas reusables
+## Reusable patterns / techniques
 
-1. **Failure analysis con confidence + similar defect citation.** El output no es "creo que X", es "X, confidence 87%, similar to DEF-1023" — accionable y auditable.
-2. **Duplicate detection antes de crear el bug.** Reduce ruido en Jira (problema real de equipos grandes).
-3. **Failure classification taxonomy** = 7 categorías ortogonales que reducen ambigüedad en triage.
+1. **Failure analysis with confidence + similar defect citation.** The output is not "I think X", it's "X, confidence 87%, similar to DEF-1023" — actionable and auditable.
+2. **Duplicate detection before creating the bug.** Reduces noise in Jira (a real problem for large teams).
+3. **Failure classification taxonomy** = 7 orthogonal categories that reduce ambiguity in triage.
 
-## Limitaciones del artículo
+## Article limitations
 
-- Conceptual, no implementación. No hay código, no hay benchmarks, no hay caveats. Es una lista de "what could be" más que "what is".
-- El stack listado es genérico; no hay opiniones sobre trade-offs entre opciones.
+- Conceptual, not implementation. No code, no benchmarks, no caveats. It's a list of "what could be" rather than "what is".
+- The listed stack is generic; no opinions on trade-offs between options.
 
-## Qué destilamos a `research/`
+## What we distilled to `research/`
 
-→ Añadidos a `insights.md`:
-- **Failure analysis con RAG histórico + classification taxonomy** = el use case de mayor leverage en enterprise.
-- **Duplicate detection antes de crear bug** = requisito UX para no romper Jira.
+→ Added to `insights.md`:
+- **Failure analysis with historical RAG + classification taxonomy** = the highest-leverage use case in enterprise.
+- **Duplicate detection before creating a bug** = UX requirement to not break Jira.
 
-→ Refuerza patterns en `patterns.md`:
-- "Output con confidence + cita verifiable" como patrón de presentación de juicios LLM.
+→ Reinforces patterns in `patterns.md`:
+- "Output with confidence + verifiable citation" as a presentation pattern for LLM judgments.

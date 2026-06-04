@@ -3,68 +3,68 @@ title: "Your AI Test Pipeline Does Not Need the Cloud: Running QA Agents Locally
 author: Rohit Kshirsagar
 date: 2026-05-03
 url: https://medium.com/@krohit0389/your-ai-test-pipeline-does-not-need-the-cloud-running-qa-agents-locally-with-ollama-and-lm-studio-1e72dbaa9f32
-status: ✅ destilado
+status: ✅ distilled
 relevance: ⭐⭐⭐⭐⭐
 ---
 
 # TL;DR
 
-Para muchas empresas (regulated industries, data residency, security review estricto), pasar Jira tickets / PRDs a una API externa es un dealbreaker. Solución viable hoy: **Ollama + LM Studio + LangChain** corriendo local, con la **OpenAI-compatible API spec** como capa de portabilidad.
+For many companies (regulated industries, data residency, strict security review), sending Jira tickets / PRDs to an external API is a dealbreaker. Viable solution today: **Ollama + LM Studio + LangChain** running locally, with the **OpenAI-compatible API spec** as the portability layer.
 
-## Tesis central
+## Core thesis
 
-> El primer review de un pipeline QA con IA por parte de seguridad enterprise pregunta una sola cosa antes que nada: ¿dónde van los datos? Si la respuesta involucra OpenAI API key, la conversación termina ahí. **No es un obstáculo burocrático — es una constraint legítima de diseño.**
+> The first review of an AI-powered QA pipeline by enterprise security asks one thing before anything else: where does the data go? If the answer involves an OpenAI API key, the conversation ends there. **This is not a bureaucratic obstacle — it is a legitimate design constraint.**
 
-## Arquitectura
+## Architecture
 
-- **Ollama** = runtime local. Expone REST API **OpenAI-compatible** en `localhost:11434`.
-- **LM Studio** = desktop UI para descubrir / comparar modelos de HuggingFace.
-- **LangChain `ChatOpenAI`** → cambias `base_url` y `model` → el resto del pipeline NO cambia.
+- **Ollama** = local runtime. Exposes REST API **OpenAI-compatible** at `localhost:11434`.
+- **LM Studio** = desktop UI for discovering / comparing HuggingFace models.
+- **LangChain `ChatOpenAI`** → change `base_url` and `model` → the rest of the pipeline DOES NOT change.
 
-**Implicación arquitectónica:** si construyes contra la spec de OpenAI desde día 1, local y cloud son intercambiables a nivel de config, no de código.
+**Architectural implication:** if you build against the OpenAI spec from day 1, local and cloud are interchangeable at the config level, not at the code level.
 
-## Modelos recomendados por tarea QA
+## Recommended models per QA task
 
-| Task | Modelo | Hardware |
+| Task | Model | Hardware |
 |---|---|---|
-| Test case generation (JSON estructurado) | Llama 3 8B | 8 GB unified memory |
-| Clasificación / tagging | Mistral 7B Instruct | 8 GB |
-| RAG con multi-chunk reasoning | Llama 3 70B Q4 | 16 GB+ |
+| Test case generation (structured JSON) | Llama 3 8B | 8 GB unified memory |
+| Classification / tagging | Mistral 7B Instruct | 8 GB |
+| RAG with multi-chunk reasoning | Llama 3 70B Q4 | 16 GB+ |
 
-## Trade-offs honestos
+## Honest trade-offs
 
-| Eje | Cloud (GPT-4o) | Local (Llama 3 8B) |
+| Axis | Cloud (GPT-4o) | Local (Llama 3 8B) |
 |---|---|---|
-| Latencia test gen request | 1.2s | 4-6s |
-| Calidad en multi-step reasoning | baseline | ~20% requiere refinement humano |
-| Coste por token | $$ | electricidad |
-| Data residency | sale | no sale |
-| Capability frontier | top | "good enough" para tareas tight y constrained |
+| Latency test gen request | 1.2s | 4-6s |
+| Quality in multi-step reasoning | baseline | ~20% requires human refinement |
+| Cost per token | $$ | electricity |
+| Data residency | leaves | does not leave |
+| Capability frontier | top | "good enough" for tight and constrained tasks |
 
-> "Local models no son iguales a frontier cloud models. Son **good enough** para tareas bien definidas y estructuradas como test case generation desde un Jira ticket, especialmente si el prompt es tight y el output schema constrained."
+> "Local models are not equal to frontier cloud models. They are **good enough** for well-defined and structured tasks like test case generation from a Jira ticket, especially if the prompt is tight and the output schema is constrained."
 
-## Patrones / técnicas reusables
+## Reusable patterns / techniques
 
-1. **OpenAI-compatible API como capa de portabilidad.** No acoples al SDK de Anthropic ni al de OpenAI directamente; expón un base_url configurable.
-2. **Modelo elegido por tarea, no por organización.** No hay "el mejor modelo" — hay matriz tarea × tamaño × constraint de hardware.
-3. **Constrained schema reduce el gap cloud→local.** Cuanto más tight el output schema, menos importa el size del modelo.
+1. **OpenAI-compatible API as portability layer.** Do not couple to the Anthropic SDK or the OpenAI SDK directly; expose a configurable base_url.
+2. **Model chosen per task, not per organization.** There is no "best model" — there is a task × size × hardware constraint matrix.
+3. **Constrained schema reduces the cloud→local gap.** The tighter the output schema, the less the model size matters.
 
-## Limitaciones admitidas
+## Limitations acknowledged
 
-- Hardware requirements son reales: < 8 GB unified memory → quantizado lento / inviable interactivo.
-- Model capability changes fast → benchmark contra tu use case, no contra benchmarks generales.
-- LM Studio catalogue sesga a modelos populares generales; domain-specific / fine-tuned requiere import manual.
+- Hardware requirements are real: < 8 GB unified memory → quantized is slow / interactive is not viable.
+- Model capability changes fast → benchmark against your use case, not against general benchmarks.
+- LM Studio catalogue is biased toward popular general models; domain-specific / fine-tuned requires manual import.
 
-## Qué destilamos a `research/`
+## What we distilled to `research/`
 
-→ Añadidos a `insights.md`:
-- **OpenAI-compatible API como capa de portabilidad** (criterio arquitectónico).
-- **Local-first como requirement enterprise**, no como workaround.
-- **Modelo por tarea**, no por organización. Matriz × hardware constraint.
+→ Added to `insights.md`:
+- **OpenAI-compatible API as portability layer** (architectural criterion).
+- **Local-first as enterprise requirement**, not as workaround.
+- **Model per task**, not per organization. Matrix × hardware constraint.
 
-→ Refuerza pattern en `patterns.md`:
+→ Reinforces pattern in `patterns.md`:
 - "Constrained schema = small model OK; open generation = needs frontier".
 
-## Implicación directa para nworld-qa-framework
+## Direct implication for qa-framework
 
-Decisión arquitectónica: **el framework debe poder correr 100% local**. Si el cliente es banco/seguros/salud, esto NO es opcional. Diseñar contra OpenAI-compatible spec, NO contra el SDK de Anthropic directamente. La dependencia a Opus que admite Kastner es un anti-patrón a evitar — o al menos a aislar tras una abstracción.
+Architectural decision: **the framework must be able to run 100% locally**. If the client is a bank/insurance/healthcare company, this is NOT optional. Design against the OpenAI-compatible spec, NOT against the Anthropic SDK directly. The Opus dependency that Kastner acknowledges is an anti-pattern to avoid — or at least to isolate behind an abstraction.

@@ -1,4 +1,4 @@
-# nworld-qa-framework
+# qa-framework
 
 NWorld framework for automatic E2E test generation with Playwright + LLM.
 
@@ -11,32 +11,25 @@ Not a binary, no runtime, no dependencies.
 ## Generation pipeline
 
 ```
-Source Code ──┐
-OpenAPI spec ─┤──► Context Assembler ──► LLM + Prompt Template ──► Playwright Spec
-Jira ticket ──┤                                                        │
-Test conventions ┘                                                     ▼
-                                                               Validation + XRay
+Source Code ──────┐
+OpenAPI spec ─────┤
+Jira ticket ──────┤──► Context Assembler ──► LLM + Prompt Template ──► Playwright Spec
+Test conventions ─┤                                                        │
+DOM live (opt.) ──┘                                                        ▼
+                                                                   Validation Loop
+                                                                   (opt. debug retry)
+                                                                        │
+                                                                        ▼
+                                                                   XRay + PR
 ```
 
-Defined in `protocol/v0.1-generation-protocol.md`.
+Defined in `protocol/v0.1-generation-protocol.md` (8 steps: parse → jira normalize → assemble → DOM inspect → generate → post-process → validation loop → report).
 
 ## Structure
 
 ```
-nworld-qa-framework/
+qa-framework/
   STATUS.md                    ← Task vs. existing artifact map
-  skills/
-    generation/                   ← Skills that generate tests and fixtures
-      create-e2e-spec.md             Generates Playwright spec from a component
-      create-mock-fixture.md          Generates JSON fixture from OpenAPI spec
-    scaffolding/                  ← Skills that create the project structure
-      create-domain.md               Domain scaffolds
-      create-feature.md               Feature with testId by default
-      create-component.md             Shared component (rule of 3)
-      create-microfrontend.md         MFE wrapper + webpack + eventbus
-      create-environment.md           Configmap + Playwright project
-    verification/                 ← Validation skills
-      verify.md                       Lint + types + tests + architecture
   protocol/
     v0.1-generation-protocol.md   ← Generation pipeline (inputs → output)
     prompt-templates/
@@ -48,10 +41,13 @@ nworld-qa-framework/
   parsers/
     openapi/                      ← Extracts endpoints, schemas, errors from spec
     source-code/                  ← Extracts testIds, interactions, routes from component
-    jira/                         ← Extracts ACs and flows from a ticket (placeholder)
-    test-conventions/             ← Extracts patterns from existing tests
+    jira/                         ← Normalisation step: LLM call converts freeform tickets to structured JSON
+    test-conventions/             ← Extracts patterns as strict convention contract (prohibitive rules)
+  targets/                        ← Target project validation sequence
   validation/                     ← XRay reporter + verify pipeline
 ```
+
+> **Note:** The pilot skills (`create-e2e-spec`, `create-mock-fixture`, `verify`, scaffolding skills) that validated the skill-first approach have been archived. Their evidence is captured in `STATUS.md` (section "Covered by the internal pilot") and cited by ADR-001. Executable skills for this repo live in `.claude/skills/`.
 
 ## Principles
 
@@ -62,6 +58,8 @@ Distilled from `../research/insights.md` and `../research/patterns.md`:
 3. **Build-time vs run-time** — Skills to generate; Playwright CLI to execute. They don't mix
 4. **Local-first** — The framework runs where the dev works. No external server, no API to audit
 5. **Confidence + rationale** — Every LLM output carries confidence + justification, not bare judgment
+6. **Strict convention contracts** — Prohibitive rules ("PROHIBITED", "ONLY") produce ~95% LLM compliance vs ~70% for descriptive guidelines
+7. **Observation over inference** — Debug loops use DOM state + screenshots, not just error messages
 
 ## Origin of decisions
 

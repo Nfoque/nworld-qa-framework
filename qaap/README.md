@@ -10,9 +10,11 @@ QAAP enables QA experts to automate the creation and maintenance of end-to-end t
 2. **Generate Gherkin test scenarios** using LLMs, with confidence scores and rationale
 3. **Get second opinions** — generate with one model, review with another (Claude + Gemini, etc.)
 4. **Review and refine** via human-in-the-loop chat (NotebookLM-style)
-5. **Auto-codify** Gherkin into executable tests (Playwright, Cypress, Karate)
-6. **Execute and monitor** — run tests, track health trends, detect degradation
-7. **Propose fixes** — AI detects problems and suggests code changes as PRs
+5. **Auto-codify** Gherkin into executable tests (Playwright, Cypress, Karate) with DOM-grounded selectors
+6. **Validate and self-heal** — observation-based debug loop (screenshot + DOM state → evidence-based fix)
+7. **Execute and monitor** — run tests, track health trends, detect degradation
+8. **Write back** — update Jira tickets with comments, status transitions, PR links (audit trail)
+9. **Propose fixes** — AI detects problems and suggests code changes as PRs
 
 ## Key Features
 
@@ -84,9 +86,9 @@ See [documentation/](documentation/) for full product specs:
 ## Research Foundation
 
 QAAP builds on consolidated QA automation research in the parent repository:
-- 13+ analyzed articles on LLM-based testing (2022-2026)
+- 13 analyzed articles on LLM-based testing (2022-2026)
 - Client signals from real enterprise engagements
-- Validated patterns: properties over content, confidence-based routing, living datasets, static-analysis-first
+- Validated patterns: properties over content, confidence-based routing, living datasets, static-analysis-first, strict convention contracts, normalisation steps, observation-based debug
 
 ---
 

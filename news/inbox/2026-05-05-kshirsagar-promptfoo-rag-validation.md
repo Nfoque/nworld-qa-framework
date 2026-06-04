@@ -3,72 +3,72 @@ title: "4 Metrics. 1 Week. Blind Testing → Full RAG Validation: PromptFoo Setu
 author: Rohit Kshirsagar
 date: 2026-05-05
 url: https://medium.com/@krohit0389/4-metrics-1-week-blind-testing-full-rag-validation-promptfoo-setup-for-sdets-f87b8211eb8a
-status: ✅ destilado
+status: ✅ distilled
 relevance: ⭐⭐⭐⭐⭐
 ---
 
 # TL;DR
 
-Setup de **PromptFoo** en una semana con 4 métricas que destapó **14 prompts variantes que el manual review había aprobado**. El framework es YAML-first + Git-native + CI-native.
+**PromptFoo** setup in one week with 4 metrics that uncovered **14 prompt variants that manual review had approved**. The framework is YAML-first + Git-native + CI-native.
 
-## Tesis central
+## Core thesis
 
-> El tipo de confianza más peligroso no es la incertidumbre — es la confianza tras una sesión de manual testing que "fue bien". Para LLMs eso es liability, no validación. Los LLMs no fallan tirando excepciones: fallan siendo confidentemente incorrectos, sutilmente off-topic, inconsistentes entre inputs equivalentes, o tóxicos en edge cases.
+> The most dangerous type of confidence is not uncertainty — it is confidence after a manual testing session that "went well". For LLMs that is liability, not validation. LLMs do not fail by throwing exceptions: they fail by being confidently incorrect, subtly off-topic, inconsistent across equivalent inputs, or toxic in edge cases.
 
-## Por qué PromptFoo (vs. DeepEval / RAGAS)
+## Why PromptFoo (vs. DeepEval / RAGAS)
 
-| Criterio | PromptFoo | DeepEval |
+| Criterion | PromptFoo | DeepEval |
 |---|---|---|
-| Config | YAML en Git, revisable en PR | Python-native, más flexible |
-| Comparación side-by-side de prompts | Nativa | Vía custom code |
-| CI integration | 4 líneas en GitHub Actions | Más setup |
-| Métricas RAG-específicas (precision/recall del retrieval) | Limitadas | Más completas |
+| Config | YAML in Git, reviewable in PR | Python-native, more flexible |
+| Side-by-side prompt comparison | Native | Via custom code |
+| CI integration | 4 lines in GitHub Actions | More setup |
+| RAG-specific metrics (retrieval precision/recall) | Limited | More complete |
 
-**Combinable:** PromptFoo (CI rápido + variant comparison) + DeepEval/RAGAS (deep retrieval analysis). No son mutuamente excluyentes.
+**Combinable:** PromptFoo (fast CI + variant comparison) + DeepEval/RAGAS (deep retrieval analysis). They are not mutually exclusive.
 
-## Las 4 métricas (elegidas por cubrir failure modes reales)
+## The 4 metrics (chosen to cover real failure modes)
 
-| Métrica | Threshold | Qué cubre |
+| Metric | Threshold | What it covers |
 |---|---|---|
-| **Answer correctness** | 0.85 | similitud semántica vs. expected output |
-| **Context adherence** | 0.80 | hallucination detector para RAG: cada claim debe ser grounded en context retrieved |
-| **Toxicity** | pass/fail | adversarial prompts, alto downside asimétrico |
-| **Response consistency** | 0.80 | dos rephrasings de la misma pregunta producen respuestas equivalentes |
+| **Answer correctness** | 0.85 | semantic similarity vs. expected output |
+| **Context adherence** | 0.80 | hallucination detector for RAG: each claim must be grounded in retrieved context |
+| **Toxicity** | pass/fail | adversarial prompts, high asymmetric downside |
+| **Response consistency** | 0.80 | two rephrasings of the same question produce equivalent answers |
 
-## Ground-truth dataset — 3 fuentes (2 días de trabajo)
+## Ground-truth dataset — 3 sources (2 days of work)
 
-1. **Production query logs** (90 queries) — categorizadas por intent, sampleadas representativamente.
-2. **Adversarial prompts** — known failure modes, queries fuera de scope, ambigüedades.
-3. **Regression cases** — bugs que llegaron a prod en el último cuarto.
+1. **Production query logs** (90 queries) — categorized by intent, representatively sampled.
+2. **Adversarial prompts** — known failure modes, out-of-scope queries, ambiguities.
+3. **Regression cases** — bugs that reached prod in the last quarter.
 
-Expected output ≠ string exacto. Criterios: "must acknowledge X", "must not claim Y", "must cite source Z".
+Expected output ≠ exact string. Criteria: "must acknowledge X", "must not claim Y", "must cite source Z".
 
-## Hallazgo crítico de la primera corrida
+## Critical finding from the first run
 
-| Métrica | Production prompt | Revised prompt (con grounding instructions explícitas) |
+| Metric | Production prompt | Revised prompt (with explicit grounding instructions) |
 |---|---|---|
-| Context adherence | 0.73 ❌ | **0.89** ✅ (+16 puntos) |
+| Context adherence | 0.73 ❌ | **0.89** ✅ (+16 points) |
 
-→ Data driveada decisión que de otro modo habría sido debate subjetivo product vs. eng.
+→ Data drove a decision that otherwise would have been a subjective product vs. eng debate.
 
-## Patrones / técnicas reusables
+## Reusable patterns / techniques
 
-1. **Eval al pipeline completo, no al modelo en aislamiento.** PromptFoo apunta al endpoint del RAG pipeline, no al modelo directamente.
-2. **Variant comparison head-to-head como mecanismo de decisión.** Tres variantes del system prompt corridas en una sola pasada.
-3. **Threshold per métrica, no global.** Cada axis tiene su propio umbral porque cada uno tiene su distribución natural.
+1. **Eval the full pipeline, not the model in isolation.** PromptFoo targets the RAG pipeline endpoint, not the model directly.
+2. **Head-to-head variant comparison as decision mechanism.** Three system prompt variants run in a single pass.
+3. **Per-metric threshold, not global.** Each axis has its own threshold because each has its own natural distribution.
 
-## Limitaciones admitidas
+## Limitations acknowledged
 
-- 120 cases ≠ cobertura del long tail. Dataset es living document, hay que rebaselinear con cada cambio significativo de modelo/retrieval.
-- Semantic similarity es sensible a la calidad de los expected outputs. Garbage in → garbage out aplica al eval tanto como al modelo.
+- 120 cases ≠ long tail coverage. Dataset is a living document, it needs to be rebaselined with every significant model/retrieval change.
+- Semantic similarity is sensitive to the quality of expected outputs. Garbage in → garbage out applies to the eval as much as to the model.
 
-## Qué destilamos a `research/`
+## What we distilled to `research/`
 
-→ Añadidos a `insights.md`:
-- **PromptFoo + DeepEval/RAGAS** como stack combinable (no excluyente).
-- **Eval the pipeline, not the model.** Test endpoint del sistema completo.
-- **Per-metric thresholds, no global.** Cada axis tiene su distribución.
-- **Variant comparison as decision mechanism.** Convierte debates subjetivos en data.
+→ Added to `insights.md`:
+- **PromptFoo + DeepEval/RAGAS** as combinable stack (not exclusive).
+- **Eval the pipeline, not the model.** Test the full system endpoint.
+- **Per-metric thresholds, not global.** Each axis has its own distribution.
+- **Variant comparison as decision mechanism.** Turns subjective debates into data.
 
-→ Refuerza pattern en `patterns.md`:
-- "Golden dataset / ground truth" como inversión obligatoria, no shortcut-able.
+→ Reinforces pattern in `patterns.md`:
+- "Golden dataset / ground truth" as mandatory investment, not shortcut-able.

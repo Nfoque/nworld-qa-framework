@@ -40,6 +40,11 @@ interface TaskManagerConnector extends Connector {
   fetchTickets(query: TicketQuery): Promise<Ticket[]>;
   fetchTicketDetail(key: string): Promise<TicketDetail>;     // ACs, description, links
   pushTestResults(results: TestResultPayload): Promise<void>; // Push to XRay, etc.
+
+  // Write-back operations (audit trail — Nesvitii pattern)
+  postComment(key: string, message: string): Promise<void>;           // Progress notifications
+  transitionStatus(key: string, to: string): Promise<void>;           // Move ticket through workflow
+  linkPR(key: string, prUrl: string): Promise<void>;                  // Attach PR reference to ticket
 }
 
 // document-source
@@ -134,6 +139,28 @@ interface SyncResult {
 - Never logged, never included in prompt logs or error messages
 - Credentials validated on save via `testConnection()`
 - UI: credential fields are masked with reveal toggle, never sent back to frontend after save
+
+### Write-Back Sequence (Task Manager)
+
+When QAAP generates tests from a Jira ticket, the full write-back sequence provides
+an audit trail from ticket to CI result (pattern from Nesvitii):
+
+```
+1. fetchTicketDetail(key)          → read AC, description, links
+2. postComment(key, "Starting...")  → notify stakeholders
+3. transitionStatus(key, "In Progress")
+4. [pipeline runs: parse → generate → codify]
+5. postComment(key, "PR created: <url>")
+6. linkPR(key, prUrl)
+7. transitionStatus(key, "In Review")
+8. [if tests fail in CI]
+   postComment(key, "Tests failed: <summary>")
+   transitionStatus(key, "In Progress")
+```
+
+Write-back operations are optional — the connector works read-only if the tenant
+doesn't grant write permissions. Each write-back step is idempotent and failure-tolerant
+(a failed comment post doesn't block the pipeline).
 
 ---
 

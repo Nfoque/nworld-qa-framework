@@ -1,10 +1,13 @@
-# nworld-qa-framework — Research workspace
+# qa-framework — Research workspace
 
-Research and design workspace for **nworld-qa-framework**: a framework for automatic
-E2E test generation with Playwright, assisted by LLM.
+Research and design workspace for two products:
 
-For the product design (pipeline, principles, ADRs), see
-[nworld-qa-framework/README.md](nworld-qa-framework/README.md).
+1. **qa-framework** (`qa-framework/`) — Skill-first framework for automatic E2E test generation with Playwright + LLM.
+2. **QAAP** (`qaap/`) — Multi-tenant SaaS platform that productizes the framework's pipeline.
+
+For the framework design (pipeline, principles, ADRs), see
+[qa-framework/README.md](qa-framework/README.md).
+For the SaaS product, see [qaap/README.md](qaap/README.md).
 
 ## Organization
 
@@ -15,19 +18,21 @@ For the product design (pipeline, principles, ADRs), see
 │   ├── patterns.md                 Recurring patterns across sources
 │   └── client-signals.md          Market signals (sanitized)
 │
-├── news/                        Articles and publications on QA + LLMs
+├── news/                        Articles and publications on QA + LLMs (14 processed)
 │
 ├── references/                  External repos studied (code, ADRs, postmortems)
 │
 ├── clients/                     Transcripts and analysis per client (gitignored)
 │
-└── nworld-qa-framework/        The framework — final product
+├── qa-framework/        The framework — skills, protocol, parsers, ADRs
+│
+└── qaap/                        The SaaS product — documentation + code monorepo
 ```
 
 ## Research -> product flow
 
 ```
-news/ + references/  ──►  research/insights.md   ──►  nworld-qa-framework/
+news/ + references/  ──►  research/insights.md   ──►  qa-framework/
                           research/patterns.md
 clients/ (gitignored) ──► research/client-signals.md
 ```
@@ -39,4 +44,4 @@ has backing from client signals, that is a strong signal. Without a trace, the d
 
 - Each article or repo added includes a brief note in its folder's index README.
 - `research/` is consolidated opinion, not just another index.
-- `nworld-qa-framework/` is kept clean — only what has already gone through `research/` goes in.
+- `qa-framework/` is kept clean — only what has already gone through `research/` goes in.

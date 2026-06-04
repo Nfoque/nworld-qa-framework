@@ -3,15 +3,15 @@ title: "Using AI to Find Coverage Gaps in Your Playwright Test Suite"
 author: Amrutalohabare
 date: 2026-06-01
 url: https://medium.com/@amrutalohabare/using-ai-to-find-coverage-gaps-in-your-playwright-test-suite-7b2e590f8ab9
-status: ✅ destilado
+status: ✅ distilled
 relevance: ⭐⭐⭐⭐
 ---
 
 # TL;DR
 
-4 workflows con prompts copiables para usar Claude como auditor de cobertura sobre una suite Playwright. El workflow #4 es el más valioso: **automatizar el chequeo de gaps en cada PR vía GitHub Actions + Claude API**.
+4 workflows with copy-paste prompts to use Claude as a coverage auditor on a Playwright suite. Workflow #4 is the most valuable: **automate gap checking on every PR via GitHub Actions + Claude API**.
 
-> ⚠️ El raw markdown del artículo está incompleto en `processed/` — falta el inicio. Lo que aparece corresponde a los workflows 1, 3 y 4 (el 2 también falta). Procesado con lo disponible.
+> Warning: The raw markdown of the article is incomplete in `processed/` — the beginning is missing. What appears corresponds to workflows 1, 3, and 4 (workflow 2 is also missing). Processed with what was available.
 
 ## Workflow 1 — Find missing scenarios from user story
 
@@ -29,45 +29,45 @@ Review the tests against acceptance criteria and:
 3. Rate overall coverage as Low/Medium/High with reason
 ```
 
-**Caso real reportado:** corrió esto sobre tests de checkout. AC tenía 8 puntos, tests cubrían 6. Claude detectó en <10s:
-- ❌ No test para applying expired discount code
-- ❌ No test para checkout cuando saved card está expirada
+**Real case reported:** ran this on checkout tests. AC had 8 points, tests covered 6. Claude detected in <10s:
+- No test for applying expired discount code
+- No test for checkout when saved card is expired
 
-## Workflow 3 — Traceability sin herramienta dedicada
+## Workflow 3 — Traceability without a dedicated tool
 
-Mapea user stories → test functions automáticamente. Output ejemplo:
+Maps user stories → test functions automatically. Example output:
 ```
 US-04 (Remember me functionality) → ❌ NO TEST FOUND
 US-05 (Password reset flow) → ❌ NO TEST FOUND
 ```
 
-Es una matriz de trazabilidad ligera que típicamente requiere herramienta (Xray, Zephyr) o spreadsheet manual.
+This is a lightweight traceability matrix that typically requires a tool (Xray, Zephyr) or a manual spreadsheet.
 
-## Workflow 4 — Automate en cada PR (el power move)
+## Workflow 4 — Automate on every PR (the power move)
 
-GitHub Action que en cada PR a `tests/**` corre un script Python que:
-1. Lee todos los test files de `tests/`.
-2. Manda el conjunto a Claude Sonnet 4 (`claude-sonnet-4-20250514`).
-3. Pide gaps HIGH risk, máximo 5.
-4. **Falla el build si la respuesta contiene "high"**.
+GitHub Action that on every PR to `tests/**` runs a Python script that:
+1. Reads all test files from `tests/`.
+2. Sends the collection to Claude Sonnet 4 (`claude-sonnet-4-20250514`).
+3. Asks for HIGH risk gaps, maximum 5.
+4. **Fails the build if the response contains "high"**.
 
-Workflow YAML + script Python completos están en el artículo (ver crudo en `processed/`).
+Full workflow YAML + Python script are in the article (see raw in `processed/`).
 
-## Patrones / técnicas reusables
+## Reusable patterns / techniques
 
-1. **Coverage gap analysis como linter en PR.** Mismo modelo mental que ESLint/typecheck — corre automático, bloquea merge si flag.
-2. **Constrain output** ("maximum 5 items", "be concise", "format as bullet list") — reduce noise y coste de tokens.
-3. **Gate por keyword en respuesta** (`if "high" in gaps.lower()`) — simplísimo y suficiente para empezar.
+1. **Coverage gap analysis as a PR linter.** Same mental model as ESLint/typecheck — runs automatically, blocks merge if flagged.
+2. **Constrain output** ("maximum 5 items", "be concise", "format as bullet list") — reduces noise and token cost.
+3. **Gate by keyword in response** (`if "high" in gaps.lower()`) — dead simple and sufficient to start.
 
-## Limitaciones (no admitidas pero obvias)
+## Limitations (not acknowledged but obvious)
 
-- Mandar **todos** los test files en un solo prompt no escala — context window finito + coste creciente.
-- Gate por keyword es frágil: el modelo puede decir "no high-risk gaps detected" y bloquear el build. Necesita structured output (JSON con field `risk_level`).
-- No hay caching ni baseline — cada PR re-evalúa la suite entera incluso si no cambió la lógica core.
+- Sending **all** test files in a single prompt doesn't scale — finite context window + growing cost.
+- Gate by keyword is fragile: the model can say "no high-risk gaps detected" and block the build. Needs structured output (JSON with `risk_level` field).
+- No caching or baseline — every PR re-evaluates the entire suite even if the core logic didn't change.
 
-## Qué destilamos a `research/`
+## What we distilled to `research/`
 
-→ Añadidos a `insights.md`:
-- **Coverage gap analysis como PR linter** — patrón replicable.
-- **Output constraints en prompt** (max items, formato) como técnica de control de coste/ruido.
-- **Structured output mandatory** para gating decisions (no keyword matching).
+→ Added to `insights.md`:
+- **Coverage gap analysis as PR linter** — replicable pattern.
+- **Output constraints in prompt** (max items, format) as a cost/noise control technique.
+- **Structured output mandatory** for gating decisions (not keyword matching).

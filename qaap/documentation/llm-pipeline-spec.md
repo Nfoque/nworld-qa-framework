@@ -115,10 +115,36 @@ Convention Parser   → existing test patterns, import conventions, what's alrea
 
 Each parser produces a typed `ParseResult` that feeds into the assembler. Parsers are independent — they can run in parallel.
 
-**Existing base from nworld-qa-framework:**
+#### Stage 1b: Normalize (LLM — freeform inputs only)
+
+Some sources (Jira tickets, pasted free text, documents) are freeform — every author writes differently. A **dedicated, cheap LLM call** converts these to structured JSON *before* the assembler sees them. This separates parsing from reasoning.
+
+```
+Freeform input (Jira description, free text, document chunk)
+  │
+  ▼
+LLM normalisation call
+  - Task type: classification (small/fast model — GPT-4o-mini, Llama 3 8B)
+  - System: "Extract testable assertions. Return ONLY valid JSON."
+  - Response format: JSON schema enforced
+  - Max tokens: ~1000
+  │
+  ▼
+Structured JSON: { assertions[], preconditions[], userRole, feature }
+```
+
+**Why a separate step, not inline in the main prompt:**
+- Allows validating extraction quality before spending tokens on generation
+- Uses a cheap model (classification tier) — not the expensive generation model
+- Can be cached per source version (same ticket content → same normalisation)
+- Pipeline principal never sees ambiguous input
+
+(Origin: Nesvitii — normalisation step pattern. See also `qa-framework/parsers/jira/README.md`)
+
+**Existing base from qa-framework:**
 - Source Code Parser: partial (from `create-e2e-spec` skill)
 - OpenAPI Parser: partial (from `generate-fixtures.js` pilot)
-- Jira Parser: placeholder (genuinely new)
+- Jira Parser: spec drafted (normalisation step strategy defined — from Nesvitii research)
 - Convention Parser: partial (from `verify` skill)
 
 ### Stage 2: Assemble Context
@@ -199,13 +225,47 @@ Applied changes are tracked: each assistant message records which scenarios were
 Prompt templates: `codify-playwright.ts`, `codify-cypress.ts`, `codify-karate.ts`
 
 For each approved scenario:
-1. Build prompt with: Gherkin text + target framework + project conventions + available testIds + OpenAPI context
+
+#### 6a. DOM Inspection (optional — requires running environment)
+
+If the plan has a `targetEnvironment.url` configured:
+1. Navigate to the route under test via Playwright
+2. Extract all `data-testid` attributes from the relevant DOM region
+3. Build a **ground-truth selector map**: which elements actually exist and what they're called
+4. Merge with testIds from source code parser (source may miss dynamic/third-party testIds)
+
+This eliminates selector hallucination. Without DOM inspection: ~85% selector accuracy. With it: ~98%.
+(Origin: Nesvitii — Playwright MCP DOM inspection pattern)
+
+#### 6b. Code Generation
+
+1. Build prompt with: Gherkin text + target framework + project conventions (as strict contract) + available testIds (source + DOM) + OpenAPI context
 2. LLM generates test code
 3. Post-processing validates:
    - Imports are correct for the target framework
-   - TestIds used exist in source (if source code connector active)
+   - TestIds used exist in source or DOM (if connectors active)
    - TypeScript compilation check (for Playwright/Cypress)
 4. Confidence assigned based on evidence ratio (testId-backed locators vs. inferred)
+5. Each selector tagged with evidence source: `source-code`, `dom-live`, or `inferred`
+
+#### 6c. Validation Loop (optional — requires running environment)
+
+If the test can be executed against a running environment:
+1. Run the generated test
+2. If all tests pass → done (confidence boost +13%)
+3. If tests fail → **observation-based debug**:
+   - Navigate to failing URL with headed browser
+   - Execute steps up to the point of failure
+   - Take screenshot + inspect DOM state at moment of failure
+   - Compare expected selector vs what actually exists in the DOM
+   - Feed evidence (screenshot + DOM snapshot + error message) to LLM for fix
+   - Apply fix and retry
+4. Max 3 retry attempts. If still failing after 3: mark as `needs-human-review`
+
+The fix is based on **observation** (real DOM state), not **inference** (interpreting error message alone). This produces correct fixes on the first attempt in most cases.
+(Origin: Nesvitii — observation-based debug loop)
+
+If no running environment is available, the validation loop is skipped (degraded mode — lower confidence, no retry).
 
 **Each framework has its own prompt template** because the idioms differ significantly. This is not a "template with a framework variable" — each prompt understands its target framework deeply.
 
@@ -237,11 +297,13 @@ Located at `apps/api/src/modules/pipeline/prompts/`:
 
 | Template | Task Type | Input | Output |
 |----------|-----------|-------|--------|
+| `normalize-ticket.ts` | classification | Freeform ticket description | `{ assertions[], preconditions[], userRole, feature }` |
 | `generate-gherkin.ts` | generation | GenerationContext | TestScenario[] with Gherkin |
 | `review-plan.ts` | review | Scenarios + Context | ReviewFeedback per scenario |
-| `codify-playwright.ts` | codification | Scenario + Conventions + TestIds | Playwright test code |
-| `codify-cypress.ts` | codification | Scenario + Conventions + TestIds | Cypress test code |
+| `codify-playwright.ts` | codification | Scenario + Conventions (strict) + TestIds (source+DOM) | Playwright test code |
+| `codify-cypress.ts` | codification | Scenario + Conventions (strict) + TestIds (source+DOM) | Cypress test code |
 | `codify-karate.ts` | codification | Scenario + OpenAPI | Karate feature code |
+| `fix-failing-test.ts` | codification | Error + Screenshot + DOM snapshot + AGENTS.md | Fixed test code |
 | `classify-failure.ts` | failure_analysis | Error + History (RAG) | Classification + RCA |
 | `propose-fix.ts` | generation | Failure patterns + Source code | ProactiveFix proposal |
 | `analyze-impact.ts` | classification | Changed files + Test plan | Affected scenarios list |

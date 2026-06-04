@@ -48,7 +48,7 @@ Criterios de exito:
 - **Multi-tenant**: RLS en toda tabla, CRUD tenants, administracion
 - **Branding**: MUI ThemeProvider con colores/logo/fuente por tenant
 - **SSO**: Better Auth con OIDC per tenant (Okta, Azure AD, Google Workspace)
-- **Conector Jira**: Pull tickets + ACs, push resultados a XRay
+- **Conector Jira**: Pull tickets + ACs, push resultados a XRay, write-back (comments, status transitions, PR links — audit trail completo)
 - **Conector GitHub**: Pull source code + OpenAPI specs, push tests como PRs
 - **Conector S3/Docs**: Upload y ingest de documentos de requisitos
 - **Second Opinions**: Configurar modelo de review, cadena de jobs BullMQ: generar → review → merge con provenance
@@ -60,7 +60,7 @@ Criterios de exito:
 ### Criterios de exito
 1. Dos tenants operando simultaneamente con datos aislados
 2. SSO funcional con al menos un proveedor OIDC
-3. Jira pull → generation → approval → XRay push cycle completo
+3. Jira pull → generation → approval → XRay push cycle completo (with write-back audit trail: comments + status transitions)
 
 ---
 
@@ -70,6 +70,7 @@ Criterios de exito:
 
 - **Modalidad API**: Karate framework support (OpenAPI → Karate features → codify)
 - **Ejecucion In-Platform**: Runners containerizados (Playwright en Docker, Karate en Docker), progreso real-time via SSE
+- **DOM Inspection + Validation Loop**: Pre-codification DOM grounding (extract real selectors from running env) + post-codification observation-based debug loop (screenshot + DOM state → evidence-based fix, max 3 retries)
 - **Cron Scheduling + Branch Filtering**: Regresiones diarias por rama (main, develop, feature/*), por PR, por push
 - **Failure Analysis**: RAG-based con pgvector (embedding test failures + historical RCAs). Taxonomia 7 categorias (product/automation/flaky/env/data/infra/third_party)
 - **Living Dataset**: Promover failures a nuevos test scenarios (cada fallo de prod se convierte en golden test case)
@@ -93,6 +94,7 @@ Criterios de exito:
 
 - **AI Fix Proposals**: Deteccion proactiva de bugs, propuestas de fixes exportables como PRs al repo del cliente
 - **Source Change Impact**: Webhook de repo → analisis de impacto → re-run solo tests afectados
+- **Jira Ticket Trigger**: Webhook de Jira (ticket con label/status change) → pipeline completo (parse → generate → codify → PR → Jira write-back) sin intervencion humana
 - **Branch Comparison**: Comparar pass rates entre ramas, detectar regresiones antes de merge
 - **Helm Chart**: Documentado y testeado para on-prem + Ollama como LLM local
 - **iOS Modality**: XCUITest placeholder architecture y primeros generators

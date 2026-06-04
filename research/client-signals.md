@@ -1,112 +1,112 @@
-# Client signals — qué nos piden los clientes (cross-client, sanitized)
+# Client signals — what clients are asking for (cross-client, sanitized)
 
-Síntesis sanitizada de necesidades de testing observadas en reuniones con clientes.
-Los datos originales viven en `clients/` (gitignored, local-only). Aquí solo entra
-el patrón agregado, sin nombres ni detalles que identifiquen al cliente.
+Sanitized synthesis of testing needs observed in client meetings.
+Original data lives in `clients/` (gitignored, local-only). Only the
+aggregated pattern goes here, without names or details that identify the client.
 
-Esta es **la otra mitad** del input a la priorización del framework:
+This is **the other half** of the input to framework prioritization:
 
-- `research/insights.md` y `research/patterns.md` = qué dice el ecosistema (literatura, postmortems públicos).
-- `research/client-signals.md` (este archivo) = qué dice el mercado real (NFQ engagements).
+- `research/insights.md` and `research/patterns.md` = what the ecosystem says (literature, public postmortems).
+- `research/client-signals.md` (this file) = what the real market says (NFQ engagements).
 
-Cuando una misma necesidad aparece en ≥ 2 clientes independientes, sube aquí y se
-vuelve **señal de roadmap** para `nworld-qa-framework/`.
+When the same need appears in ≥ 2 independent clients, it rises here and
+becomes a **roadmap signal** for `qa-framework/`.
 
-## Formato
+## Format
 
 ```
-### [Necesidad]
-- **Apariciones:** N clientes (industria / tipo de proyecto, sin nombres)
-- **Descripción:** qué piden — formulado de forma genérica
-- **Cobertura actual del framework:** ✅ / ⚠️ / ❌
-- **Anchor en research:** trazado a `research/insights.md#...` si aplica
-- **Acción:** añadir a priorización / monitorear / sin cambio
+### [Need]
+- **Appearances:** N clients (industry / project type, no names)
+- **Description:** what they ask for — phrased generically
+- **Current framework coverage:** ✅ / ⚠️ / ❌
+- **Research anchor:** traced to `research/insights.md#...` if applicable
+- **Action:** add to prioritization / monitor / no change
 ```
 
 ---
 
-## Nota sobre el estado actual
+## Note on current state
 
-Los signals abajo son **provisionales**. Vienen de un único cliente con 3 engagements paralelos en SaaS enterprise distintos (HR core, IT service mgmt, payroll). La regla del archivo exige ≥ 2 clientes independientes para que un patrón se considere "señal firme de roadmap". Estos signals son hipótesis a confirmar cuando lleguen reuniones del próximo cliente.
+The signals below are **provisional**. They come from a single client with 3 parallel engagements in different enterprise SaaS domains (HR core, IT service mgmt, payroll). The file's rule requires ≥ 2 independent clients for a pattern to be considered a "firm roadmap signal". These signals are hypotheses to confirm when meetings with the next client arrive.
 
-Marcados con `[1c-3e]` = observado en 1 cliente / 3 engagements (intra-cliente).
-
----
-
-### Vendor-sin-acceso-al-tooling-del-cliente
-
-- **Apariciones:** `[1c-3e]` (2 de 3 engagements de una cuenta SaaS enterprise: HR core + payroll)
-- **Descripción:** El cliente contrata simultáneamente al **implementador del SaaS** (consultora del producto) y al **testing vendor**. El testing vendor opera dentro del tooling del cliente (Jira, etc.). Los implementadores **no tienen acceso a ese tooling** y no es viable conseguírselo en plazos cortos. Resultado: el flujo defect / test-case se rompe en el borde del vendor externo. Workaround típico: construir un Jira Form para que externos puedan crear defects sin acceso completo.
-- **Cobertura actual del framework:** ❌ — es problema operativo / privilege management, no LLM-driven QA.
-- **Anchor en research:** —
-- **Acción:** monitorear. Si aparece en otro cliente, considerar si hay valor en automatizar el bridge defect-form ↔ Jira (pero probablemente sigue fuera de scope del framework actual).
+Marked with `[1c-3e]` = observed in 1 client / 3 engagements (intra-client).
 
 ---
 
-### Regression suite como "gap reconocido, nunca construido"
+### Vendor-without-access-to-client-tooling
 
-- **Apariciones:** `[1c-3e]` (los 3 engagements). En palabras del propio cliente: *"testing is a big gap, has always been"*, *"we just test the change usually, no regression"*, *"we hope nothing breaks, find out when in production"*.
-- **Descripción:** Equipos cliente reconocen explícitamente que la regression suite es un gap fundacional. La única regresión "decente" existe para platform upgrades 1-2x/año. Sprint-level regression no existe. Cada cambio se valida solo contra el cambio puntual, sin verificar que lo previamente funcional sigue funcionando.
-- **Cobertura actual del framework:** ⚠️ Parcial — el framework distingue "regression vs exploratory" como criterio de diseño, pero el contenido está orientado a LLMs (eval frameworks). El gap aquí es enterprise SaaS regression suite construction — diferente dominio.
-- **Anchor en research:** `research/insights.md#regression-vs-exploratory-como-criterio-de-diseño`, `research/patterns.md#golden-dataset-/-ground-truth-como-inversión-obligatoria` (la idea de "dataset construction es trabajo de primera clase").
-- **Acción:** añadir a priorización del framework: **si hay una versión enterprise-SaaS del framework, regression-from-zero es el módulo más demandado**. Considerar un patrón "regression seed → growth" análogo al living dataset pero para test cases enterprise.
-
----
-
-### Pipeline gating como aspiración no implementada
-
-- **Apariciones:** `[1c-3e]` (2 de 3 engagements: una platform de seguridad SaaS + un módulo de payroll). El cliente *quiere* bloquear deploys ante test failures pero no ha invertido en el tooling.
-- **Descripción:** El equipo cliente debate integrar tests en el pipeline para bloquear deploys ante fallo. En todos los casos: "es buena idea, no es trivial implementar en nuestro stack actual". El stack actual (ej. SaaS-specific deployment tools) no expone hooks limpios para gating, o el testing vendor no tiene acceso al CI/CD del cliente.
-- **Cobertura actual del framework:** ✅ Alineado conceptualmente — el patrón "Build-time vs run-time separation" del framework dice exactamente esto: lo que asiste al QA durante diseño no debe estar en el path de ejecución CI, y lo determinista sí debe bloquear pipeline.
-- **Anchor en research:** `research/patterns.md#build-time-vs-run-time-separation`.
-- **Acción:** monitorear. Si esto se confirma con otros clientes, el framework podría posicionar su contribución como *"el lado run-time del split"* — un runner determinista que se enchufa al pipeline del cliente. Útil para diferenciarse del posicionamiento puro "LLM exploration".
+- **Appearances:** `[1c-3e]` (2 of 3 engagements from one enterprise SaaS account: HR core + payroll)
+- **Description:** The client simultaneously contracts the **SaaS implementer** (product consultancy) and the **testing vendor**. The testing vendor operates within the client's tooling (Jira, etc.). The implementers **do not have access to that tooling** and it is not feasible to get it for them on short timelines. Result: the defect / test-case flow breaks at the external vendor boundary. Typical workaround: build a Jira Form so that external parties can create defects without full access.
+- **Current framework coverage:** ❌ — this is an operational / privilege management problem, not LLM-driven QA.
+- **Research anchor:** —
+- **Action:** monitor. If it appears in another client, consider whether there is value in automating the defect-form ↔ Jira bridge (but it probably remains out of scope for the current framework).
 
 ---
 
-### Test evidence como Word/screenshot/Sheets en sistema secundario
+### Regression suite as "acknowledged gap, never built"
 
-- **Apariciones:** `[1c-3e]` (los 3 engagements, cada uno con un tool distinto: comentarios Jira + screenshots adjuntos, Word docs en file storage del cliente, Google Sheets ad hoc).
-- **Descripción:** La "captura de evidencia de test" sí existe en los 3 casos, pero nunca está estructurada. Cada engagement reinventa un formato distinto (screenshot pegado en ticket, doc adjunto a herramienta de deploy, sheet manual). Resultado: la evidencia no es trazable, ni queryable, ni reutilizable para construir regression suite.
-- **Cobertura actual del framework:** ❌ — es problema de test management / structured artifacts.
-- **Anchor en research:** —
-- **Acción:** monitorear. La oportunidad de framework sería **schema obligatorio para test execution artifacts** (rationale + screenshot + ID + version + result), análogo al "schema obligatorio para outputs LLM" que ya recoge `research/patterns.md#confidence-+-cita-como-formato-de-output-llm`. Misma filosofía, dominio distinto.
-
----
-
-### Cross-functional / integration impact testing como gap fundacional
-
-- **Apariciones:** `[1c-3e]` (los 3 engagements). Casos observados: una platform que toca múltiples áreas (HR, IT service mgmt, asset mgmt, compliance); un sync diario entre dos SaaS críticos (HR → payroll); una migración a SaaS-recruitment con 2 plugins externos.
-- **Descripción:** El SaaS o sus integraciones tocan múltiples módulos / sistemas / áreas funcionales. Sin matriz de dependencias documentada. Un cambio en un módulo puede romper otro sin previo aviso. El equipo cliente no testa el impacto cross-functional sistemáticamente.
-- **Cobertura actual del framework:** ❌ Conceptualmente fuera de scope — el framework trata propiedades de outputs LLM individuales, no dependency-graph testing.
-- **Anchor en research:** —
-- **Acción:** monitorear. Si esto se repite, posible extensión del framework hacia **impact analysis** (qué tests correr cuando cambia el módulo X) — pero probablemente se construye con análisis estático del schema/config del SaaS, no con LLM. Cuña LLM posible: clasificar PRs por área de impacto y sugerir test suites a correr (análogo a "Coverage gap analysis como PR linter" pero invertido).
+- **Appearances:** `[1c-3e]` (all 3 engagements). In the client's own words: *"testing is a big gap, has always been"*, *"we just test the change usually, no regression"*, *"we hope nothing breaks, find out when in production"*.
+- **Description:** Client teams explicitly acknowledge that the regression suite is a foundational gap. The only "decent" regression exists for platform upgrades 1-2x/year. Sprint-level regression does not exist. Each change is validated only against the specific change, without verifying that previously working functionality still works.
+- **Current framework coverage:** ⚠️ Partial — the framework distinguishes "regression vs exploratory" as a design criterion, but the content is oriented toward LLMs (eval frameworks). The gap here is enterprise SaaS regression suite construction — a different domain.
+- **Research anchor:** `research/insights.md#regression-vs-exploratory-como-criterio-de-diseño`, `research/patterns.md#golden-dataset-/-ground-truth-como-inversión-obligatoria` (the idea that "dataset construction is first-class work").
+- **Action:** add to framework prioritization: **if there is an enterprise-SaaS version of the framework, regression-from-zero is the most demanded module**. Consider a "regression seed → growth" pattern analogous to the living dataset but for enterprise test cases.
 
 ---
 
-### Inheritance de test cases de vendor saliente
+### Pipeline gating as an unimplemented aspiration
 
-- **Apariciones:** `[1c-3e]` (2 de 3 engagements: vendor saliente dejó test cases en uno; en el otro el knowledge holder único sale del proyecto y bus factor = 1).
-- **Descripción:** Cuando un vendor sale del engagement, deja un baseline de test cases (de UAT de proyecto cerrado, o de configuración manual hand-built). El nuevo vendor (NFQ) los hereda. Problema: estos artefactos fueron diseñados como **one-shot** (UAT para ir-vivo del proyecto cerrado), no como **regression continua**. Hay que catalogarlos, deduplicarlos, y reinterpretarlos como semilla del regression suite — no aplicarlos tal cual.
-- **Cobertura actual del framework:** ⚠️ Parcial — el patrón "Living dataset (promotion-from-incident)" tiene la misma forma pero aplicado a fallos de producción, no a herencia de vendor. La idea de "el dataset es resultado acumulado, no artefacto inicial" se traduce bien aquí: convertir el baseline heredado en seed, no en truth.
-- **Anchor en research:** `research/patterns.md#living-dataset-promotion-from-incident`.
-- **Acción:** añadir nota a `research/patterns.md` sobre **otra fuente del living dataset: vendor-handover baseline**, no solo production incidents.
-
----
-
-### Test management tooling decision con múltiples candidates simultáneos
-
-- **Apariciones:** `[1c-3e]` (los 3 engagements). Combinaciones observadas: SaaS-native ATF vs side project interno vs herramienta del nuevo vendor; Jira+X-Ray vs Google Sheets legacy; Jira+Word-attachments vs algo estructurado por proponer.
-- **Descripción:** El cliente está en medio de decidir su stack de test management — múltiples herramientas candidatas en paralelo, alguna nativa del SaaS (ATF), alguna construida internamente (side project), alguna propuesta por el nuevo vendor. El nuevo vendor entra como participante en la decisión, no como adopter.
-- **Cobertura actual del framework:** ⚠️ — paralelo conceptual con "OpenAI-compatible API como capa de portabilidad": no acoplarse a un proveedor único. Aquí la lección: el framework debería ofrecer **una capa de abstracción sobre test management tooling**, no un binding a Jira o X-Ray específico.
-- **Anchor en research:** `research/insights.md#openai-compatible-api-como-capa-de-portabilidad`.
-- **Acción:** añadir a priorización: **constraint NF #2 del framework: test management agnóstico**. Si el framework genera/consume test cases, debe poder hacerlo contra Jira+X-Ray, Azure DevOps, TestRail, o un sheets ad hoc.
+- **Appearances:** `[1c-3e]` (2 of 3 engagements: a security SaaS platform + a payroll module). The client *wants* to block deploys on test failures but has not invested in the tooling.
+- **Description:** The client team discusses integrating tests into the pipeline to block deploys on failure. In all cases: "it's a good idea, it's not trivial to implement in our current stack". The current stack (e.g., SaaS-specific deployment tools) does not expose clean hooks for gating, or the testing vendor does not have access to the client's CI/CD.
+- **Current framework coverage:** ✅ Conceptually aligned — the "Build-time vs run-time separation" pattern in the framework says exactly this: what assists QA during design should not be in the CI execution path, and what is deterministic should block the pipeline.
+- **Research anchor:** `research/patterns.md#build-time-vs-run-time-separation`.
+- **Action:** monitor. If this is confirmed with other clients, the framework could position its contribution as *"the run-time side of the split"* — a deterministic runner that plugs into the client's pipeline. Useful for differentiating from a pure "LLM exploration" positioning.
 
 ---
 
-### Acceso a sistemas SaaS como bloqueante operativo del onboarding del vendor
+### Test evidence as Word/screenshot/Sheets in a secondary system
 
-- **Apariciones:** `[1c-3e]` (2 de 3 engagements: payroll SaaS donde "los roles existentes son demasiado amplios"; HR SaaS donde testers requieren "business roles" provisionados por equipo específico vía Jira tickets).
-- **Descripción:** El nuevo vendor de testing necesita un rol específico para los testers en el SaaS del cliente. Los roles existentes son demasiado amplios (admin/dev → exceso de privilegios + restricciones de compliance) o demasiado restrictivos (business user → no puede testar). Hay que crear un **rol nuevo "tester"** vía authorization team del cliente. Esto bloquea operativamente las primeras semanas del engagement.
-- **Cobertura actual del framework:** ❌ Operativo, fuera de scope.
-- **Anchor en research:** —
-- **Acción:** sin cambio en framework. Útil como **input al playbook de onboarding de engagements NFQ** — anticipar este bloqueante en la primera reunión.
+- **Appearances:** `[1c-3e]` (all 3 engagements, each with a different tool: Jira comments + attached screenshots, Word docs in the client's file storage, ad hoc Google Sheets).
+- **Description:** "Test evidence capture" does exist in all 3 cases, but it is never structured. Each engagement reinvents a different format (screenshot pasted in ticket, doc attached to deployment tool, manual sheet). Result: evidence is not traceable, not queryable, not reusable for building a regression suite.
+- **Current framework coverage:** ❌ — this is a test management / structured artifacts problem.
+- **Research anchor:** —
+- **Action:** monitor. The framework opportunity would be a **mandatory schema for test execution artifacts** (rationale + screenshot + ID + version + result), analogous to the "mandatory schema for LLM outputs" already captured in `research/patterns.md#confidence-+-cita-como-formato-de-output-llm`. Same philosophy, different domain.
+
+---
+
+### Cross-functional / integration impact testing as a foundational gap
+
+- **Appearances:** `[1c-3e]` (all 3 engagements). Observed cases: a platform touching multiple areas (HR, IT service mgmt, asset mgmt, compliance); a daily sync between two critical SaaS systems (HR → payroll); a migration to SaaS-recruitment with 2 external plugins.
+- **Description:** The SaaS or its integrations touch multiple modules / systems / functional areas. No documented dependency matrix. A change in one module can break another without warning. The client team does not systematically test cross-functional impact.
+- **Current framework coverage:** ❌ Conceptually out of scope — the framework addresses properties of individual LLM outputs, not dependency-graph testing.
+- **Research anchor:** —
+- **Action:** monitor. If this repeats, possible framework extension toward **impact analysis** (which tests to run when module X changes) — but it would probably be built with static analysis of the SaaS schema/config, not with LLM. Possible LLM wedge: classify PRs by impact area and suggest test suites to run (analogous to "Coverage gap analysis as PR linter" but inverted).
+
+---
+
+### Test case inheritance from outgoing vendor
+
+- **Appearances:** `[1c-3e]` (2 of 3 engagements: outgoing vendor left test cases in one; in the other the sole knowledge holder is leaving the project and bus factor = 1).
+- **Description:** When a vendor exits the engagement, they leave a baseline of test cases (from UAT of a closed project, or from hand-built manual configuration). The new vendor (NFQ) inherits them. Problem: these artifacts were designed as **one-shot** (UAT for go-live of the closed project), not as **continuous regression**. They need to be cataloged, deduplicated, and reinterpreted as a seed for the regression suite — not applied as-is.
+- **Current framework coverage:** ⚠️ Partial — the "Living dataset (promotion-from-incident)" pattern has the same shape but applied to production failures, not vendor inheritance. The idea that "the dataset is an accumulated result, not an initial artifact" translates well here: convert the inherited baseline into a seed, not into truth.
+- **Research anchor:** `research/patterns.md#living-dataset-promotion-from-incident`.
+- **Action:** add note to `research/patterns.md` about **another source for the living dataset: vendor-handover baseline**, not only production incidents.
+
+---
+
+### Test management tooling decision with multiple simultaneous candidates
+
+- **Appearances:** `[1c-3e]` (all 3 engagements). Observed combinations: SaaS-native ATF vs internal side project vs new vendor's tool; Jira+X-Ray vs legacy Google Sheets; Jira+Word-attachments vs something structured to be proposed.
+- **Description:** The client is in the middle of deciding their test management stack — multiple candidate tools in parallel, some native to the SaaS (ATF), some built internally (side project), some proposed by the new vendor. The new vendor enters as a participant in the decision, not as an adopter.
+- **Current framework coverage:** ⚠️ — conceptual parallel with "OpenAI-compatible API as portability layer": do not couple to a single provider. The lesson here: the framework should offer **an abstraction layer over test management tooling**, not a binding to a specific Jira or X-Ray.
+- **Research anchor:** `research/insights.md#openai-compatible-api-como-capa-de-portabilidad`.
+- **Action:** add to prioritization: **framework NF constraint #2: test management agnostic**. If the framework generates/consumes test cases, it must be able to do so against Jira+X-Ray, Azure DevOps, TestRail, or ad hoc sheets.
+
+---
+
+### Access to SaaS systems as an operational blocker for vendor onboarding
+
+- **Appearances:** `[1c-3e]` (2 of 3 engagements: payroll SaaS where "existing roles are too broad"; HR SaaS where testers require "business roles" provisioned by a specific team via Jira tickets).
+- **Description:** The new testing vendor needs a specific role for testers in the client's SaaS. Existing roles are either too broad (admin/dev → excess privileges + compliance restrictions) or too restrictive (business user → cannot test). A **new "tester" role** must be created via the client's authorization team. This operationally blocks the first weeks of the engagement.
+- **Current framework coverage:** ❌ Operational, out of scope.
+- **Research anchor:** —
+- **Action:** no change in framework. Useful as **input to the NFQ engagement onboarding playbook** — anticipate this blocker in the first meeting.

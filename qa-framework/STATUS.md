@@ -25,16 +25,22 @@
 | Evaluate LLM models | 3 insights (selection by task, versioning, local-first) | Practical benchmark → promote `adr-001` appendix to its own ADR |
 | Coverage Planner | Insight "coverage gap analysis as PR linter" | Implementation |
 
+## Partial base from Nesvitii research (strategy defined, no implementation)
+
+| Task | Base in research | What's missing |
+|---|---|---|
+| Parser: Jira/Story | Normalisation step pattern from Nesvitii (dedicated LLM call, freeform → structured JSON). Spec drafted in `parsers/jira/README.md` | Implementation. Jira API integration (or connector in QAAP) |
+| Validation loop + Self-healing | Observation-based debug loop from Nesvitii (screenshot + DOM snapshot → evidence-based fix, max 3 retries). Documented in `protocol/v0.1-generation-protocol.md` step 8 | Implementation. Requires running environment (local/staging) |
+| DOM inspection for selector grounding | Nesvitii: Playwright navigates to page, extracts real `data-testid` attributes before generating. Documented in `protocol/v0.1-generation-protocol.md` step 5 | Implementation. Optional step — degrades gracefully without running env |
+
 ## Genuinely new (create from scratch)
 
 | Task | Note |
 |---|---|
 | Investigate alternatives (Meticulous, QA Wolf, Shortest, Carbonate, Momentic) | Not investigated |
-| Parser: Jira/Story | The pilot does not use Jira as a generation input |
 | Context Assembler | Orchestrator that combines parsers — the pilot has isolated skills |
 | Prompt Protocol v2 | Evolution of v1 (few-shot, multi-env) — premature |
 | Spec Generator (full engine) | Skills are manual; automated engine does not exist |
-| Validation loop + Self-healing | Nothing exists for retry with LLM |
 | CLI: nfq-e2e | Does not exist |
 | CI/CD: GitHub Action | Does not exist |
 | Documentation for the team | Does not exist |

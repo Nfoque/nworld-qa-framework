@@ -1,50 +1,51 @@
 # News — QA Automation + LLMs
 
-Colección de noticias, artículos, posts, papers y publicaciones relacionadas con
-automatización de testing usando LLMs.
+Collection of news, articles, posts, papers, and publications related to
+test automation using LLMs.
 
-## Fuentes RSS
+## RSS Sources
 
-Las fuentes RSS verificadas viven en [`feeds.md`](feeds.md). Los Top 3 son los
-tag feeds de Medium (`ai-testing`, `llm-testing`, `test-automation`).
+Verified RSS feeds live in [`feeds.md`](feeds.md). The Top 3 are the
+Medium tag feeds (`ai-testing`, `llm-testing`, `test-automation`).
 
-## Artículos de pago (Medium member-only)
+## Paywalled Articles (Medium member-only)
 
-Yo no puedo entrar a tu cuenta de Medium. El RSS sólo da excerpts. Para que pueda
-leer el cuerpo completo, ver [`paywall-workflow.md`](paywall-workflow.md) — el
-flujo recomendado es **MarkDownload + drop en `inbox/raw/`**.
+The assistant **cannot authenticate** with your Medium account. RSS only returns excerpts.
+To read the full body of a member-only post, see [`paywall-workflow.md`](paywall-workflow.md) —
+the recommended flow is **MarkDownload + drop in `inbox/raw/`**.
 
-## Cómo añadir una noticia
+## How to add an article
 
-1. Guardar el artículo (o un resumen + link) en `inbox/` con nombre `YYYY-MM-DD-slug.md`.
-2. Añadir una entrada en la tabla de abajo.
-3. Cuando se haya destilado a `research/`, marcar como ✅ procesada.
+1. Save the article (or a summary + link) in `inbox/` named `YYYY-MM-DD-slug.md`.
+2. Add an entry to the index table below.
+3. Once distilled to `research/`, mark as ✅ distilled.
 
-## Índice
+## Index
 
-| Fecha | Título | Fuente | Estado | Notas |
+| Date | Title | Source | Status | Notes |
 |---|---|---|---|---|
-| 2026-06-01 | [Test-Driven AI: Deterministic CI/CD Evaluations for Genkit in Go](inbox/2026-06-01-elamir-genkit-go-deterministic-evals.md) | Medium (ElAmir Mansour) | ✅ destilado | "Score, don't assert" + eval-as-merge-gate en GitHub Actions. Refuerza, no abre eje. |
-| 2026-06-01 | [How I Built a pytest Framework to Test LLMs on Red Hat OpenShift AI](inbox/2026-06-01-pattnaik-pytest-llm-openshift.md) | Medium (alaka_pattnaik) | ✅ destilado | **Negative-retrieval (fake-fact injection)** + Layer 0 de serving + judge model custom (gotcha DeepEval↔OpenAI). |
-| 2026-06-01 | [Using AI to Find Coverage Gaps in Your Playwright Test Suite](inbox/2026-06-01-amrutalohabare-ai-coverage-gaps-playwright.md) | Medium (Amrutalohabare) | ✅ destilado | Patrón "coverage gap analysis como PR linter" + GitHub Action concreto. |
-| 2026-05-30 | [How RAG is Transforming Test Automation](inbox/2026-05-30-singh-rag-test-automation.md) | Medium (Sanjay Singh) | ✅ destilado | Mapa conceptual: RAG para failure analysis + classification taxonomy + duplicate detection. |
-| 2026-05-25 | [Why QA Engineers Should Learn Playwright MCP](inbox/2026-05-25-sanaev-playwright-mcp.md) | Medium (Muhammad Sanaev) | ✅ destilado | Aclara "MCP = build-time inspector, no run-time runner". Refuerza separación regression/exploratory. |
-| 2026-05-22 | [3 Agents. 12 Days. Legacy XPath → Smart Locators](inbox/2026-05-22-kshirsagar-three-agents-xpath-refactor.md) | Medium (Rohit Kshirsagar) | ✅ destilado | Arquitectura 3 agentes (Archaeologist/Refactor/Validator) + confidence-based routing. |
-| 2026-05-08 | [3 Pipelines. 14 Days. 0 → 500 AI Test Assertions](inbox/2026-05-08-kshirsagar-three-pipelines-500-assertions.md) | Medium (Rohit Kshirsagar) | ✅ destilado | **Unlock conceptual: properties over content.** Arquitectura 3 capas: structural/semantic/regression. |
-| 2026-05-05 | [4 Metrics. 1 Week. PromptFoo Setup for SDETs](inbox/2026-05-05-kshirsagar-promptfoo-rag-validation.md) | Medium (Rohit Kshirsagar) | ✅ destilado | PromptFoo + 4 métricas. Construcción de ground-truth dataset desde 3 fuentes. |
-| 2026-05-03 | [You Don't Have a Testing Problem. You Have a Vibes-Based Deployment Problem](inbox/2026-05-03-garvanand-vibes-based-deployment.md) | Medium (Garvanand) | ✅ destilado | **Trajectory eval ≠ output eval.** 4 axes de medición para agentes. LLM-as-Judge failure modes. |
-| 2026-05-03 | [Your AI Test Pipeline Does Not Need the Cloud](inbox/2026-05-03-kshirsagar-local-llm-pipeline.md) | Medium (Rohit Kshirsagar) | ✅ destilado | Local-first con Ollama + LM Studio. OpenAI-compatible API como capa de portabilidad. |
-| 2026-02-23 | [I replaced my entire QA team with Claude and Agentic Workflow](inbox/2026-02-23-kastner-replaced-qa-team-with-claude.md) | Medium · Level Up Coding (Brent Kastner) | ✅ destilado | Postmortem del autor de `references/ai-qa-framework/`. Tesis regression-vs-exploratory. |
-| 2022-01-01 | [Testing Automation, What are Pyramids and Diamonds?](inbox/2022-01-01-kapoor-pyramids-diamonds.md) | Medium (Ritesh Kapoor) | ✅ destilado | Ancla conceptual no-LLM: pirámide/invertida/diamante. Base que el "AI Testing Pyramid rewritten" da por reescrita. |
+| 2026-06-01 | [Test-Driven AI: Deterministic CI/CD Evaluations for Genkit in Go](inbox/2026-06-01-elamir-genkit-go-deterministic-evals.md) | Medium (ElAmir Mansour) | ✅ distilled | "Score, don't assert" + eval-as-merge-gate in GitHub Actions. Reinforces, doesn't open new axis. |
+| 2026-04-23 | [MCP + Playwright + Jira: How I Automated My Entire QA Workflow End-to-End](inbox/2026-04-23-nesvitii-mcp-playwright-jira-e2e-automation.md) | Medium (Mykola Nesvitii) | ✅ distilled | **Full ticket-to-PR pipeline without human touch.** Strict AGENTS.md (~95% compliance), normalisation step, DOM-grounded generation, observation-based debug loop. High impact: unblocked Jira parser, validation loop, connector write-back. |
+| 2026-06-01 | [How I Built a pytest Framework to Test LLMs on Red Hat OpenShift AI](inbox/2026-06-01-pattnaik-pytest-llm-openshift.md) | Medium (alaka_pattnaik) | ✅ distilled | **Negative-retrieval (fake-fact injection)** + Layer 0 serving + custom judge model (DeepEval↔OpenAI gotcha). |
+| 2026-06-01 | [Using AI to Find Coverage Gaps in Your Playwright Test Suite](inbox/2026-06-01-amrutalohabare-ai-coverage-gaps-playwright.md) | Medium (Amrutalohabare) | ✅ distilled | "Coverage gap analysis as PR linter" pattern + concrete GitHub Action. |
+| 2026-05-30 | [How RAG is Transforming Test Automation](inbox/2026-05-30-singh-rag-test-automation.md) | Medium (Sanjay Singh) | ✅ distilled | Conceptual map: RAG for failure analysis + classification taxonomy + duplicate detection. |
+| 2026-05-25 | [Why QA Engineers Should Learn Playwright MCP](inbox/2026-05-25-sanaev-playwright-mcp.md) | Medium (Muhammad Sanaev) | ✅ distilled | Clarifies "MCP = build-time inspector, not run-time runner". Reinforces regression/exploratory separation. |
+| 2026-05-22 | [3 Agents. 12 Days. Legacy XPath → Smart Locators](inbox/2026-05-22-kshirsagar-three-agents-xpath-refactor.md) | Medium (Rohit Kshirsagar) | ✅ distilled | 3-agent architecture (Archaeologist/Refactor/Validator) + confidence-based routing. |
+| 2026-05-08 | [3 Pipelines. 14 Days. 0 → 500 AI Test Assertions](inbox/2026-05-08-kshirsagar-three-pipelines-500-assertions.md) | Medium (Rohit Kshirsagar) | ✅ distilled | **Conceptual unlock: properties over content.** 3-layer architecture: structural/semantic/regression. |
+| 2026-05-05 | [4 Metrics. 1 Week. PromptFoo Setup for SDETs](inbox/2026-05-05-kshirsagar-promptfoo-rag-validation.md) | Medium (Rohit Kshirsagar) | ✅ distilled | PromptFoo + 4 metrics. Ground-truth dataset construction from 3 sources. |
+| 2026-05-03 | [You Don't Have a Testing Problem. You Have a Vibes-Based Deployment Problem](inbox/2026-05-03-garvanand-vibes-based-deployment.md) | Medium (Garvanand) | ✅ distilled | **Trajectory eval ≠ output eval.** 4 measurement axes for agents. LLM-as-Judge failure modes. |
+| 2026-05-03 | [Your AI Test Pipeline Does Not Need the Cloud](inbox/2026-05-03-kshirsagar-local-llm-pipeline.md) | Medium (Rohit Kshirsagar) | ✅ distilled | Local-first with Ollama + LM Studio. OpenAI-compatible API as portability layer. |
+| 2026-02-23 | [I replaced my entire QA team with Claude and Agentic Workflow](inbox/2026-02-23-kastner-replaced-qa-team-with-claude.md) | Medium · Level Up Coding (Brent Kastner) | ✅ distilled | Postmortem from the author of `references/ai-qa-framework/`. Regression-vs-exploratory thesis. |
+| 2022-01-01 | [Testing Automation, What are Pyramids and Diamonds?](inbox/2022-01-01-kapoor-pyramids-diamonds.md) | Medium (Ritesh Kapoor) | ✅ distilled | Non-LLM conceptual anchor: pyramid/inverted/diamond. Base that the "AI Testing Pyramid rewritten" takes as rewritten. |
 
-**Leyenda de estado:** 🔲 nuevo · 🔍 en estudio · ✅ destilado a `research/` · ❌ descartado
+**Status legend:** 🔲 new · 🔍 under review · ✅ distilled to `research/` · ❌ discarded
 
-## Temas que rastreamos
+## Topics we track
 
-- Agentes LLM para generación de tests (unit, integration, E2E)
-- Frameworks de evaluación de outputs de LLMs (LLM-as-a-judge, golden sets)
-- Test generation desde specs / requirements
+- LLM agents for test generation (unit, integration, E2E)
+- LLM output evaluation frameworks (LLM-as-a-judge, golden sets)
+- Test generation from specs / requirements
 - Self-healing tests
-- Visual regression con vision models
-- Tool use / MCP servers para QA
-- Casos de uso en empresas (post-mortems, blog posts de ingeniería)
+- Visual regression with vision models
+- Tool use / MCP servers for QA
+- Enterprise use cases (post-mortems, engineering blog posts)

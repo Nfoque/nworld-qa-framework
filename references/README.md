@@ -1,24 +1,24 @@
-# References — Repositorios externos
+# References — External Repositories
 
-Catálogo de repos externos relevantes para `nworld-qa-framework`. **No los
-clonamos ni auditamos su código** — sirven como anclajes conceptuales: link al
-repo + destilado del artículo o postmortem que lo describe.
+Catalog of external repos relevant to `qa-framework`. **We don't clone or audit their
+code** — they serve as conceptual anchors: link to the repo + distilled article or
+postmortem that describes it.
 
-## Cómo añadir una referencia
+## How to add a reference
 
-1. Añadir una entrada en la tabla con link al repo y al artículo/postmortem asociado.
-2. Procesar el artículo en `news/` (no el código).
-3. Destilar lo aprendido a `research/`.
+1. Add an entry in the table with link to the repo and associated article/postmortem.
+2. Process the article in `news/` (not the code).
+3. Distill learnings to `research/`.
 
-## Índice
+## Index
 
-| Repo | Autor | Stack | Postmortem / artículo | Estado |
+| Repo | Author | Stack | Postmortem / article | Status |
 |---|---|---|---|---|
-| [ai-qa-framework](https://github.com/brentkastner/ai-qa-framework) | Brent Kastner | Python + Playwright + Claude Opus 4.6 | [postmortem destilado](../news/inbox/2026-02-23-kastner-replaced-qa-team-with-claude.md) | ✅ destilado |
+| [ai-qa-framework](https://github.com/brentkastner/ai-qa-framework) | Brent Kastner | Python + Playwright + Claude Opus 4.6 | [postmortem distilled](../news/inbox/2026-02-23-kastner-replaced-qa-team-with-claude.md) | ✅ distilled |
 
-**Leyenda de estado:** 🔲 nuevo · 🔍 en estudio · ✅ destilado a `research/` · ❌ descartado
+**Status legend:** 🔲 new · 🔍 under review · ✅ distilled to `research/` · ❌ discarded
 
-## Notas
+## Notes
 
-- El código NO se clona localmente. Si en algún momento hace falta consultar un fichero concreto, se hace bajo demanda contra GitHub, no como audit sistemático.
-- El valor de una entrada aquí es el **link al repo** + la **destilación del artículo**, no el código.
+- Code is NOT cloned locally. If we ever need to check a specific file, it's done on-demand against GitHub, not as a systematic audit.
+- The value of an entry here is the **link to the repo** + the **article distillation**, not the code.

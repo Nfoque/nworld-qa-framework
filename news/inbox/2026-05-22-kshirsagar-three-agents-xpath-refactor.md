@@ -3,87 +3,87 @@ title: "3 Agents. 12 Days. Legacy XPath → Smart Locators"
 author: Rohit Kshirsagar
 date: 2026-05-22
 url: https://medium.com/@krohit0389/3-agents-12-days-77a7827d6b52
-status: ✅ destilado
+status: ✅ distilled
 relevance: ⭐⭐⭐⭐⭐
 ---
 
 # TL;DR
 
-Sistema de **3 agentes especializados** que limpió 847 selectores XPath frágiles en 94 archivos de tests Selenium en 12 días, **con 0 regresiones**. Lo importante no es el resultado — es la arquitectura de **confidence-based routing** que decide qué pasa por humano y qué no.
+A system of **3 specialized agents** that cleaned up 847 fragile XPath selectors across 94 Selenium test files in 12 days, **with 0 regressions**. What matters is not the result — it's the **confidence-based routing** architecture that decides what goes through a human and what doesn't.
 
-## El problema (psicología, no técnica)
+## The problem (psychology, not technical)
 
-XPath debt compone porque modificar locators tiene riesgo desconocido (no sabes qué más depende del mismo elemento) → nadie los toca → la deuda crece → el miedo crece → la suite se vuelve intocable.
+XPath debt compounds because modifying locators carries unknown risk (you don't know what else depends on the same element) → nobody touches them → debt grows → fear grows → the suite becomes untouchable.
 
-El sistema **no resuelve los selectores**. Resuelve el problema psicológico: hace que el riesgo de refactorizar sea menor que el de no hacerlo.
+The system **doesn't solve the selectors**. It solves the psychological problem: it makes the risk of refactoring lower than the risk of not refactoring.
 
-## Arquitectura: 3 agentes especializados
+## Architecture: 3 specialized agents
 
 ### Agent 1 — The Archaeologist (audit)
 
-Static analysis pass. Clasifica cada `By.*` locator en 4 tiers de riesgo:
+Static analysis pass. Classifies each `By.*` locator into 4 risk tiers:
 
-| Tier | Criterio | Acción |
+| Tier | Criteria | Action |
 |---|---|---|
-| 🔴 Critical | Positional XPath (`//div[3]/span[1]`), auto-generated framework IDs (`ember-*`, `ng-*`) | Fix inmediato |
-| 🟠 High | CSS class chains > 2, `@class` XPath, índices hardcoded | Fix this sprint |
-| 🟡 Medium | XPath `text()` / `contains()` contra texto estable | Schedule next sprint |
-| 🟢 Safe | `By.id()` estable, `By.name()`, `By.linkText()` | No tocar |
+| Red Critical | Positional XPath (`//div[3]/span[1]`), auto-generated framework IDs (`ember-*`, `ng-*`) | Fix immediately |
+| Orange High | CSS class chains > 2, `@class` XPath, hardcoded indices | Fix this sprint |
+| Yellow Medium | XPath `text()` / `contains()` against stable text | Schedule next sprint |
+| Green Safe | Stable `By.id()`, `By.name()`, `By.linkText()` | Don't touch |
 
-Output: JSON backlog con file/line, current selector, tier, test criticality, fix complexity.
+Output: JSON backlog with file/line, current selector, tier, test criticality, fix complexity.
 
-> "Transforma 'tenemos 847 XPath que arreglar' en '312 Critical+High, aquí los 47 en flows de mayor valor, en este orden'."
+> "Transforms 'we have 847 XPaths to fix' into '312 Critical+High, here are the 47 in the highest-value flows, in this order'."
 
 ### Agent 2 — The Refactor Engine (replace)
 
-Para cada locator High/Critical:
-1. Headless browser probe contra staging → captura DOM subtree.
-2. Manda a Claude Sonnet con prompt estructurado y **priority list** explícita:
+For each High/Critical locator:
+1. Headless browser probe against staging → captures DOM subtree.
+2. Sends to Claude Sonnet with a structured prompt and **explicit priority list**:
    ```
-   1. By.id()           si existe id estable
+   1. By.id()           if a stable id exists
    2. By.cssSelector([data-testid='...'])
    3. By.name()
    4. By.cssSelector([aria-label='...'])
    5. By.linkText()
-   6. By.xpath()        solo si no hay alternativa estable
+   6. By.xpath()        only if no stable alternative exists
    ```
-3. Devuelve recommended locator + **confidence score 0-100** + rationale.
+3. Returns recommended locator + **confidence score 0-100** + rationale.
 
-**Routing por confidence (el patrón clave):**
+**Routing by confidence (the key pattern):**
 
-| Confidence | Acción | % en su run |
+| Confidence | Action | % in their run |
 |---|---|---|
-| ≥ 85% | Auto-reemplazo, change logged, queued a Validator | 68% |
+| >= 85% | Auto-replacement, change logged, queued for Validator | 68% |
 | 60-84% | Engineer review (one-click approve / override) | 24% |
-| < 60% | Manual con context notes (frecuentemente: "frontend debe añadir `data-testid`") | 8% |
+| < 60% | Manual with context notes (frequently: "frontend needs to add `data-testid`") | 8% |
 
 ### Agent 3 — The Validator (safety net)
 
-Corre **ambas versiones** (original + refactored) contra el mismo staging environment. Cualquier test que cambia pass/fail dispara diff report con DOM state + confidence score asignado.
+Runs **both versions** (original + refactored) against the same staging environment. Any test that changes pass/fail triggers a diff report with DOM state + assigned confidence score.
 
-En 12 días, atrapó **4 casos** donde el reemplazo high-confidence era técnicamente válido pero **conductualmente erróneo** (selector correcto del tipo de elemento, instancia equivocada).
+In 12 days, it caught **4 cases** where the high-confidence replacement was technically valid but **behaviorally wrong** (correct selector for the element type, wrong instance).
 
-> "Cero regresiones shipeadas. No porque los agentes fueran perfectos. Porque la capa de validación atrapó imperfección antes de llegar a main."
+> "Zero regressions shipped. Not because the agents were perfect. Because the validation layer caught imperfection before it reached main."
 
-## Patrones / técnicas reusables
+## Reusable patterns / techniques
 
-1. **Confidence-based human-in-the-loop routing.** El agente etiqueta su propia incertidumbre; humanos revisan solo el rango ambiguo.
-2. **Validation by parallel execution.** Correr original y refactored en paralelo es el único garante real de "zero regression".
-3. **Priority list explícita en el prompt** (no "find best locator", sino lista numerada). El modelo no inventa estrategia; ejecuta política.
-4. **Static analysis + LLM en pipeline.** El Archaeologist no usa LLM (clasificación determinista); el LLM solo entra cuando hay ambigüedad real.
+1. **Confidence-based human-in-the-loop routing.** The agent labels its own uncertainty; humans review only the ambiguous range.
+2. **Validation by parallel execution.** Running original and refactored in parallel is the only real guarantee of "zero regression".
+3. **Explicit priority list in the prompt** (not "find best locator", but a numbered list). The model doesn't invent strategy; it executes policy.
+4. **Static analysis + LLM in pipeline.** The Archaeologist doesn't use LLM (deterministic classification); the LLM only enters when there is real ambiguity.
 
-## Limitaciones admitidas
+## Acknowledged limitations
 
-- 8% manual requirió cambios cross-team en frontend (añadir `data-testid` a 23 componentes) — 3 días de scheduling + 4h de implementación.
-- Validator dobla el CI runtime durante la ventana de refactor (~35min adicionales por run en 94 files).
-- Calibración del confidence está atada a Selenium standard API; Shadow DOM / Web Components → scores sistemáticamente menores y más manual.
+- 8% manual required cross-team frontend changes (adding `data-testid` to 23 components) — 3 days of scheduling + 4h of implementation.
+- Validator doubles CI runtime during the refactor window (~35min additional per run on 94 files).
+- Confidence calibration is tied to Selenium standard API; Shadow DOM / Web Components → systematically lower scores and more manual work.
 
-## Qué destilamos a `research/`
+## What we distilled to `research/`
 
-→ Añadidos a `insights.md`:
-- **Confidence-based routing** como patrón táctico clave.
-- **Static analysis + LLM fallback** (no LLM-everywhere): determinismo donde se puede, LLM donde hay ambigüedad.
-- **Validation by parallel execution** como el único garante real.
+→ Added to `insights.md`:
+- **Confidence-based routing** as a key tactical pattern.
+- **Static analysis + LLM fallback** (not LLM-everywhere): determinism where possible, LLM where there is ambiguity.
+- **Validation by parallel execution** as the only real guarantee.
 
-→ Refuerza pattern en `patterns.md`:
-- "Descomposición en 3 capas/agentes" — segundo dato point (junto a 3-pipelines del mismo autor).
+→ Reinforces pattern in `patterns.md`:
+- "Decomposition into 3 layers/agents" — second data point (alongside 3-pipelines from the same author).

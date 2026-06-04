@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QAAP — QA Automation Platform (Print)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Sora:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="qaap-data.jsx"></script>
+<script type="text/babel" src="qaap-ui.jsx"></script>
+<script type="text/babel" src="qaap-login.jsx"></script>
+<script type="text/babel" src="qaap-dashboard.jsx"></script>
+<script type="text/babel" src="qaap-health.jsx"></script>
+<script type="text/babel" src="qaap-plan-detail.jsx"></script>
+<script type="text/babel" src="qaap-executions.jsx"></script>
+<script type="text/babel" src="qaap-proposals.jsx"></script>
+<script type="text/babel" src="qaap-reports.jsx"></script>
+<script type="text/babel" src="qaap-schedules.jsx"></script>
+<script type="text/babel" src="qaap-connectors.jsx"></script>
+<script type="text/babel" src="qaap-wizard.jsx"></script>
+<script type="text/babel" src="qaap-llm-settings.jsx"></script>
+<script type="text/babel" src="qaap-branding.jsx"></script>
+<script type="text/babel" src="qaap-settings.jsx"></script>
+
+<script type="text/babel">
+{/* Inline all styles from main prototype */}
+</script>
+
+<link rel="stylesheet" href="qaap-print-styles.css">
+
+<script type="text/babel">
+// Print version: render all screens sequentially as pages
+function PrintApp() {
+  const noop = () => {};
+  const samplePlan = QAAP_DATA.testPlans[0];
+
+  const pages = [
+    { title: 'Login', component: <LoginScreen onLogin={noop}></LoginScreen> },
+    { title: 'Dashboard', component: <DashboardScreen onNavigate={noop} onOpenPlan={noop} onNewPlan={noop}></DashboardScreen> },
+    { title: 'Test Plans', component: (
+      <div className="screen-content" style={{ opacity:1, transform:'none' }}>
+        <div className="screen-header">
+          <div>
+            <h1 className="screen-title">Test Plans</h1>
+            <p className="screen-subtitle">Manage your E2E test plans across all modalities.</p>
+          </div>
+        </div>
+        <div className="card">
+          <div className="plans-table">
+            <div className="plans-table-header">
+              <span className="col-name">Name</span>
+              <span className="col-sm">Type</span>
+              <span className="col-sm">Status</span>
+              <span className="col-sm">Scenarios</span>
+              <span className="col-sm">Pass Rate</span>
+              <span className="col-md">Health</span>
+              <span className="col-sm">Updated</span>
+            </div>
+            {QAAP_DATA.testPlans.map(plan => (
+              <div key={plan.id} className="plans-table-row">
+                <span className="col-name">
+                  <span className="plan-name">{plan.name}</span>
+                  <span style={{ fontSize:11, color:'var(--qaap-text-tertiary)' }}>{plan.framework}</span>
+                </span>
+                <span className="col-sm"><ModalityBadge modality={plan.modality}></ModalityBadge></span>
+                <span className="col-sm"><StatusBadge status={plan.status} small></StatusBadge></span>
+                <span className="col-sm col-num">{plan.scenarioCount}</span>
+                <span className="col-sm col-num">{plan.passRate != null ? `${plan.passRate}%` : '—'}</span>
+                <span className="col-md">
+                  {plan.health ? (
+                    <span style={{ display:'flex', alignItems:'center', gap:8 }}>
+                      <Sparkline data={plan.trend} width={60} height={20}
+                        color={plan.health === 'healthy' ? 'var(--qaap-success)' : 'var(--qaap-warning)'}></Sparkline>
+                      <HealthBadge health={plan.health}></HealthBadge>
+                    </span>
+                  ) : <span style={{ color:'var(--qaap-text-tertiary)', fontSize:12 }}>—</span>}
+                </span>
+                <span className="col-sm" style={{ color:'var(--qaap-text-tertiary)', fontSize:12 }}>{plan.lastUpdated}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )},
+    { title: 'Test Plan Detail — Standard', component: <PlanDetailScreen plan={samplePlan} onBack={noop} variant="clean" onVariantChange={noop}></PlanDetailScreen> },
+    { title: 'Test Plan Detail — IDE', component: <PlanDetailScreen plan={samplePlan} onBack={noop} variant="ide" onVariantChange={noop}></PlanDetailScreen> },
+    { title: 'Test Plan Detail — AI-First', component: <PlanDetailScreen plan={samplePlan} onBack={noop} variant="ai-first" onVariantChange={noop}></PlanDetailScreen> },
+    { title: 'Health Dashboard', component: <HealthScreen onNavigate={noop}></HealthScreen> },
+    { title: 'Executions', component: <ExecutionScreen onNavigate={noop}></ExecutionScreen> },
+    { title: 'AI Proposals', component: <ProposalsScreen onNavigate={noop}></ProposalsScreen> },
+    { title: 'Reports & Delivery', component: <ReportsScreen onNavigate={noop}></ReportsScreen> },
+    { title: 'Scheduled Runs', component: <SchedulesScreen onNavigate={noop}></SchedulesScreen> },
+    { title: 'Connectors', component: <ConnectorsScreen onNavigate={noop}></ConnectorsScreen> },
+    { title: 'LLM Providers', component: <LLMSettingsScreen onNavigate={noop}></LLMSettingsScreen> },
+    { title: 'Branding Settings', component: <BrandingScreen onNavigate={noop}></BrandingScreen> },
+    { title: 'SSO Settings', component: <SSOScreen onNavigate={noop}></SSOScreen> },
+    { title: 'Notifications', component: <NotificationsScreen onNavigate={noop}></NotificationsScreen> },
+    { title: 'Team', component: <TeamScreen onNavigate={noop}></TeamScreen> },
+  ];
+
+  return (
+    <div className="print-root">
+      {pages.map((page, i) => (
+        <div key={i} className="print-page">
+          <div className="print-page-label">{page.title}</div>
+          <div className={`print-page-content ${i === 0 ? 'print-login-page' : 'print-app-page'}`}>
+            {i === 0 ? (
+              page.component
+            ) : (
+              <div className="app-shell" style={{ height:'auto', minHeight:0 }}>
+                <Sidebar currentScreen="dashboard" onNavigate={noop}></Sidebar>
+                <div className="app-main" style={{ height:'auto', minHeight:0 }}>
+                  <TopBar breadcrumbs={[{ label: page.title }]}></TopBar>
+                  <div className="app-content" style={{ overflow:'visible', height:'auto' }}>
+                    {page.component}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Wait for fonts + scripts, then render and auto-print
+document.fonts.ready.then(() => {
+  setTimeout(() => {
+    ReactDOM.createRoot(document.getElementById('root')).render(<PrintApp></PrintApp>);
+    setTimeout(() => { window.print(); }, 500);
+  }, 300);
+});
+</script>
+</body>
+</html>

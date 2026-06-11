@@ -8,110 +8,148 @@ QAAP is a multi-tenant SaaS platform that enables QA experts to automate E2E tes
 
 ```
 qaap/
-├── documentation/          # Product specs, design handoff, domain model, ADRs
-│   ├── architecture-plan.md
-│   ├── design-handoff.md
-│   ├── domain-model.md
-│   ├── mvp-phases.md
-│   ├── connector-spec.md
-│   ├── llm-pipeline-spec.md
-│   └── decisions/          # ADRs
+├── spa/                    # React SPA (Vite + MUI) — deployed to Vercel
+│   └── src/
+│       ├── domains/        # Feature modules (connectors, dashboard)
+│       ├── shared/         # Auth, layout, theme, components, config, tenant
+│       ├── main.tsx        # Entry point (providers + render)
+│       └── router.tsx      # TanStack Router routes
 │
-└── code/                   # Application monorepo (Turborepo + pnpm)
-    ├── packages/
-    │   ├── db/             # Drizzle ORM schema + migrations (PostgreSQL)
-    │   └── shared/         # Shared types, validators (Zod), constants
-    ├── apps/
-    │   ├── api/            # Fastify + tRPC + Better Auth + BullMQ workers
-    │   └── web/            # React 19 + Vite + MUI + TanStack Router/Query
-    └── tooling/            # ESLint, TypeScript, Prettier configs
+├── backend/                # Supabase project (Edge Functions + PostgreSQL)
+│   ├── config.toml         # Supabase local dev config (project_id: qaap)
+│   ├── migrations/         # SQL migrations (0001–0009)
+│   └── functions/          # Deno Edge Functions
+│       ├── _shared/        # Shared utilities (client, response, cors, tenant, connectors)
+│       ├── get-profile/    # User profile
+│       ├── get-tenants/    # Tenant list (superadmin)
+│       ├── get-connectors/ # List connectors for tenant
+│       ├── create-connector/
+│       ├── update-connector/
+│       ├── delete-connector/
+│       └── test-connector/ # Validate connector credentials
+│
+├── documentation/          # Product specs, ADRs, scaffolding skills
+│   ├── product/            # Architecture, domain model, MVP phases, connectors, LLM pipeline, design, branding
+│   ├── adr/                # 17 ADRs (VSA, domain layer, stack adaptation, testing, dev env)
+│   └── skills/             # 7 Claude Code skills for scaffolding VSA structures
+│
+├── prototypes/             # HTML/JSX prototypes (Netlify demos)
+├── package.json            # Root scripts (dev, lint, check, deploy)
+└── CLAUDE.md               # This file
 ```
 
 ## Tech Stack
 
-- **Frontend**: React 19, Vite, MUI v6, TanStack Router, TanStack Query v5, Zustand, Monaco Editor, Tiptap
-- **Backend**: Fastify, tRPC v11 (internal API), REST (webhooks), Better Auth (SSO), BullMQ (job queue)
-- **Database**: PostgreSQL 16 with RLS (multi-tenant), pgvector (RAG), Drizzle ORM
-- **Cache/Queue**: Redis (Valkey) + BullMQ
-- **LLM**: Custom client over OpenAI-compatible API (no SDK lock-in). LiteLLM as multi-provider gateway
-- **Containers**: Docker Compose (dev), Helm (k8s production/on-prem)
-- **Monorepo**: Turborepo + pnpm workspaces
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 19, Vite 8, TypeScript 6, MUI v9, TanStack Query v5, TanStack Router |
+| Backend | Supabase Edge Functions (Deno) |
+| Database | PostgreSQL with RLS (multi-tenant via tenant_id) |
+| Auth | Supabase Auth (Google OAuth) |
+| LLM | OpenAI-compatible API (no SDK lock-in) |
+| Deployment | Vercel (SPA) + Supabase (backend) |
 
 ## Common Commands
 
-All commands run from `qaap/code/`:
+### Root (from `qaap/`)
 
 ```bash
-pnpm install                       # Install all dependencies
-pnpm dev                           # Start all apps (api + web) in dev mode
-pnpm build                         # Build all packages and apps
-pnpm lint                          # Lint all packages
-pnpm typecheck                     # TypeScript type checking
-pnpm test                          # Run all tests
-docker compose up -d               # Start PostgreSQL + Redis
-docker compose down                # Stop services
+npm run dev                        # Start SPA dev server
+npm run lint                       # Lint SPA (ESLint) + backend (Deno lint)
+npm run format                     # Format SPA (Prettier) + backend (Deno fmt)
+npm run check                      # Full check: lint + format + types + build (SPA + backend)
+npm run build                      # Production build (SPA)
+npm run deploy:functions           # Deploy all Edge Functions to Supabase
 ```
 
-### Package-specific:
+### SPA (from `qaap/spa/`)
+
 ```bash
-pnpm --filter @qaap/api dev        # Start API only
-pnpm --filter @qaap/web dev        # Start frontend only
-pnpm --filter @qaap/db migrate     # Run database migrations
-pnpm --filter @qaap/db seed        # Seed development data
+npm install                        # Install dependencies
+npm run dev                        # Dev server at http://localhost:5173
+npm run build                      # tsc + vite build
+npm run lint                       # ESLint check
+npm run lint:fix                   # ESLint auto-fix
+npm run format                     # Prettier write
+npm run types:check                # tsc --noEmit
+npm run check                      # lint:fix + format + types + build
 ```
 
-## Architecture
+### Backend (from `qaap/backend/`)
 
-Modular monolith with explicit module boundaries. Modules communicate async via BullMQ. Multi-tenancy via PostgreSQL Row-Level Security (tenant_id on every table, RLS policies enforce isolation).
+```bash
+supabase start                     # Start local Supabase stack
+supabase functions serve           # Serve Edge Functions locally
+supabase db push                   # Push migrations to remote
+supabase functions deploy <name>   # Deploy a single Edge Function
+```
 
-### Key Modules (in `apps/api/src/modules/`)
+Migrations can also be applied via the Supabase MCP tool (`apply_migration`).
 
-| Module | Responsibility |
-|--------|---------------|
-| auth | Better Auth setup, per-tenant SSO (OIDC/SAML) |
-| tenant | CRUD tenants, branding, feature tiers |
-| plan | Test plans, scenarios, Gherkin management |
-| pipeline | Parsers, context assembler, LLM generator/reviewer/codifier |
-| connector | Plugin registry + providers (Jira, GitHub, S3, etc.) |
-| execution | Test runners, cron scheduler, failure analyzer |
-| proactive | AI fix proposals, coverage gap detection |
-| health | Trend analysis, degradation detection, alerts |
-| report | Report generation + multi-channel delivery |
-| chat | WebSocket human-in-the-loop conversations |
+## Database
 
-## Coding Conventions
+Supabase project: `zxdbfubcisgcfentbstg`
 
-- **File naming**: kebab-case (`test-plan.ts`, `llm-router.ts`)
-- **Tests**: `file-name.test.ts(x)`
-- **Types**: Shared types in `packages/shared/src/types/`, Zod validators in `validators/`
-- **Module API**: Each module exports via barrel `index.ts`. Cross-module imports only from public API.
-- **LLM outputs**: Always `{ result, confidence, rationale, model, tokensUsed, latencyMs }`
-- **No SDK lock-in**: LLM calls use OpenAI-compatible `/v1/chat/completions` API. No provider-specific SDKs.
-- **Prompt logging**: Every LLM call logged to `prompt_logs` table (non-negotiable NFR)
+### Current tables (public schema)
+
+| Table | Description |
+|-------|------------|
+| tenants | Multi-tenant isolation unit (slug, branding) |
+| user_profiles | Extends auth.users (tenant_id, role, avatar) |
+| connector_configs | Connector instances per tenant (type, credentials, config) |
+
+All tables have RLS enabled with tenant isolation.
+
+### Edge Functions
+
+| Function | Purpose |
+|----------|---------|
+| get-profile | Return authenticated user's profile |
+| get-tenants | List all tenants (superadmin only) |
+| get-connectors | List connectors for the active tenant |
+| create-connector | Create a new connector instance |
+| update-connector | Update connector config/credentials |
+| delete-connector | Remove a connector instance |
+| test-connector | Validate connector credentials (e.g. GitHub token) |
+
+### Shared utilities (`functions/_shared/`)
+
+- `client.ts` — `createSupabaseClient(req)` and `createServiceClient()`
+- `response.ts` — `preflight()`, `ok(data)`, `error(message, status)`
+- `cors.ts` — CORS headers
+- `tenant.ts` — Tenant resolution from request headers
+- `connectors/github.ts` — GitHub API integration
+
+## Environment Variables
+
+### SPA (`spa/.env.local`)
+```
+VITE_SUPABASE_URL=https://zxdbfubcisgcfentbstg.supabase.co
+VITE_SUPABASE_ANON_KEY=<anon-key>
+```
+
+## Architecture Patterns
+
+- **Zero direct DB queries from frontend** — all data flows through Edge Functions
+- **Edge Function pattern**: OPTIONS → CORS, Auth → verify, Business logic → `ok(data)` / `error(msg)`
+- **Shared utilities**: Every function imports from `_shared/` (client, response, cors, tenant)
+- **RLS for tenant isolation**: `tenant_id` on every table, policies filter by `auth.uid()`
+- **Migrations**: SQL files in `backend/migrations/`, applied via MCP or CLI
+- **VSA (Vertical Slice Architecture)**: SPA organized by `domains/<domain>/features/<feature>/`
 
 ## Design Principles (from research)
 
 - **Properties over content** in assertions (assert visibility, count, enabled — not specific text)
 - **Static analysis first, LLM where there is ambiguity**
-- **Confidence + rationale** as mandatory output format
+- **Confidence + rationale** as mandatory LLM output format
 - **Living dataset**: Every production failure becomes a golden test case
 - **Build-time vs run-time separation**: LLM for exploration, deterministic for regression
-- **Strict convention contracts**: Prohibitive rules ("PROHIBITED", "ONLY") > descriptive guidelines ("prefer")
-- **Normalisation step**: Dedicated cheap LLM call to structure freeform input before the main pipeline
-- **Observation-based debug**: Screenshot + DOM state for fixing failures, not just error message inference
+- **Strict convention contracts**: Prohibitive rules > descriptive guidelines
+- **Every LLM call logged** to prompt_logs table (non-negotiable NFR)
 
 ## Related Documentation
 
-- `documentation/architecture-plan.md` — Full architecture with diagrams
-- `documentation/domain-model.md` — All entities with field definitions and rationale
-- `documentation/mvp-phases.md` — Phase roadmap (4 phases)
-- `documentation/connector-spec.md` — Connector interface and provider catalog
-- `documentation/llm-pipeline-spec.md` — LLM orchestration, routing, prompt strategy
-- `documentation/design-handoff.md` — UI/UX design brief (portable to design tools)
-
-## Research Foundation
-
-QAAP's decisions trace back to consolidated research in the parent repo (`../research/`):
-- `insights.md` — 13 articles distilled into architectural constraints
-- `patterns.md` — Recurring patterns across sources (12 patterns from 13 articles)
-- `client-signals.md` — Real client needs validating product direction
+- [Product specs](documentation/product/) — Architecture, domain model, MVP phases, connectors, LLM pipeline, design, branding
+- [ADRs](documentation/adr/) — 17 ADRs on VSA, domain layer, stack adaptation, testing, dev environment
+- [Scaffolding skills](documentation/skills/) — 7 Claude Code skills for creating domains, features, components, etc.
+- [Root CLAUDE.md](../CLAUDE.md) — Research workflows, design principles, available skills

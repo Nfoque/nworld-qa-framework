@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Research and design workspace for two products:
 
 1. **qa-framework** (`qa-framework/`) — Skill-first framework for automatic E2E test generation with Playwright + LLM. Consumed as Claude Code skills (`.md` files copied to `.claude/commands/`). No binary, no runtime, no dependencies.
-2. **QAAP** (`qaap/`) — Multi-tenant SaaS platform (React 19 + Fastify + PostgreSQL) that productizes the framework's pipeline into a web app with connectors, multi-LLM orchestration, and execution.
+2. **QAAP** (`qaap/`) — Multi-tenant SaaS platform (React 19 + Supabase) that productizes the framework's pipeline into a web app with connectors, multi-LLM orchestration, and execution.
 
 There is no runnable code at the root level — this is a documentation/research monorepo. QAAP has its own `CLAUDE.md` at `qaap/CLAUDE.md` with build/dev/test commands.
 
@@ -26,7 +26,7 @@ news/                        ← Article processing pipeline
   inbox/raw/                    Drop zone for raw downloads (.md/.pdf from browser)
   inbox/raw/processed/          Raw files already processed (moved here after distillation)
 
-qa-framework/         ← The framework product (design docs, not executable code)
+qa-framework/                ← The framework product (design docs, not executable code)
   STATUS.md                     Task vs. existing artifact map — check this first
   architecture/                 ADRs (adr-001 through adr-003)
   protocol/                     Generation pipeline spec + prompt templates
@@ -35,9 +35,9 @@ qa-framework/         ← The framework product (design docs, not executable cod
   validation/                   XRay reporter + verify pipeline
 
 qaap/                        ← SaaS product (has its own CLAUDE.md)
-  documentation/                Product specs (architecture, domain model, MVP phases,
-                                connector spec, LLM pipeline spec, design handoff)
-  code/                         Application monorepo (Turborepo + pnpm)
+  spa/                          React 19 SPA (Vite + MUI v9)
+  backend/                      Supabase Edge Functions + PostgreSQL migrations
+  documentation/                Product specs, 17 ADRs, scaffolding skills
   prototypes/                   HTML/Netlify prototypes
 
 clients/                     ← Client engagement transcripts (gitignored, local-only)
@@ -63,8 +63,6 @@ references/                  ← Links to external repos studied (no code cloned
 4. Update `project-state.md` (rolling snapshot)
 5. If a testing need appears in 2+ clients, promote (sanitized) to `research/client-signals.md`
 
-Use `/new-client-project` skill to scaffold a new client/project folder.
-
 ## Research → Product Traceability
 
 Every design decision must trace back to `research/insights.md` or `research/patterns.md`. Each ADR cites its origins. If something also has backing from `research/client-signals.md`, that's a strong signal. **Without a research trace, the decision does not go into the framework.**
@@ -78,7 +76,7 @@ clients/ (local)    ──► research/client-signals.md
 
 ## Design Principles (from research)
 
-These are load-bearing — not aspirational guidelines but hard constraints validated across 13 articles:
+These are load-bearing — not aspirational guidelines but hard constraints validated across research:
 
 - **Properties over content** — Assert on structural properties (visible, count, enabled), never literal text. 5 independent sources converge on "score, don't assert".
 - **Static analysis first, LLM where ambiguity** — Justify each LLM use against a deterministic alternative.
@@ -106,15 +104,14 @@ These are load-bearing — not aspirational guidelines but hard constraints vali
 | `/promote-patterns` | Find insights that now appear in 2+ sources and should become patterns |
 | `/research-competitor` | Deep-research a competitor tool, produce structured comparison against our principles |
 | `/research-status` | Read-only dashboard: article counts, insight/pattern coverage, materialization ratios |
-| `/new-client-project` | Scaffold a new client/project folder under `clients/` |
 
 ## QAAP Development
 
-For QAAP build/test/dev commands, see `qaap/CLAUDE.md`. Key facts:
+For QAAP build/dev commands, see [`qaap/CLAUDE.md`](qaap/CLAUDE.md). Key facts:
 
-- Monorepo: Turborepo + pnpm (`qaap/code/`)
-- Backend: Fastify + tRPC + BullMQ + PostgreSQL (Drizzle ORM)
-- Frontend: React 19 + Vite + MUI v6 + TanStack Router/Query
-- LLM: OpenAI-compatible API via LiteLLM gateway — no provider SDK lock-in
-- Multi-tenancy: PostgreSQL RLS (tenant_id on every table)
+- Frontend: React 19 + Vite 8 + MUI v9 + TanStack Router/Query (`qaap/spa/`)
+- Backend: Supabase Edge Functions (Deno) (`qaap/backend/`)
+- Database: PostgreSQL with RLS (multi-tenant via tenant_id)
+- Auth: Supabase Auth (Google OAuth)
+- LLM: OpenAI-compatible API — no provider SDK lock-in
 - Every LLM call logged to `prompt_logs` table (non-negotiable NFR)

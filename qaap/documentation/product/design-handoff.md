@@ -8,7 +8,7 @@ This document is a standalone design brief for creating UI mockups and visual de
 
 **QAAP** — QA Automation Platform by NFQ. Enterprise SaaS for QA experts to automate E2E test plan creation and maintenance using AI. The platform replaces traditional QA departments with a combination of QA expertise + AI-powered automation.
 
-**Target users**: QA Engineers, QA Leads, QA Managers at enterprise companies (Inditex scale). Technical but not developers — they think in test plans, acceptance criteria, and regression suites, not in code.
+**Target users**: QA Engineers, QA Leads, QA Managers at enterprise companies. Technical but not developers — they think in test plans, acceptance criteria, and regression suites, not in code.
 
 **Tone**: Professional, precise, trustworthy. This is a tool that handles critical quality assurance — it should feel serious and reliable, not playful. Think "enterprise tool that doesn't look boring" — clean, modern, data-dense but not cluttered.
 

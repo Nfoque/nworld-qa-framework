@@ -34,7 +34,6 @@ The top-level isolation unit. Every record in the system belongs to a tenant.
 | branding | JSON | `{ logoUrl, faviconUrl, primaryColor, accentColor, backgroundColor, fontFamily, loginMessage }` |
 | sso_provider | JSON | OIDC/SAML config reference (Better Auth organization) |
 | llm_config | JSON | Default model matrix for this tenant (can be overridden per plan) |
-| plan_tier | enum | `starter` / `professional` / `enterprise` |
 | created_at | timestamp | |
 | updated_at | timestamp | |
 

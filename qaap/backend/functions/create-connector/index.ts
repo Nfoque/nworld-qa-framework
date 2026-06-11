@@ -1,0 +1,80 @@
+import {
+  createServiceClient,
+  createSupabaseClient,
+  getAuthUser,
+} from "../_shared/client.ts";
+import { error, ok, preflight } from "../_shared/response.ts";
+import { resolveTenantId } from "../_shared/tenant.ts";
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return preflight();
+  if (req.method !== "POST") return error("METHOD_NOT_ALLOWED", 405);
+
+  const client = createSupabaseClient(req);
+  const user = await getAuthUser(client, req);
+  if (!user) return error("UNAUTHORIZED", 401);
+
+  const serviceClient = createServiceClient();
+  const resolved = await resolveTenantId(serviceClient, user.id, req);
+  if (!resolved) return error("NO_TENANT", 403);
+
+  if (!["superadmin", "admin", "editor"].includes(resolved.role)) {
+    return error("FORBIDDEN", 403);
+  }
+
+  const body = await req.json();
+  const {
+    connectorId,
+    category,
+    displayName,
+    description,
+    config,
+    credentials,
+  } = body;
+
+  if (!connectorId || !category || !displayName) {
+    return error(
+      "MISSING_FIELDS: connectorId, category, displayName required",
+      400,
+    );
+  }
+
+  const { data, error: dbErr } = await serviceClient
+    .from("connector_configs")
+    .insert({
+      tenant_id: resolved.tenantId,
+      connector_id: connectorId,
+      category,
+      display_name: displayName,
+      description: description ?? "",
+      config: config ?? {},
+      credentials: credentials ?? null,
+      status: credentials ? "active" : "disabled",
+    })
+    .select()
+    .single();
+
+  if (dbErr) {
+    if (dbErr.code === "23505") {
+      return error("CONNECTOR_ALREADY_EXISTS", 409);
+    }
+    return error(dbErr.message, 500);
+  }
+
+  return ok({
+    id: data.id,
+    tenantId: data.tenant_id,
+    connectorId: data.connector_id,
+    category: data.category,
+    displayName: data.display_name,
+    description: data.description,
+    config: data.config,
+    hasCredentials: !!data.credentials,
+    status: data.status,
+    statusMessage: data.status_message,
+    lastSyncedAt: data.last_synced_at,
+    lastTestedAt: data.last_tested_at,
+    createdAt: data.created_at,
+    updatedAt: data.updated_at,
+  });
+});

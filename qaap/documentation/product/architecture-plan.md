@@ -165,14 +165,16 @@ User: "Crear suite de regresion para checkout"
 
 ```
 qaap/
-├── documentation/                      # Product documentation
-│   ├── architecture-plan.md            # This document
-│   ├── design-handoff.md               # Design brief for Claude Design
-│   ├── domain-model.md                 # Entity definitions + relationships
-│   ├── mvp-phases.md                   # Phase roadmap with scope per phase
-│   ├── connector-spec.md               # Connector interface + provider catalog
-│   ├── llm-pipeline-spec.md            # LLM orchestration, prompts, routing
-│   └── decisions/                      # ADRs specific to QAAP
+├── documentation/
+│   ├── product/                        # Product specs
+│   │   ├── architecture-plan.md        # This document
+│   │   ├── design-handoff.md           # Design brief for Claude Design
+│   │   ├── domain-model.md             # Entity definitions + relationships
+│   │   ├── mvp-phases.md               # Phase roadmap with scope per phase
+│   │   ├── connector-spec.md           # Connector interface + provider catalog
+│   │   └── llm-pipeline-spec.md        # LLM orchestration, prompts, routing
+│   ├── adr/                            # VSA + Domain architecture decisions (01-17)
+│   └── skills/                         # Claude Code scaffolding skills
 │
 ├── code/                               # Application code (monorepo root)
 │   ├── package.json                    # Workspace root (pnpm)

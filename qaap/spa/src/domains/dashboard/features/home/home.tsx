@@ -12,6 +12,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import { ActivityFeed } from "./activity-feed";
 import { ExecutionsTable } from "./executions-table";
@@ -27,6 +28,7 @@ import { useAuth } from "@/shared/auth/auth-provider";
 import { StatCard } from "@/shared/components/stat-card";
 
 export function Home() {
+  const { t } = useTranslation();
   const { profile } = useAuth();
   const firstName = profile?.name?.split(" ")[0] ?? "there";
   const approved = MOCK_TEST_PLANS.filter(
@@ -49,14 +51,14 @@ export function Home() {
       >
         <Box>
           <Typography variant="h4" sx={{ fontSize: 22 }}>
-            Welcome back, {firstName}
+            {t("home.welcome", { name: firstName })}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
-            Here's what's happening with your test plans today.
+            {t("home.subtitle")}
           </Typography>
         </Box>
         <Button variant="contained" startIcon={<AddIcon />}>
-          New Test Plan
+          {t("home.newTestPlan")}
         </Button>
       </Stack>
 
@@ -69,30 +71,30 @@ export function Home() {
         }}
       >
         <StatCard
-          label="Test Plans"
+          label={t("home.testPlans")}
           value={MOCK_TEST_PLANS.length}
-          subtitle={`${approved} approved`}
+          subtitle={t("home.approved", { count: approved })}
           icon={DescriptionOutlinedIcon}
           color="#217BEE"
         />
         <StatCard
-          label="Total Scenarios"
+          label={t("home.totalScenarios")}
           value={totalScenarios}
-          subtitle="Across all plans"
+          subtitle={t("home.acrossAllPlans")}
           icon={SubjectOutlinedIcon}
           color="#8B5CF6"
         />
         <StatCard
-          label="Avg Pass Rate"
+          label={t("home.avgPassRate")}
           value="94.2%"
           icon={MonitorHeartOutlinedIcon}
           color="#16A34A"
-          trend={{ label: "2.1% vs last week", up: true }}
+          trend={{ label: t("home.vsLastWeek", { value: "2.1%" }), up: true }}
         />
         <StatCard
-          label="Pending Reviews"
+          label={t("home.pendingReviews")}
           value="4"
-          subtitle="2 plans need attention"
+          subtitle={t("home.plansNeedAttention", { count: 2 })}
           icon={AccessTimeOutlinedIcon}
           color="#EC683E"
         />
@@ -110,14 +112,14 @@ export function Home() {
             }}
           >
             <Typography variant="h6" sx={{ fontSize: 14 }}>
-              Test Plans
+              {t("home.testPlans")}
             </Typography>
             <Button
               size="small"
               endIcon={<ChevronRightIcon />}
               sx={{ fontSize: 12 }}
             >
-              View all
+              {t("home.viewAll")}
             </Button>
           </Stack>
           <PlansTable plans={MOCK_TEST_PLANS} />
@@ -135,7 +137,7 @@ export function Home() {
         <Card>
           <CardContent>
             <Typography variant="h6" sx={{ fontSize: 14, mb: 1.5 }}>
-              Recent Activity
+              {t("home.recentActivity")}
             </Typography>
             <ActivityFeed items={MOCK_ACTIVITY} />
           </CardContent>
@@ -143,7 +145,7 @@ export function Home() {
         <Card>
           <CardContent>
             <Typography variant="h6" sx={{ fontSize: 14, mb: 1.5 }}>
-              Quick Actions
+              {t("home.quickActions")}
             </Typography>
             <QuickActions />
           </CardContent>
@@ -162,14 +164,14 @@ export function Home() {
             }}
           >
             <Typography variant="h6" sx={{ fontSize: 14 }}>
-              Recent Executions
+              {t("home.recentExecutions")}
             </Typography>
             <Button
               size="small"
               endIcon={<ChevronRightIcon />}
               sx={{ fontSize: 12 }}
             >
-              View all
+              {t("home.viewAll")}
             </Button>
           </Stack>
           <ExecutionsTable executions={MOCK_EXECUTIONS} />

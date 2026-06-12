@@ -1,8 +1,17 @@
+export interface TenantBranding {
+  primaryColor?: string;
+  primaryColorLight?: string;
+  primaryColorDark?: string;
+  logoUrl?: string;
+  accentColor?: string;
+  loginMessage?: string;
+}
+
 export interface Tenant {
   id: string;
   slug: string;
   name: string;
-  branding: Record<string, string>;
+  branding: TenantBranding;
 }
 
 export interface UserProfile {

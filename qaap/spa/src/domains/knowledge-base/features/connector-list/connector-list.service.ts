@@ -5,6 +5,8 @@ import type {
   ConnectorCatalogEntry,
   ConnectorDto,
   CreateConnectorInput,
+  TestConnectorInput,
+  TestConnectorResult,
   UiConnectorStatus,
   UpdateConnectorInput,
 } from "./connector-list.types";
@@ -151,15 +153,10 @@ export function useDeleteConnector() {
 export function useTestConnector() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (connectorId: string) =>
-      invokeFunction<{
-        connectorId: string;
-        status: string;
-        statusMessage: string | null;
-        result: unknown;
-      }>(FN_TEST, {
+    mutationFn: (input: TestConnectorInput) =>
+      invokeFunction<TestConnectorResult>(FN_TEST, {
         method: "POST",
-        body: { connectorId },
+        body: input as unknown as Record<string, unknown>,
       }),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: CONNECTORS_KEY }),

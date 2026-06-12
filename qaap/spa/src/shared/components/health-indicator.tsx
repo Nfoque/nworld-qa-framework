@@ -1,9 +1,10 @@
 import { Box, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
-const HEALTH_MAP: Record<string, { label: string; color: string }> = {
-  healthy: { label: "Healthy", color: "#16A34A" },
-  degrading: { label: "Degrading", color: "#EC683E" },
-  critical: { label: "Critical", color: "#D13B5F" },
+const HEALTH_COLORS: Record<string, string> = {
+  healthy: "#16A34A",
+  degrading: "#EC683E",
+  critical: "#D13B5F",
 };
 
 interface HealthIndicatorProps {
@@ -11,17 +12,18 @@ interface HealthIndicatorProps {
 }
 
 export function HealthIndicator({ health }: HealthIndicatorProps) {
-  const config = HEALTH_MAP[health] ?? HEALTH_MAP.healthy;
+  const { t } = useTranslation();
+  const color = HEALTH_COLORS[health] ?? HEALTH_COLORS.healthy;
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
       <Box
-        sx={{ width: 6, height: 6, borderRadius: "50%", bgcolor: config.color }}
+        sx={{ width: 6, height: 6, borderRadius: "50%", bgcolor: color }}
       />
       <Typography
         variant="caption"
-        sx={{ fontWeight: 600, color: config.color }}
+        sx={{ fontWeight: 600, color }}
       >
-        {config.label}
+        {t(`health.${health}`, health)}
       </Typography>
     </Box>
   );

@@ -43,6 +43,31 @@ export interface UpdateConnectorInput {
   statusMessage?: string;
 }
 
+export interface TestConnectorInput {
+  connectorId: string;
+  credentials?: Record<string, unknown>;
+}
+
+export interface GitHubRepo {
+  fullName: string;
+  description: string | null;
+  private: boolean;
+  language: string | null;
+  updatedAt: string;
+}
+
+export interface TestConnectorResult {
+  connectorId: string;
+  status: string;
+  statusMessage: string | null;
+  result: {
+    tokenValid: boolean;
+    user?: string;
+    avatarUrl?: string;
+    repos: GitHubRepo[];
+  };
+}
+
 export type UiConnectorStatus = "connected" | "not_configured" | "error";
 
 export interface ConnectorCatalogEntry {

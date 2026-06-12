@@ -11,6 +11,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { ConnectorCard } from "./connector-card";
 import { useConnectors } from "./connector-list.service";
@@ -21,6 +22,7 @@ import { StatCard } from "@/shared/components/stat-card";
 type FilterTab = "all" | UiConnectorStatus;
 
 export function ConnectorList() {
+  const { t } = useTranslation();
   const [filter, setFilter] = useState<FilterTab>("all");
   const { data: connectors = [], isLoading, error } = useConnectors();
 
@@ -41,11 +43,10 @@ export function ConnectorList() {
     <Box sx={{ p: 3 }}>
       <Box sx={{ mb: 2.5 }}>
         <Typography variant="h4" sx={{ fontSize: 22 }}>
-          Connectors
+          {t("connectors.title")}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
-          Connect your tools and data sources to provide context for AI-powered
-          test generation.
+          {t("connectors.subtitle")}
         </Typography>
       </Box>
 
@@ -58,28 +59,28 @@ export function ConnectorList() {
         }}
       >
         <StatCard
-          label="Total Connectors"
+          label={t("connectors.totalConnectors")}
           value={connectors.length}
-          subtitle={`${connectedCount} active`}
+          subtitle={t("connectors.active", { count: connectedCount })}
           icon={CableOutlinedIcon}
           color="#217BEE"
         />
         <StatCard
-          label="Connected"
+          label={t("connectors.connected")}
           value={connectedCount}
           icon={CheckCircleOutlinedIcon}
           color="#16A34A"
         />
         <StatCard
-          label="Needs Setup"
+          label={t("connectors.needsSetup")}
           value={needsSetupCount}
           icon={SettingsOutlinedIcon}
           color="#82858D"
         />
         <StatCard
-          label="Errors"
+          label={t("connectors.errors")}
           value={errorCount}
-          subtitle={errorCount > 0 ? "Needs attention" : undefined}
+          subtitle={errorCount > 0 ? t("connectors.needsAttention") : undefined}
           icon={ErrorOutlineOutlinedIcon}
           color="#D13B5F"
         />
@@ -101,10 +102,10 @@ export function ConnectorList() {
           "& .MuiTabs-indicator": { height: 2 },
         }}
       >
-        <Tab label="All" value="all" />
-        <Tab label="Connected" value="connected" />
-        <Tab label="Not Configured" value="not_configured" />
-        <Tab label="Errors" value="error" />
+        <Tab label={t("connectors.tabAll")} value="all" />
+        <Tab label={t("connectors.tabConnected")} value="connected" />
+        <Tab label={t("connectors.tabNotConfigured")} value="not_configured" />
+        <Tab label={t("connectors.tabErrors")} value="error" />
       </Tabs>
 
       {isLoading && (
@@ -115,7 +116,7 @@ export function ConnectorList() {
 
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
-          Failed to load connectors. Please try again.
+          {t("connectors.loadError")}
         </Alert>
       )}
 
@@ -126,8 +127,8 @@ export function ConnectorList() {
           />
           <Typography variant="body1" color="text.secondary">
             {filter === "all"
-              ? "No connectors configured yet. Add your first connector to get started."
-              : "No connectors match this filter."}
+              ? t("connectors.emptyAll")
+              : t("connectors.emptyFiltered")}
           </Typography>
         </Box>
       )}

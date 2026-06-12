@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
 
   const { data: tenants, error: dbErr } = await serviceClient
     .from("tenants")
-    .select("id, slug, name, created_at")
+    .select("id, slug, name, branding, created_at")
     .order("name", { ascending: true });
 
   if (dbErr) return error(dbErr.message, 500);
@@ -37,6 +37,7 @@ Deno.serve(async (req) => {
       id: t.id,
       slug: t.slug,
       name: t.name,
+      branding: t.branding ?? {},
       createdAt: t.created_at,
     })),
   );

@@ -5,8 +5,7 @@ import {
 } from "../_shared/client.ts";
 import { error, ok, preflight } from "../_shared/response.ts";
 import { resolveTenantId } from "../_shared/tenant.ts";
-import { testGitHub } from "../_shared/connectors/github.ts";
-import type { GitHubTestResult } from "../_shared/connectors/github.ts";
+import { validateGitHubToken } from "../_shared/connectors/github.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return preflight();
@@ -21,59 +20,51 @@ Deno.serve(async (req) => {
   if (!resolved) return error("NO_TENANT", 403);
 
   const body = await req.json();
-  const { connectorId } = body;
+  const { connectorId, credentials: rawCredentials } = body;
   if (!connectorId) return error("MISSING_FIELD: connectorId required", 400);
 
-  const { data: connector, error: dbErr } = await serviceClient
+  const { data: connector } = await serviceClient
     .from("connector_configs")
     .select("*")
     .eq("connector_id", connectorId)
     .eq("tenant_id", resolved.tenantId)
     .single();
 
-  if (dbErr || !connector) return error("CONNECTOR_NOT_FOUND", 404);
-  if (!connector.credentials?.token) return error("NO_CREDENTIALS", 400);
+  const token = rawCredentials?.token ?? connector?.credentials?.token;
+  if (!token) return error("NO_CREDENTIALS", 400);
 
-  let result: GitHubTestResult;
-  let newStatus: string;
-  let statusMessage: string | null = null;
-
-  if (connector.connector_id === "github") {
-    result = await testGitHub(connector.credentials.token, connector.config);
-
-    if (!result.tokenValid) {
-      newStatus = "error";
-      statusMessage = "Invalid token — check your Personal Access Token.";
-    } else {
-      const inaccessible = result.repos.filter((r) => !r.accessible);
-      if (inaccessible.length > 0) {
-        newStatus = "error";
-        statusMessage = `Cannot access: ${
-          inaccessible.map((r) => `${r.name} (${r.error})`).join(", ")
-        }`;
-      } else {
-        newStatus = "active";
-        statusMessage = null;
-      }
-    }
-  } else {
+  if (connectorId !== "github") {
     return error(
-      `Test not implemented for connector: ${connector.connector_id}`,
+      `Test not implemented for connector: ${connectorId}`,
       400,
     );
   }
 
-  await serviceClient
-    .from("connector_configs")
-    .update({
-      status: newStatus,
-      status_message: statusMessage,
-      last_tested_at: new Date().toISOString(),
-    })
-    .eq("id", connector.id);
+  const result = await validateGitHubToken(token);
+
+  let newStatus: string;
+  let statusMessage: string | null = null;
+
+  if (!result.tokenValid) {
+    newStatus = "error";
+    statusMessage = "Invalid token — check your Personal Access Token.";
+  } else {
+    newStatus = "active";
+  }
+
+  if (connector) {
+    await serviceClient
+      .from("connector_configs")
+      .update({
+        status: newStatus,
+        status_message: statusMessage,
+        last_tested_at: new Date().toISOString(),
+      })
+      .eq("id", connector.id);
+  }
 
   return ok({
-    connectorId: connector.connector_id,
+    connectorId,
     status: newStatus,
     statusMessage,
     result,

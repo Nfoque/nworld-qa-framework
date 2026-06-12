@@ -1,20 +1,20 @@
 import { Chip, type ChipProps } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
-const STATUS_MAP: Record<string, { label: string; color: ChipProps["color"] }> =
-  {
-    approved: { label: "Approved", color: "success" },
-    review: { label: "In Review", color: "warning" },
-    generating: { label: "Generating", color: "primary" },
-    draft: { label: "Draft", color: "default" },
-    archived: { label: "Archived", color: "default" },
-    passed: { label: "Passed", color: "success" },
-    failed: { label: "Failed", color: "error" },
-    pending: { label: "Pending", color: "warning" },
-    rejected: { label: "Rejected", color: "error" },
-    connected: { label: "Connected", color: "success" },
-    not_configured: { label: "Not Configured", color: "default" },
-    error: { label: "Error", color: "error" },
-  };
+const STATUS_COLORS: Record<string, ChipProps["color"]> = {
+  approved: "success",
+  review: "warning",
+  generating: "primary",
+  draft: "default",
+  archived: "default",
+  passed: "success",
+  failed: "error",
+  pending: "warning",
+  rejected: "error",
+  connected: "success",
+  not_configured: "default",
+  error: "error",
+};
 
 interface StatusBadgeProps {
   status: string;
@@ -22,9 +22,8 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, size = "small" }: StatusBadgeProps) {
-  const config = STATUS_MAP[status] ?? {
-    label: status,
-    color: "default" as const,
-  };
-  return <Chip label={config.label} color={config.color} size={size} />;
+  const { t } = useTranslation();
+  const color = STATUS_COLORS[status] ?? ("default" as const);
+  const label = t(`status.${status}`, status);
+  return <Chip label={label} color={color} size={size} />;
 }

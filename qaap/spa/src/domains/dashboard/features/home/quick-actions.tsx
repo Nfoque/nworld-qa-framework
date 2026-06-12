@@ -3,32 +3,33 @@ import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
 import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
 import PlayCircleOutlinedIcon from "@mui/icons-material/PlayCircleOutlined";
 import { Box, ButtonBase, Stack, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
-const actions = [
+const actionDefs = [
   {
-    title: "New Test Plan",
-    desc: "Create web, API, or iOS plan",
+    titleKey: "quickActions.newTestPlan",
+    descKey: "quickActions.newTestPlanDesc",
     icon: AddIcon,
     color: "#217BEE",
     bg: "#EBF3FE",
   },
   {
-    title: "Run Tests",
-    desc: "Execute an approved plan",
+    titleKey: "quickActions.runTests",
+    descKey: "quickActions.runTestsDesc",
     icon: PlayCircleOutlinedIcon,
     color: "#16A34A",
     bg: "#F0FDF4",
   },
   {
-    title: "AI Proposals",
-    desc: "3 suggestions waiting",
+    titleKey: "quickActions.aiProposals",
+    descKey: "quickActions.aiProposalsDesc",
     icon: AutoAwesomeOutlinedIcon,
     color: "#EC683E",
     bg: "#FFF5F0",
   },
   {
-    title: "Generate Report",
-    desc: "Export results & metrics",
+    titleKey: "quickActions.generateReport",
+    descKey: "quickActions.generateReportDesc",
     icon: AssessmentOutlinedIcon,
     color: "#8B5CF6",
     bg: "#8B5CF612",
@@ -36,11 +37,13 @@ const actions = [
 ];
 
 export function QuickActions() {
+  const { t } = useTranslation();
+
   return (
     <Stack spacing={1}>
-      {actions.map((action) => (
+      {actionDefs.map((action) => (
         <ButtonBase
-          key={action.title}
+          key={action.titleKey}
           sx={{
             display: "flex",
             alignItems: "center",
@@ -70,14 +73,14 @@ export function QuickActions() {
           </Box>
           <Box sx={{ textAlign: "left" }}>
             <Typography variant="body2" sx={{ fontWeight: 600, fontSize: 13 }}>
-              {action.title}
+              {t(action.titleKey)}
             </Typography>
             <Typography
               variant="caption"
               color="text.secondary"
               sx={{ fontSize: 11 }}
             >
-              {action.desc}
+              {t(action.descKey)}
             </Typography>
           </Box>
         </ButtonBase>

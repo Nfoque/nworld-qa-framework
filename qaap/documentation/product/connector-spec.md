@@ -101,7 +101,7 @@ interface SyncResult {
 | Connector | Category | Config | Credentials |
 |-----------|----------|--------|-------------|
 | **Jira Cloud** | task-manager | `{ baseUrl, projectKey, jqlFilter? }` | `{ email, apiToken }` |
-| **GitHub** | code-repo | `{ owner, repo, defaultBranch, pathFilters? }` | `{ token }` (PAT or GitHub App) |
+| **GitHub** | code-repo | `{ selectedRepos: string[] }` (full names, e.g. `"org/repo"`) | `{ token }` (PAT — repos discovered automatically) |
 | **S3** | document-source | `{ bucket, prefix?, region }` | `{ accessKeyId, secretAccessKey }` |
 
 ### Phase 3

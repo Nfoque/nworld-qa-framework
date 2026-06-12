@@ -1,14 +1,16 @@
-export interface GitHubTestResult {
-  tokenValid: boolean;
-  user?: string;
-  repos: GitHubRepoResult[];
+export interface GitHubRepo {
+  fullName: string;
+  description: string | null;
+  private: boolean;
+  language: string | null;
+  updatedAt: string;
 }
 
-export interface GitHubRepoResult {
-  name: string;
-  accessible: boolean;
-  description?: string | null;
-  error?: string;
+export interface GitHubValidationResult {
+  tokenValid: boolean;
+  user?: string;
+  avatarUrl?: string;
+  repos: GitHubRepo[];
 }
 
 function ghHeaders(token: string): Record<string, string> {
@@ -19,10 +21,9 @@ function ghHeaders(token: string): Record<string, string> {
   };
 }
 
-export async function testGitHub(
+export async function validateGitHubToken(
   token: string,
-  config: { owner: string; repositories: string[] },
-): Promise<GitHubTestResult> {
+): Promise<GitHubValidationResult> {
   const headers = ghHeaders(token);
 
   const userRes = await fetch("https://api.github.com/user", { headers });
@@ -31,41 +32,46 @@ export async function testGitHub(
   }
   const userData = await userRes.json();
 
-  const repoNames = config.repositories.length > 0
-    ? config.repositories
-    : await listOwnerRepos(headers, config.owner);
+  const repos = await listAccessibleRepos(headers);
 
-  const repos = await Promise.all(
-    repoNames.map(async (name): Promise<GitHubRepoResult> => {
-      const res = await fetch(
-        `https://api.github.com/repos/${config.owner}/${name}`,
-        { headers },
-      );
-      if (res.ok) {
-        const repoData = await res.json();
-        return { name, accessible: true, description: repoData.description };
-      }
-      const body = await res.json().catch(() => ({}));
-      return {
-        name,
-        accessible: false,
-        error: body.message ?? `HTTP ${res.status}`,
-      };
-    }),
-  );
-
-  return { tokenValid: true, user: userData.login, repos };
+  return {
+    tokenValid: true,
+    user: userData.login,
+    avatarUrl: userData.avatar_url,
+    repos,
+  };
 }
 
-async function listOwnerRepos(
+const MAX_PAGES = 5;
+const PER_PAGE = 100;
+
+async function listAccessibleRepos(
   headers: Record<string, string>,
-  owner: string,
-): Promise<string[]> {
-  const res = await fetch(
-    `https://api.github.com/users/${owner}/repos?per_page=5&sort=updated`,
-    { headers },
-  );
-  if (!res.ok) return [];
-  const repos = await res.json();
-  return repos.map((r: { name: string }) => r.name);
+): Promise<GitHubRepo[]> {
+  const repos: GitHubRepo[] = [];
+
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const res = await fetch(
+      `https://api.github.com/user/repos?per_page=${PER_PAGE}&page=${page}&sort=updated&affiliation=owner,collaborator,organization_member`,
+      { headers },
+    );
+    if (!res.ok) break;
+
+    const data = await res.json();
+    if (data.length === 0) break;
+
+    for (const r of data) {
+      repos.push({
+        fullName: r.full_name,
+        description: r.description,
+        private: r.private,
+        language: r.language,
+        updatedAt: r.updated_at,
+      });
+    }
+
+    if (data.length < PER_PAGE) break;
+  }
+
+  return repos;
 }

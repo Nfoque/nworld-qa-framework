@@ -1,4 +1,13 @@
+import {
+  faConfluence,
+  faFigma,
+  faGithub,
+  faJira,
+  faSlack,
+} from "@fortawesome/free-brands-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import AddIcon from "@mui/icons-material/Add";
+import CableOutlinedIcon from "@mui/icons-material/CableOutlined";
 import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
 import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -16,20 +25,21 @@ import {
   Typography,
 } from "@mui/material";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { ConfigureConnectorDialog } from "./configure-connector-dialog";
 import { useTestConnector } from "./connector-list.service";
-import type { Connector, ConnectorCategory } from "./connector-list.types";
+import type { Connector } from "./connector-list.types";
 
 import { useSnackbar } from "@/shared/components/snackbar-provider";
 import { StatusBadge } from "@/shared/components/status-badge";
 
-const CATEGORY_LABELS: Record<ConnectorCategory, string> = {
-  "task-manager": "Task Manager",
-  "document-source": "Document Source",
-  "code-repo": "Code Repository",
-  "test-runner": "Test Runner",
-  notification: "Notifications",
+const CONNECTOR_ICONS: Record<string, typeof faGithub> = {
+  github: faGithub,
+  jira: faJira,
+  figma: faFigma,
+  confluence: faConfluence,
+  slack: faSlack,
 };
 
 interface ConnectorCardProps {
@@ -37,34 +47,42 @@ interface ConnectorCardProps {
 }
 
 export function ConnectorCard({ connector }: ConnectorCardProps) {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
   const testConnector = useTestConnector();
   const { showSnackbar } = useSnackbar();
   const hasConfig = Object.keys(connector.config).length > 0;
 
+  const categoryLabel = t(
+    `connectorCategories.${connector.category}`,
+    connector.category,
+  ) as string;
+
   function handleTest() {
-    testConnector.mutate(connector.connectorId, {
-      onSuccess: (data) => {
-        if (data.status === "active") {
-          const result = data.result as
-            | { repos?: { name: string; description?: string | null }[] }
-            | undefined;
-          const repo = result?.repos?.[0];
-          const desc = repo?.description ? ` — ${repo.description}` : "";
-          showSnackbar(
-            `${connector.name} connected: ${repo?.name ?? "OK"}${desc}`,
-            "success",
-          );
-        } else {
-          showSnackbar(
-            data.statusMessage ?? "Connection test failed.",
-            "error",
-          );
-        }
+    testConnector.mutate(
+      { connectorId: connector.connectorId },
+      {
+        onSuccess: (data) => {
+          if (data.status === "active") {
+            const repoCount = data.result.repos?.length ?? 0;
+            showSnackbar(
+              t("connectors.connectedRepos", {
+                name: connector.name,
+                count: repoCount,
+              }),
+              "success",
+            );
+          } else {
+            showSnackbar(
+              data.statusMessage ?? t("connectors.testFailed"),
+              "error",
+            );
+          }
+        },
+        onError: () => showSnackbar(t("connectors.testError"), "error"),
       },
-      onError: () => showSnackbar("Failed to test connection.", "error"),
-    });
+    );
   }
 
   return (
@@ -81,12 +99,34 @@ export function ConnectorCard({ connector }: ConnectorCardProps) {
       <CardContent sx={{ flex: 1, pb: 1 }}>
         <Stack
           direction="row"
-          sx={{
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            mb: 1,
-          }}
+          spacing={1.5}
+          sx={{ alignItems: "flex-start", mb: 1 }}
         >
+          <Box
+            sx={{
+              width: 40,
+              height: 40,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              mt: 0.25,
+            }}
+          >
+            {CONNECTOR_ICONS[connector.connectorId] ? (
+              <FontAwesomeIcon
+                icon={CONNECTOR_ICONS[connector.connectorId]}
+                style={{
+                  fontSize: 24,
+                  color: "var(--mui-palette-text-primary)",
+                }}
+              />
+            ) : (
+              <CableOutlinedIcon
+                sx={{ fontSize: 24, color: "text.secondary" }}
+              />
+            )}
+          </Box>
           <Box sx={{ minWidth: 0, flex: 1 }}>
             <Stack
               direction="row"
@@ -110,7 +150,7 @@ export function ConnectorCard({ connector }: ConnectorCardProps) {
               {connector.description}
             </Typography>
             <Chip
-              label={CATEGORY_LABELS[connector.category] ?? connector.category}
+              label={categoryLabel}
               size="small"
               variant="outlined"
               sx={{ fontSize: 11 }}
@@ -127,7 +167,7 @@ export function ConnectorCard({ connector }: ConnectorCardProps) {
             <CheckCircleOutlinedIcon
               sx={{ fontSize: 14, color: "success.main" }}
             />
-            Last sync: {connector.lastSync}
+            {t("connectors.lastSync", { date: connector.lastSync })}
           </Typography>
         )}
 
@@ -162,7 +202,7 @@ export function ConnectorCard({ connector }: ConnectorCardProps) {
                   mb: 0.75,
                 }}
               >
-                Configuration
+                {t("connectors.configuration")}
               </Typography>
               {Object.entries(connector.config).map(([key, val]) => (
                 <Stack
@@ -210,14 +250,16 @@ export function ConnectorCard({ connector }: ConnectorCardProps) {
                 onClick={handleTest}
                 disabled={testConnector.isPending}
               >
-                {testConnector.isPending ? "Testing..." : "Test Connection"}
+                {testConnector.isPending
+                  ? t("connectors.testing")
+                  : t("connectors.testConnection")}
               </Button>
               <Button
                 size="small"
                 sx={{ fontSize: 12 }}
                 onClick={() => setConfigOpen(true)}
               >
-                Configure
+                {t("connectors.configure")}
               </Button>
             </>
           )}
@@ -229,7 +271,7 @@ export function ConnectorCard({ connector }: ConnectorCardProps) {
               sx={{ fontSize: 12 }}
               onClick={() => setConfigOpen(true)}
             >
-              Configure
+              {t("connectors.configure")}
             </Button>
           )}
           {connector.status === "error" && (
@@ -242,14 +284,16 @@ export function ConnectorCard({ connector }: ConnectorCardProps) {
                 onClick={handleTest}
                 disabled={testConnector.isPending}
               >
-                {testConnector.isPending ? "Testing..." : "Retry"}
+                {testConnector.isPending
+                  ? t("connectors.testing")
+                  : t("connectors.retry")}
               </Button>
               <Button
                 size="small"
                 sx={{ fontSize: 12 }}
                 onClick={() => setConfigOpen(true)}
               >
-                Configure
+                {t("connectors.configure")}
               </Button>
             </>
           )}

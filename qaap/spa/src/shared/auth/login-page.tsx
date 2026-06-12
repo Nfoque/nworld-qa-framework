@@ -1,11 +1,13 @@
 import GoogleIcon from "@mui/icons-material/Google";
 import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
-import { Box, Paper, Button, Typography, Stack, Alert } from "@mui/material";
+import { Alert, Box, Button, Paper, Stack, Typography } from "@mui/material";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useAuth } from "./auth-provider";
 
 export function LoginPage() {
+  const { t } = useTranslation();
   const { signInWithGoogle } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -16,7 +18,7 @@ export function LoginPage() {
     try {
       await signInWithGoogle();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "An error occurred");
+      setError(err instanceof Error ? err.message : t("login.error"));
       setLoading(false);
     }
   };
@@ -50,7 +52,7 @@ export function LoginPage() {
           <Stack spacing={0.5} sx={{ alignItems: "center" }}>
             <Typography variant="h4">QAAP</Typography>
             <Typography variant="body2" color="text.secondary">
-              QA Automation Platform
+              {t("login.subtitle")}
             </Typography>
           </Stack>
 
@@ -69,7 +71,7 @@ export function LoginPage() {
             fullWidth
             sx={{ fontSize: "1rem", py: 1.5 }}
           >
-            {loading ? "Redirecting..." : "Sign in with Google"}
+            {loading ? t("login.redirecting") : t("login.signIn")}
           </Button>
 
           <Typography
@@ -77,7 +79,7 @@ export function LoginPage() {
             color="text.secondary"
             sx={{ textAlign: "center" }}
           >
-            Enterprise SSO available for configured tenants
+            {t("login.ssoNote")}
           </Typography>
         </Stack>
       </Paper>

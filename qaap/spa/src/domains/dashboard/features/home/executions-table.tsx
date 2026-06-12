@@ -10,6 +10,7 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import type { Execution } from "./home.types";
 
@@ -20,78 +21,29 @@ interface ExecutionsTableProps {
 }
 
 export function ExecutionsTable({ executions }: ExecutionsTableProps) {
+  const { t } = useTranslation();
+
+  const headerSx = {
+    fontWeight: 600,
+    fontSize: 11,
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.04em",
+    color: "text.secondary",
+  };
+
   return (
     <TableContainer>
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell
-              sx={{
-                fontWeight: 600,
-                fontSize: 11,
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-                color: "text.secondary",
-              }}
-            >
-              Status
+            <TableCell sx={headerSx}>{t("tables.status")}</TableCell>
+            <TableCell sx={headerSx}>{t("tables.env")}</TableCell>
+            <TableCell sx={headerSx}>{t("tables.date")}</TableCell>
+            <TableCell sx={{ ...headerSx, minWidth: 160 }}>
+              {t("tables.passRate")}
             </TableCell>
-            <TableCell
-              sx={{
-                fontWeight: 600,
-                fontSize: 11,
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-                color: "text.secondary",
-              }}
-            >
-              Env
-            </TableCell>
-            <TableCell
-              sx={{
-                fontWeight: 600,
-                fontSize: 11,
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-                color: "text.secondary",
-              }}
-            >
-              Date
-            </TableCell>
-            <TableCell
-              sx={{
-                fontWeight: 600,
-                fontSize: 11,
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-                color: "text.secondary",
-                minWidth: 160,
-              }}
-            >
-              Pass Rate
-            </TableCell>
-            <TableCell
-              sx={{
-                fontWeight: 600,
-                fontSize: 11,
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-                color: "text.secondary",
-              }}
-            >
-              Duration
-            </TableCell>
-            <TableCell
-              sx={{
-                fontWeight: 600,
-                fontSize: 11,
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-                color: "text.secondary",
-              }}
-            >
-              Trigger
-            </TableCell>
+            <TableCell sx={headerSx}>{t("tables.duration")}</TableCell>
+            <TableCell sx={headerSx}>{t("tables.trigger")}</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>

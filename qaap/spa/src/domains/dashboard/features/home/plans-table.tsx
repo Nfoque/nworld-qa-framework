@@ -8,6 +8,7 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
+import { useTranslation } from "react-i18next";
 
 import type { TestPlan } from "./home.types";
 
@@ -20,90 +21,32 @@ interface PlansTableProps {
 }
 
 export function PlansTable({ plans }: PlansTableProps) {
+  const { t } = useTranslation();
+
+  const headerSx = {
+    fontWeight: 600,
+    fontSize: 11,
+    textTransform: "uppercase" as const,
+    letterSpacing: "0.04em",
+    color: "text.secondary",
+  };
+
   return (
     <TableContainer>
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell
-              sx={{
-                fontWeight: 600,
-                fontSize: 11,
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-                color: "text.secondary",
-              }}
-            >
-              Name
+            <TableCell sx={headerSx}>{t("tables.name")}</TableCell>
+            <TableCell sx={headerSx}>{t("tables.type")}</TableCell>
+            <TableCell sx={headerSx}>{t("tables.status")}</TableCell>
+            <TableCell align="right" sx={headerSx}>
+              {t("tables.scenarios")}
             </TableCell>
-            <TableCell
-              sx={{
-                fontWeight: 600,
-                fontSize: 11,
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-                color: "text.secondary",
-              }}
-            >
-              Type
+            <TableCell align="right" sx={headerSx}>
+              {t("tables.passRate")}
             </TableCell>
-            <TableCell
-              sx={{
-                fontWeight: 600,
-                fontSize: 11,
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-                color: "text.secondary",
-              }}
-            >
-              Status
-            </TableCell>
-            <TableCell
-              align="right"
-              sx={{
-                fontWeight: 600,
-                fontSize: 11,
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-                color: "text.secondary",
-              }}
-            >
-              Scenarios
-            </TableCell>
-            <TableCell
-              align="right"
-              sx={{
-                fontWeight: 600,
-                fontSize: 11,
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-                color: "text.secondary",
-              }}
-            >
-              Pass Rate
-            </TableCell>
-            <TableCell
-              sx={{
-                fontWeight: 600,
-                fontSize: 11,
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-                color: "text.secondary",
-              }}
-            >
-              Health
-            </TableCell>
-            <TableCell
-              sx={{
-                fontWeight: 600,
-                fontSize: 11,
-                textTransform: "uppercase",
-                letterSpacing: "0.04em",
-                color: "text.secondary",
-              }}
-            >
-              Updated
-            </TableCell>
+            <TableCell sx={headerSx}>{t("tables.health")}</TableCell>
+            <TableCell sx={headerSx}>{t("tables.updated")}</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>

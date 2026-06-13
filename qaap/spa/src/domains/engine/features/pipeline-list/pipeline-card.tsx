@@ -1,9 +1,5 @@
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import BugReportOutlinedIcon from "@mui/icons-material/BugReportOutlined";
-import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import FactCheckOutlinedIcon from "@mui/icons-material/FactCheckOutlined";
-import GitHubIcon from "@mui/icons-material/GitHub";
-import SourceOutlinedIcon from "@mui/icons-material/SourceOutlined";
 import {
   Avatar,
   Box,
@@ -20,34 +16,14 @@ import { useTranslation } from "react-i18next";
 
 import { isInProgress } from "./pipeline-list.service";
 
-import type {
-  EngineJob,
-  StepType,
-} from "@/domains/engine/features/engine-run/engine-run.types";
+import {
+  CONNECTOR_ICONS,
+  DEFAULT_CONNECTOR_ICON,
+  STATUS_LABELS,
+} from "@/domains/engine/engine.constants";
+import type { EngineJob } from "@/domains/engine/features/engine-run/engine-run.types";
 import { PIPELINE_STEPS } from "@/domains/engine/features/engine-run/engine-run.types";
-
-const STATUS_CHIP: Record<
-  string,
-  {
-    labelKey: string;
-    color: "default" | "primary" | "success" | "warning" | "error";
-  }
-> = {
-  queued: { labelKey: "pipeline.statusQueued", color: "default" },
-  running: { labelKey: "pipeline.statusRunning", color: "primary" },
-  paused: { labelKey: "pipeline.statusPaused", color: "warning" },
-  completed: { labelKey: "pipeline.statusCompleted", color: "success" },
-  failed: { labelKey: "pipeline.statusFailed", color: "error" },
-  cancelled: { labelKey: "pipeline.statusCancelled", color: "default" },
-};
-
-const STEP_I18N_KEYS: Record<StepType, string> = {
-  collect: "pipeline.stageCollecting",
-  extract_features: "pipeline.stageExtractingFeatures",
-  extract_plans: "pipeline.stageExtractingPlans",
-  extract_scenarios: "pipeline.stageExtractingScenarios",
-  generate_proposal: "pipeline.stageGenerateProposal",
-};
+import { STEP_I18N_KEYS } from "@/domains/engine/features/engine-run/engine-run.utils";
 
 const STAGE_COLORS = {
   completed: "success.main",
@@ -55,13 +31,6 @@ const STAGE_COLORS = {
   error: "error.main",
   pending: "grey.200",
 } as const;
-
-const CONNECTOR_ICONS: Record<string, React.ElementType> = {
-  github: GitHubIcon,
-  jira: BugReportOutlinedIcon,
-  confluence: DescriptionOutlinedIcon,
-};
-const DEFAULT_CONNECTOR_ICON = SourceOutlinedIcon;
 
 function formatDuration(start?: string, end?: string): string | null {
   if (!start) return null;
@@ -81,7 +50,7 @@ interface PipelineCardProps {
 export function PipelineCard({ job }: PipelineCardProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const chipInfo = STATUS_CHIP[job.status] ?? {
+  const chipInfo = STATUS_LABELS[job.status] ?? {
     labelKey: job.status,
     color: "default" as const,
   };
@@ -91,7 +60,7 @@ export function PipelineCard({ job }: PipelineCardProps) {
   const steps = job.steps ?? [];
   const activeStep = steps.find((s) => s.status === "running");
   const activeStepLabel = activeStep
-    ? t(STEP_I18N_KEYS[activeStep.stepType])
+    ? t(STEP_I18N_KEYS[activeStep.stepType].label)
     : null;
 
   return (
@@ -234,7 +203,7 @@ export function PipelineCard({ job }: PipelineCardProps) {
                     ? "error"
                     : "pending"
               : "pending";
-            const i18nKey = STEP_I18N_KEYS[pipelineStep.stepType];
+            const i18nKey = STEP_I18N_KEYS[pipelineStep.stepType].label;
             return (
               <Tooltip
                 key={pipelineStep.stepType}

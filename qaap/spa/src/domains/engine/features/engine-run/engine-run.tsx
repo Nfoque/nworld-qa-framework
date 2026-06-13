@@ -1,14 +1,11 @@
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import BugReportOutlinedIcon from "@mui/icons-material/BugReportOutlined";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CircleOutlinedIcon from "@mui/icons-material/CircleOutlined";
 import DataObjectIcon from "@mui/icons-material/DataObject";
-import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import ErrorIcon from "@mui/icons-material/Error";
 import FactCheckOutlinedIcon from "@mui/icons-material/FactCheckOutlined";
-import GitHubIcon from "@mui/icons-material/GitHub";
 import LayersOutlinedIcon from "@mui/icons-material/LayersOutlined";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutlineOutlined";
 import RadioButtonCheckedIcon from "@mui/icons-material/RadioButtonChecked";
@@ -33,7 +30,6 @@ import { useJob } from "./engine-run.service";
 import {
   PIPELINE_STEPS,
   type EngineJobStep,
-  type JobStatus,
   type ProposalData,
 } from "./engine-run.types";
 import {
@@ -48,29 +44,12 @@ import { MetricBox } from "./metric-box";
 import { StepDataModal } from "./step-data-modal";
 import { StepDuration } from "./step-duration";
 
+import {
+  CONNECTOR_ICONS,
+  STATUS_LABELS,
+} from "@/domains/engine/engine.constants";
 import { isInProgress } from "@/domains/engine/features/pipeline-list/pipeline-list.service";
 import { useLiveDuration } from "@/shared/hooks/use-live-duration";
-
-const STATUS_LABELS: Record<
-  JobStatus,
-  {
-    labelKey: string;
-    color: "default" | "primary" | "success" | "warning" | "error";
-  }
-> = {
-  queued: { labelKey: "pipeline.statusQueued", color: "default" },
-  running: { labelKey: "pipeline.statusRunning", color: "primary" },
-  paused: { labelKey: "pipeline.statusPaused", color: "warning" },
-  completed: { labelKey: "pipeline.statusCompleted", color: "success" },
-  failed: { labelKey: "pipeline.statusFailed", color: "error" },
-  cancelled: { labelKey: "pipeline.statusCancelled", color: "default" },
-};
-
-const CONNECTOR_ICONS: Record<string, React.ElementType> = {
-  github: GitHubIcon,
-  jira: BugReportOutlinedIcon,
-  confluence: DescriptionOutlinedIcon,
-};
 
 export function EngineRun() {
   const { t } = useTranslation();

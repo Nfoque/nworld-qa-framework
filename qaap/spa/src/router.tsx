@@ -10,7 +10,8 @@ import { EngineRun } from "@/domains/engine/features/engine-run/engine-run";
 import { PipelineList } from "@/domains/engine/features/pipeline-list/pipeline-list";
 import { ConnectorList } from "@/domains/knowledge-base/features/connector-list/connector-list";
 import { KnowledgeBase } from "@/domains/knowledge-base/features/knowledge-base/knowledge-base";
-import { AuthenticatedGuard, LoginGuard } from "@/shared/auth/route-guards";
+import { AuthenticatedGuard } from "@/shared/auth/authenticated-guard";
+import { LoginGuard } from "@/shared/auth/login-guard";
 
 const rootRoute = createRootRoute({
   component: () => <Outlet />,

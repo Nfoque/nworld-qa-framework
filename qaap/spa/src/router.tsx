@@ -53,7 +53,7 @@ const pipelinesRoute = createRoute({
   component: PipelineList,
 });
 
-const engineRunRoute = createRoute({
+export const engineRunRoute = createRoute({
   getParentRoute: () => authenticatedRoute,
   path: "/engine/$jobId",
   component: EngineRun,

@@ -46,11 +46,12 @@ import { StepDuration } from "./step-duration";
 import { SourceChips } from "@/domains/engine/components/source-chips";
 import { STATUS_LABELS } from "@/domains/engine/engine.constants";
 import { isInProgress } from "@/domains/engine/features/pipeline-list/pipeline-list.service";
+import { engineRunRoute } from "@/router";
 import { useLiveDuration } from "@/shared/hooks/use-live-duration";
 
 export function EngineRun() {
   const { t } = useTranslation();
-  const { jobId } = useParams({ strict: false }) as { jobId: string };
+  const { jobId } = useParams({ from: engineRunRoute.id });
   const navigate = useNavigate();
   const { data: job, isLoading } = useJob(jobId);
   const running = job ? isInProgress(job.status) : false;

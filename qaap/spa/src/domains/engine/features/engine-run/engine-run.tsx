@@ -46,12 +46,12 @@ import { StepDuration } from "./step-duration";
 import { SourceChips } from "@/domains/engine/components/source-chips";
 import { STATUS_LABELS } from "@/domains/engine/engine.constants";
 import { isInProgress } from "@/domains/engine/features/pipeline-list/pipeline-list.service";
-import { engineRunRoute } from "@/router";
+import { pipelineDetailRoute } from "@/router";
 import { useLiveDuration } from "@/shared/hooks/use-live-duration";
 
 export function EngineRun() {
   const { t } = useTranslation();
-  const { jobId } = useParams({ from: engineRunRoute.id });
+  const { jobId } = useParams({ from: pipelineDetailRoute.id });
   const navigate = useNavigate();
   const { data: job, isLoading } = useJob(jobId);
   const running = job ? isInProgress(job.status) : false;
@@ -460,7 +460,7 @@ export function EngineRun() {
                 startIcon={<FactCheckOutlinedIcon />}
                 onClick={() =>
                   navigate({
-                    to: "/engine/$jobId/review",
+                    to: "/pipelines/$jobId/review",
                     params: { jobId: job.id },
                   })
                 }

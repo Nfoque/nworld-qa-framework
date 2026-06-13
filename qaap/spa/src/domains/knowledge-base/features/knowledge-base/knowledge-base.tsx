@@ -150,7 +150,7 @@ export function KnowledgeBase() {
           ];
           createJob.mutate(sources, {
             onSuccess: (job) => {
-              navigate({ to: "/engine/$jobId", params: { jobId: job.id } });
+              navigate({ to: "/pipelines/$jobId", params: { jobId: job.id } });
             },
           });
         }}

@@ -53,10 +53,16 @@ const pipelinesRoute = createRoute({
   component: PipelineList,
 });
 
-export const engineRunRoute = createRoute({
+export const pipelineDetailRoute = createRoute({
   getParentRoute: () => authenticatedRoute,
-  path: "/engine/$jobId",
+  path: "/pipelines/$jobId",
   component: EngineRun,
+});
+
+const pipelineReviewRoute = createRoute({
+  getParentRoute: () => authenticatedRoute,
+  path: "/pipelines/$jobId/review",
+  component: () => <div>Review (coming soon)</div>,
 });
 
 const routeTree = rootRoute.addChildren([
@@ -66,7 +72,8 @@ const routeTree = rootRoute.addChildren([
     connectorsRoute,
     knowledgeBaseRoute,
     pipelinesRoute,
-    engineRunRoute,
+    pipelineDetailRoute,
+    pipelineReviewRoute,
   ]),
 ]);
 

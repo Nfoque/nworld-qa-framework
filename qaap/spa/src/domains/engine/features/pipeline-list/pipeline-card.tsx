@@ -77,7 +77,7 @@ export function PipelineCard({ job }: PipelineCardProps) {
     >
       <CardActionArea
         onClick={() =>
-          navigate({ to: "/engine/$jobId", params: { jobId: job.id } })
+          navigate({ to: "/pipelines/$jobId", params: { jobId: job.id } })
         }
         sx={{ p: 2.5 }}
       >
@@ -262,7 +262,7 @@ export function PipelineCard({ job }: PipelineCardProps) {
             }
             onClick={() =>
               navigate({
-                to: "/engine/$jobId/review" as string,
+                to: "/pipelines/$jobId/review",
                 params: { jobId: job.id },
               })
             }

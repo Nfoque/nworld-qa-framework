@@ -20,6 +20,7 @@ import { PipelineListEmpty } from "./pipeline-list-empty";
 import { useJobs } from "./pipeline-list.service";
 
 import { StatCard } from "@/shared/components/stat-card";
+import { FILTER_TABS_SX } from "@/shared/theme/tab-styles";
 
 type FilterTab =
   | "all"
@@ -109,18 +110,7 @@ export function PipelineList() {
       <Tabs
         value={filter}
         onChange={(_, val: FilterTab) => setFilter(val)}
-        sx={{
-          mb: 2.5,
-          minHeight: 36,
-          "& .MuiTab-root": {
-            minHeight: 36,
-            textTransform: "none",
-            fontSize: 13,
-            fontWeight: 500,
-            py: 0,
-          },
-          "& .MuiTabs-indicator": { height: 2 },
-        }}
+        sx={FILTER_TABS_SX}
       >
         <Tab label={t("pipelines.tabAll")} value="all" />
         <Tab label={t("pipelines.tabQueued")} value="queued" />

@@ -1,33 +1,24 @@
-import {
-  createServiceClient,
-  createSupabaseClient,
-  getAuthUser,
-} from "../_shared/client.ts";
-import { error, ok, preflight } from "../_shared/response.ts";
-import { resolveTenantId } from "../_shared/tenant.ts";
+import { authenticateAndResolveTenant } from "../_shared/auth.ts";
+import { error, ok, parseBody, preflight } from "../_shared/response.ts";
 import { validateGitHubToken } from "../_shared/connectors/github.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return preflight();
   if (req.method !== "POST") return error("METHOD_NOT_ALLOWED", 405);
 
-  const client = createSupabaseClient(req);
-  const user = await getAuthUser(client, req);
-  if (!user) return error("UNAUTHORIZED", 401);
+  const auth = await authenticateAndResolveTenant(req);
+  if (auth instanceof Response) return auth;
 
-  const serviceClient = createServiceClient();
-  const resolved = await resolveTenantId(serviceClient, user.id, req);
-  if (!resolved) return error("NO_TENANT", 403);
-
-  const body = await req.json();
+  const body = await parseBody(req);
+  if (body instanceof Response) return body;
   const { connectorId, credentials: rawCredentials } = body;
   if (!connectorId) return error("MISSING_FIELD: connectorId required", 400);
 
-  const { data: connector } = await serviceClient
+  const { data: connector } = await auth.serviceClient
     .from("connector_configs")
     .select("*")
     .eq("connector_id", connectorId)
-    .eq("tenant_id", resolved.tenantId)
+    .eq("tenant_id", auth.tenantId)
     .single();
 
   const token = rawCredentials?.token ?? connector?.credentials?.token;
@@ -53,7 +44,7 @@ Deno.serve(async (req) => {
   }
 
   if (connector) {
-    await serviceClient
+    const { error: updateErr } = await auth.serviceClient
       .from("connector_configs")
       .update({
         status: newStatus,
@@ -61,6 +52,8 @@ Deno.serve(async (req) => {
         last_tested_at: new Date().toISOString(),
       })
       .eq("id", connector.id);
+
+    if (updateErr) return error(updateErr.message, 500);
   }
 
   return ok({

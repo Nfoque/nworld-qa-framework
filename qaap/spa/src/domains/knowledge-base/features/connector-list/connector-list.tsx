@@ -17,7 +17,9 @@ import { ConnectorCard } from "./connector-card";
 import { useConnectors } from "./connector-list.service";
 import type { UiConnectorStatus } from "./connector-list.types";
 
+import { EmptyState } from "@/shared/components/empty-state";
 import { StatCard } from "@/shared/components/stat-card";
+import { FILTER_TABS_SX } from "@/shared/theme/tab-styles";
 
 type FilterTab = "all" | UiConnectorStatus;
 
@@ -89,18 +91,7 @@ export function ConnectorList() {
       <Tabs
         value={filter}
         onChange={(_, val: FilterTab) => setFilter(val)}
-        sx={{
-          mb: 2.5,
-          minHeight: 36,
-          "& .MuiTab-root": {
-            minHeight: 36,
-            textTransform: "none",
-            fontSize: 13,
-            fontWeight: 500,
-            py: 0,
-          },
-          "& .MuiTabs-indicator": { height: 2 },
-        }}
+        sx={FILTER_TABS_SX}
       >
         <Tab label={t("connectors.tabAll")} value="all" />
         <Tab label={t("connectors.tabConnected")} value="connected" />
@@ -121,16 +112,18 @@ export function ConnectorList() {
       )}
 
       {!isLoading && !error && filtered.length === 0 && (
-        <Box sx={{ textAlign: "center", py: 8 }}>
-          <CableOutlinedIcon
-            sx={{ fontSize: 48, color: "text.disabled", mb: 1 }}
-          />
-          <Typography variant="body1" color="text.secondary">
-            {filter === "all"
+        <EmptyState
+          icon={
+            <CableOutlinedIcon
+              sx={{ fontSize: 48, color: "text.disabled", mb: 1 }}
+            />
+          }
+          title={
+            filter === "all"
               ? t("connectors.emptyAll")
-              : t("connectors.emptyFiltered")}
-          </Typography>
-        </Box>
+              : t("connectors.emptyFiltered")
+          }
+        />
       )}
 
       <Box

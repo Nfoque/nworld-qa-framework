@@ -1,28 +1,20 @@
-import {
-  createServiceClient,
-  createSupabaseClient,
-  getAuthUser,
-} from "../_shared/client.ts";
-import { error, ok, preflight } from "../_shared/response.ts";
-import { resolveTenantId } from "../_shared/tenant.ts";
+import { authenticateAndResolveTenant } from "../_shared/auth.ts";
+import { toConnectorDto } from "../_shared/connectors/dto.ts";
+import { error, ok, parseBody, preflight } from "../_shared/response.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return preflight();
   if (req.method !== "POST") return error("METHOD_NOT_ALLOWED", 405);
 
-  const client = createSupabaseClient(req);
-  const user = await getAuthUser(client, req);
-  if (!user) return error("UNAUTHORIZED", 401);
+  const auth = await authenticateAndResolveTenant(req);
+  if (auth instanceof Response) return auth;
 
-  const serviceClient = createServiceClient();
-  const resolved = await resolveTenantId(serviceClient, user.id, req);
-  if (!resolved) return error("NO_TENANT", 403);
-
-  if (!["superadmin", "admin", "editor"].includes(resolved.role)) {
+  if (!["superadmin", "admin", "editor"].includes(auth.role)) {
     return error("FORBIDDEN", 403);
   }
 
-  const body = await req.json();
+  const body = await parseBody(req);
+  if (body instanceof Response) return body;
   const {
     connectorId,
     category,
@@ -39,10 +31,10 @@ Deno.serve(async (req) => {
     );
   }
 
-  const { data, error: dbErr } = await serviceClient
+  const { data, error: dbErr } = await auth.serviceClient
     .from("connector_configs")
     .insert({
-      tenant_id: resolved.tenantId,
+      tenant_id: auth.tenantId,
       connector_id: connectorId,
       category,
       display_name: displayName,
@@ -61,20 +53,5 @@ Deno.serve(async (req) => {
     return error(dbErr.message, 500);
   }
 
-  return ok({
-    id: data.id,
-    tenantId: data.tenant_id,
-    connectorId: data.connector_id,
-    category: data.category,
-    displayName: data.display_name,
-    description: data.description,
-    config: data.config,
-    hasCredentials: !!data.credentials,
-    status: data.status,
-    statusMessage: data.status_message,
-    lastSyncedAt: data.last_synced_at,
-    lastTestedAt: data.last_tested_at,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
-  });
+  return ok(toConnectorDto(data));
 });

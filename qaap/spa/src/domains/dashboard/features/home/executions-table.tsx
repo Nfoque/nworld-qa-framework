@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import type { Execution } from "./home.types";
 
 import { StatusBadge } from "@/shared/components/status-badge";
+import { TABLE_HEADER_SX } from "@/shared/theme/table-styles";
 
 interface ExecutionsTableProps {
   executions: Execution[];
@@ -23,27 +24,19 @@ interface ExecutionsTableProps {
 export function ExecutionsTable({ executions }: ExecutionsTableProps) {
   const { t } = useTranslation();
 
-  const headerSx = {
-    fontWeight: 600,
-    fontSize: 11,
-    textTransform: "uppercase" as const,
-    letterSpacing: "0.04em",
-    color: "text.secondary",
-  };
-
   return (
     <TableContainer>
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell sx={headerSx}>{t("tables.status")}</TableCell>
-            <TableCell sx={headerSx}>{t("tables.env")}</TableCell>
-            <TableCell sx={headerSx}>{t("tables.date")}</TableCell>
-            <TableCell sx={{ ...headerSx, minWidth: 160 }}>
+            <TableCell sx={TABLE_HEADER_SX}>{t("tables.status")}</TableCell>
+            <TableCell sx={TABLE_HEADER_SX}>{t("tables.env")}</TableCell>
+            <TableCell sx={TABLE_HEADER_SX}>{t("tables.date")}</TableCell>
+            <TableCell sx={{ ...TABLE_HEADER_SX, minWidth: 160 }}>
               {t("tables.passRate")}
             </TableCell>
-            <TableCell sx={headerSx}>{t("tables.duration")}</TableCell>
-            <TableCell sx={headerSx}>{t("tables.trigger")}</TableCell>
+            <TableCell sx={TABLE_HEADER_SX}>{t("tables.duration")}</TableCell>
+            <TableCell sx={TABLE_HEADER_SX}>{t("tables.trigger")}</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>

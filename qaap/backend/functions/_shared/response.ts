@@ -20,3 +20,12 @@ export function error(
     status,
   });
 }
+
+// deno-lint-ignore no-explicit-any
+export async function parseBody(req: Request): Promise<any | Response> {
+  try {
+    return await req.json();
+  } catch {
+    return error("INVALID_JSON", 400);
+  }
+}

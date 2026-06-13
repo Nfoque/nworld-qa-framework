@@ -7,10 +7,11 @@ import { error, ok, preflight } from "../_shared/response.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return preflight();
+  if (req.method !== "GET") return error("METHOD_NOT_ALLOWED", 405);
 
   const client = createSupabaseClient(req);
   const user = await getAuthUser(client, req);
-  if (!user) return error("USER_NOT_ALLOWED", 401);
+  if (!user) return error("UNAUTHORIZED", 401);
 
   const serviceClient = createServiceClient();
   const { data: profile, error: profileErr } = await serviceClient

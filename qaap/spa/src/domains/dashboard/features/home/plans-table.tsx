@@ -15,6 +15,7 @@ import type { TestPlan } from "./home.types";
 import { HealthIndicator } from "@/shared/components/health-indicator";
 import { ModalityBadge } from "@/shared/components/modality-badge";
 import { StatusBadge } from "@/shared/components/status-badge";
+import { TABLE_HEADER_SX } from "@/shared/theme/table-styles";
 
 interface PlansTableProps {
   plans: TestPlan[];
@@ -23,30 +24,22 @@ interface PlansTableProps {
 export function PlansTable({ plans }: PlansTableProps) {
   const { t } = useTranslation();
 
-  const headerSx = {
-    fontWeight: 600,
-    fontSize: 11,
-    textTransform: "uppercase" as const,
-    letterSpacing: "0.04em",
-    color: "text.secondary",
-  };
-
   return (
     <TableContainer>
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell sx={headerSx}>{t("tables.name")}</TableCell>
-            <TableCell sx={headerSx}>{t("tables.type")}</TableCell>
-            <TableCell sx={headerSx}>{t("tables.status")}</TableCell>
-            <TableCell align="right" sx={headerSx}>
+            <TableCell sx={TABLE_HEADER_SX}>{t("tables.name")}</TableCell>
+            <TableCell sx={TABLE_HEADER_SX}>{t("tables.type")}</TableCell>
+            <TableCell sx={TABLE_HEADER_SX}>{t("tables.status")}</TableCell>
+            <TableCell align="right" sx={TABLE_HEADER_SX}>
               {t("tables.scenarios")}
             </TableCell>
-            <TableCell align="right" sx={headerSx}>
+            <TableCell align="right" sx={TABLE_HEADER_SX}>
               {t("tables.passRate")}
             </TableCell>
-            <TableCell sx={headerSx}>{t("tables.health")}</TableCell>
-            <TableCell sx={headerSx}>{t("tables.updated")}</TableCell>
+            <TableCell sx={TABLE_HEADER_SX}>{t("tables.health")}</TableCell>
+            <TableCell sx={TABLE_HEADER_SX}>{t("tables.updated")}</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>

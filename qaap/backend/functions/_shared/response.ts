@@ -1,22 +1,23 @@
-import { corsHeaders } from "./cors.ts";
+import { getCorsHeaders } from "./cors.ts";
 
-export function preflight(): Response {
-  return new Response("ok", { headers: corsHeaders });
+export function preflight(req: Request): Response {
+  return new Response("ok", { headers: getCorsHeaders(req) });
 }
 
-export function ok<T>(data: T): Response {
+export function ok<T>(req: Request, data: T): Response {
   return new Response(JSON.stringify(data), {
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     status: 200,
   });
 }
 
 export function error(
+  req: Request,
   message: string,
   status: number = 400,
 ): Response {
   return new Response(JSON.stringify({ error: message }), {
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...getCorsHeaders(req), "Content-Type": "application/json" },
     status,
   });
 }
@@ -26,6 +27,6 @@ export async function parseBody(req: Request): Promise<any | Response> {
   try {
     return await req.json();
   } catch {
-    return error("INVALID_JSON", 400);
+    return error(req, "INVALID_JSON", 400);
   }
 }

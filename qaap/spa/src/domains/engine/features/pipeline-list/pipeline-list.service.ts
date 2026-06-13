@@ -8,7 +8,11 @@ export function useJobs() {
     queryKey: ["engine-jobs"],
     queryFn: () =>
       invokeFunction<EngineJob[]>("list-engine-jobs", { method: "POST" }),
-    refetchInterval: 60000,
+    refetchInterval: (query) => {
+      const jobs = query.state.data;
+      if (!jobs?.some((j) => isInProgress(j.status))) return false;
+      return 10000;
+    },
   });
 }
 

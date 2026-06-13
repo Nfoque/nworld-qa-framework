@@ -16,14 +16,15 @@ import { useTranslation } from "react-i18next";
 
 import { isInProgress } from "./pipeline-list.service";
 
-import {
-  CONNECTOR_ICONS,
-  DEFAULT_CONNECTOR_ICON,
-  STATUS_LABELS,
-} from "@/domains/engine/engine.constants";
+import { SourceChips } from "@/domains/engine/components/source-chips";
+import { STATUS_LABELS } from "@/domains/engine/engine.constants";
 import type { EngineJob } from "@/domains/engine/features/engine-run/engine-run.types";
 import { PIPELINE_STEPS } from "@/domains/engine/features/engine-run/engine-run.types";
-import { STEP_I18N_KEYS } from "@/domains/engine/features/engine-run/engine-run.utils";
+import {
+  STEP_I18N_KEYS,
+  getStepState,
+} from "@/domains/engine/features/engine-run/engine-run.utils";
+import { formatMs } from "@/shared/utils/format";
 
 const STAGE_COLORS = {
   completed: "success.main",
@@ -36,11 +37,7 @@ function formatDuration(start?: string, end?: string): string | null {
   if (!start) return null;
   const s = new Date(start).getTime();
   const e = end ? new Date(end).getTime() : Date.now();
-  const diffMs = e - s;
-  const mins = Math.floor(diffMs / 60000);
-  const secs = Math.floor((diffMs % 60000) / 1000);
-  if (mins === 0) return `${secs}s`;
-  return `${mins}m ${secs}s`;
+  return formatMs(e - s);
 }
 
 interface PipelineCardProps {
@@ -163,30 +160,9 @@ export function PipelineCard({ job }: PipelineCardProps) {
         </Stack>
 
         {/* Row 2: Source chips */}
-        <Stack
-          direction="row"
-          spacing={0.75}
-          sx={{ flexWrap: "wrap", gap: 0.5, mb: 1.5 }}
-        >
-          {job.selectedSources.flatMap((s) => {
-            const Icon = CONNECTOR_ICONS[s.connector] ?? DEFAULT_CONNECTOR_ICON;
-            return s.items.map((item) => (
-              <Chip
-                key={`${s.connector}:${item}`}
-                icon={<Icon sx={{ fontSize: "14px !important" }} />}
-                label={item}
-                size="small"
-                variant="outlined"
-                sx={{
-                  fontSize: 12,
-                  height: 26,
-                  fontWeight: 500,
-                  "& .MuiChip-icon": { ml: 0.5 },
-                }}
-              />
-            ));
-          })}
-        </Stack>
+        <Box sx={{ mb: 1.5 }}>
+          <SourceChips sources={job.selectedSources} />
+        </Box>
 
         {/* Row 3: Segmented progress bar based on steps */}
         <Stack direction="row" spacing={0.5} sx={{ mb: 1.5 }}>
@@ -194,15 +170,7 @@ export function PipelineCard({ job }: PipelineCardProps) {
             const step = steps.find(
               (s) => s.stepType === pipelineStep.stepType,
             );
-            const state = step
-              ? step.status === "completed"
-                ? "completed"
-                : step.status === "running"
-                  ? "active"
-                  : step.status === "failed"
-                    ? "error"
-                    : "pending"
-              : "pending";
+            const state = getStepState(step);
             const i18nKey = STEP_I18N_KEYS[pipelineStep.stepType].label;
             return (
               <Tooltip

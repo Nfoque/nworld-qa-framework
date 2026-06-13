@@ -1,17 +1,16 @@
-import { authenticateAndResolveTenant } from "../_shared/auth.ts";
+import { authenticateAndResolveTenant, requireRole } from "../_shared/auth.ts";
 import { toConnectorDto } from "../_shared/connectors/dto.ts";
 import { error, ok, parseBody, preflight } from "../_shared/response.ts";
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return preflight();
-  if (req.method !== "POST") return error("METHOD_NOT_ALLOWED", 405);
+  if (req.method === "OPTIONS") return preflight(req);
+  if (req.method !== "POST") return error(req, "METHOD_NOT_ALLOWED", 405);
 
   const auth = await authenticateAndResolveTenant(req);
   if (auth instanceof Response) return auth;
 
-  if (!["superadmin", "admin", "editor"].includes(auth.role)) {
-    return error("FORBIDDEN", 403);
-  }
+  const denied = requireRole(req, auth, "superadmin", "admin", "editor");
+  if (denied) return denied;
 
   const body = await parseBody(req);
   if (body instanceof Response) return body;
@@ -26,6 +25,7 @@ Deno.serve(async (req) => {
 
   if (!connectorId || !category || !displayName) {
     return error(
+      req,
       "MISSING_FIELDS: connectorId, category, displayName required",
       400,
     );
@@ -48,10 +48,10 @@ Deno.serve(async (req) => {
 
   if (dbErr) {
     if (dbErr.code === "23505") {
-      return error("CONNECTOR_ALREADY_EXISTS", 409);
+      return error(req, "CONNECTOR_ALREADY_EXISTS", 409);
     }
-    return error(dbErr.message, 500);
+    return error(req, dbErr.message, 500);
   }
 
-  return ok(toConnectorDto(data));
+  return ok(req, toConnectorDto(data));
 });

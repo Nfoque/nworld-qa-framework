@@ -216,6 +216,16 @@
     "avgConfidence": "Confianza Media",
     "coverageGaps": "{{count}} hueco de cobertura detectado",
     "coverageGaps_plural": "{{count}} huecos de cobertura detectados",
-    "topPlans": "Top Planes por Confianza"
+    "topPlans": "Top Planes por Confianza",
+    "summaryProcessingChunks": "Procesando {{count}} chunks…",
+    "summaryProcessingFeatures": "Procesando {{count}} features…",
+    "summaryProcessingAreas": "Procesando {{count}} áreas de test…",
+    "summaryAssemblingScenarios": "Ensamblando {{count}} escenarios…",
+    "summaryCollected": "{{chunks}} chunks · {{sources}} fuente",
+    "summaryCollected_plural": "{{chunks}} chunks · {{sources}} fuentes",
+    "summaryFeatures": "{{count}} features · {{confidence}}% confianza media",
+    "summaryTestAreas": "{{count}} áreas de test",
+    "summaryScenarios": "{{count}} escenarios · {{confidence}}% confianza media",
+    "summaryProposal": "{{plans}} test plans · {{scenarios}} escenarios"
   }
 }

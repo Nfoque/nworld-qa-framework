@@ -216,6 +216,16 @@
     "avgConfidence": "Avg Confidence",
     "coverageGaps": "{{count}} coverage gap detected",
     "coverageGaps_plural": "{{count}} coverage gaps detected",
-    "topPlans": "Top Plans by Confidence"
+    "topPlans": "Top Plans by Confidence",
+    "summaryProcessingChunks": "Processing {{count}} chunks…",
+    "summaryProcessingFeatures": "Processing {{count}} features…",
+    "summaryProcessingAreas": "Processing {{count}} test areas…",
+    "summaryAssemblingScenarios": "Assembling {{count}} scenarios…",
+    "summaryCollected": "{{chunks}} chunks · {{sources}} source",
+    "summaryCollected_plural": "{{chunks}} chunks · {{sources}} sources",
+    "summaryFeatures": "{{count}} features · {{confidence}}% avg confidence",
+    "summaryTestAreas": "{{count}} test areas",
+    "summaryScenarios": "{{count}} scenarios · {{confidence}}% avg confidence",
+    "summaryProposal": "{{plans}} test plans · {{scenarios}} scenarios"
   }
 }

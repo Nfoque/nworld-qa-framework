@@ -9,7 +9,6 @@ import FactCheckOutlinedIcon from "@mui/icons-material/FactCheckOutlined";
 import LayersOutlinedIcon from "@mui/icons-material/LayersOutlined";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutlineOutlined";
 import RadioButtonCheckedIcon from "@mui/icons-material/RadioButtonChecked";
-import SourceOutlinedIcon from "@mui/icons-material/SourceOutlined";
 import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
 import {
   Avatar,
@@ -44,10 +43,8 @@ import { MetricBox } from "./metric-box";
 import { StepDataModal } from "./step-data-modal";
 import { StepDuration } from "./step-duration";
 
-import {
-  CONNECTOR_ICONS,
-  STATUS_LABELS,
-} from "@/domains/engine/engine.constants";
+import { SourceChips } from "@/domains/engine/components/source-chips";
+import { STATUS_LABELS } from "@/domains/engine/engine.constants";
 import { isInProgress } from "@/domains/engine/features/pipeline-list/pipeline-list.service";
 import { useLiveDuration } from "@/shared/hooks/use-live-duration";
 
@@ -445,7 +442,7 @@ export function EngineRun() {
                                 : "success.dark",
                           }}
                         >
-                          {summary}
+                          {t(summary.key, summary.params)}
                         </Typography>
                       )}
                     </Box>
@@ -705,27 +702,7 @@ export function EngineRun() {
               >
                 {t("pipeline.selectedSources")}
               </Typography>
-              <Stack direction="row" sx={{ flexWrap: "wrap", gap: 0.75 }}>
-                {job.selectedSources.flatMap((source) => {
-                  const Icon =
-                    CONNECTOR_ICONS[source.connector] ?? SourceOutlinedIcon;
-                  return source.items.map((item) => (
-                    <Chip
-                      key={`${source.connector}:${item}`}
-                      icon={<Icon sx={{ fontSize: "14px !important" }} />}
-                      label={item}
-                      size="small"
-                      variant="outlined"
-                      sx={{
-                        fontSize: 12,
-                        fontWeight: 500,
-                        height: 28,
-                        "& .MuiChip-icon": { ml: 0.5 },
-                      }}
-                    />
-                  ));
-                })}
-              </Stack>
+              <SourceChips sources={job.selectedSources} />
             </CardContent>
           </Card>
         </Stack>

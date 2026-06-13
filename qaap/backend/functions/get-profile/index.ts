@@ -6,12 +6,12 @@ import {
 import { error, ok, preflight } from "../_shared/response.ts";
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return preflight();
-  if (req.method !== "GET") return error("METHOD_NOT_ALLOWED", 405);
+  if (req.method === "OPTIONS") return preflight(req);
+  if (req.method !== "GET") return error(req, "METHOD_NOT_ALLOWED", 405);
 
   const client = createSupabaseClient(req);
   const user = await getAuthUser(client, req);
-  if (!user) return error("UNAUTHORIZED", 401);
+  if (!user) return error(req, "UNAUTHORIZED", 401);
 
   const serviceClient = createServiceClient();
   const { data: profile, error: profileErr } = await serviceClient
@@ -20,9 +20,9 @@ Deno.serve(async (req) => {
     .eq("id", user.id)
     .single();
 
-  if (profileErr || !profile) return error("PROFILE_NOT_FOUND", 404);
+  if (profileErr || !profile) return error(req, "PROFILE_NOT_FOUND", 404);
 
-  return ok({
+  return ok(req, {
     id: profile.id,
     email: profile.email,
     name: profile.name,

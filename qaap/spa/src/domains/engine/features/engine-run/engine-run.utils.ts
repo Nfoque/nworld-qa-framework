@@ -25,31 +25,50 @@ export function getProgress(steps: EngineJobStep[]): {
   return { current: completed, total: PIPELINE_STEPS.length };
 }
 
-export function getStepSummary(step: EngineJobStep | undefined): string | null {
+export interface StepSummaryI18n {
+  key: string;
+  params: Record<string, unknown>;
+}
+
+export function getStepSummary(
+  step: EngineJobStep | undefined,
+): StepSummaryI18n | null {
   if (!step) return null;
   const { status, stepType, output, input } = step;
 
+  const arrLen = (obj: Record<string, unknown>, key: string) => {
+    const arr = obj[key];
+    return Array.isArray(arr) ? arr.length : 0;
+  };
+
   if (status === "running" && input) {
-    const len = (obj: Record<string, unknown>, key: string) => {
-      const arr = obj[key];
-      return Array.isArray(arr) ? arr.length : 0;
-    };
     switch (stepType) {
       case "extract_features": {
-        const n = len(input, "raw_chunks");
-        return n ? `Processing ${n} chunks…` : null;
+        const n = arrLen(input, "raw_chunks");
+        return n
+          ? { key: "pipeline.summaryProcessingChunks", params: { count: n } }
+          : null;
       }
       case "extract_plans": {
-        const n = len(input, "features");
-        return n ? `Processing ${n} features…` : null;
+        const n = arrLen(input, "features");
+        return n
+          ? { key: "pipeline.summaryProcessingFeatures", params: { count: n } }
+          : null;
       }
       case "extract_scenarios": {
-        const n = len(input, "test_areas");
-        return n ? `Processing ${n} test areas…` : null;
+        const n = arrLen(input, "test_areas");
+        return n
+          ? { key: "pipeline.summaryProcessingAreas", params: { count: n } }
+          : null;
       }
       case "generate_proposal": {
-        const n = len(input, "scenarios");
-        return n ? `Assembling ${n} scenarios…` : null;
+        const n = arrLen(input, "scenarios");
+        return n
+          ? {
+              key: "pipeline.summaryAssemblingScenarios",
+              params: { count: n },
+            }
+          : null;
       }
       default:
         return null;
@@ -57,10 +76,6 @@ export function getStepSummary(step: EngineJobStep | undefined): string | null {
   }
 
   if (status === "completed" && output) {
-    const len = (key: string) => {
-      const arr = output[key];
-      return Array.isArray(arr) ? arr.length : 0;
-    };
     const avgConf = (key: string) => {
       const arr = output[key];
       if (!Array.isArray(arr) || !arr.length) return 0;
@@ -75,29 +90,40 @@ export function getStepSummary(step: EngineJobStep | undefined): string | null {
     };
     switch (stepType) {
       case "collect": {
-        const n = len("raw_chunks");
+        const n = arrLen(output, "raw_chunks");
         if (!n) return null;
         const sources = new Set(
           (output.raw_chunks as Array<Record<string, unknown>>).map(
             (c) => c.source,
           ),
         ).size;
-        return `${n} chunks · ${sources} source${sources !== 1 ? "s" : ""}`;
+        return {
+          key: "pipeline.summaryCollected",
+          params: { chunks: n, sources, count: sources },
+        };
       }
       case "extract_features": {
-        const n = len("features");
+        const n = arrLen(output, "features");
         return n
-          ? `${n} features · ${avgConf("features")}% avg confidence`
+          ? {
+              key: "pipeline.summaryFeatures",
+              params: { count: n, confidence: avgConf("features") },
+            }
           : null;
       }
       case "extract_plans": {
-        const n = len("test_areas");
-        return n ? `${n} test areas` : null;
+        const n = arrLen(output, "test_areas");
+        return n
+          ? { key: "pipeline.summaryTestAreas", params: { count: n } }
+          : null;
       }
       case "extract_scenarios": {
-        const n = len("scenarios");
+        const n = arrLen(output, "scenarios");
         return n
-          ? `${n} scenarios · ${avgConf("scenarios")}% avg confidence`
+          ? {
+              key: "pipeline.summaryScenarios",
+              params: { count: n, confidence: avgConf("scenarios") },
+            }
           : null;
       }
       case "generate_proposal": {
@@ -111,7 +137,9 @@ export function getStepSummary(step: EngineJobStep | undefined): string | null {
           typeof stats?.total_scenarios === "number"
             ? stats.total_scenarios
             : 0;
-        return plans ? `${plans} test plans · ${scenarios} scenarios` : null;
+        return plans
+          ? { key: "pipeline.summaryProposal", params: { plans, scenarios } }
+          : null;
       }
       default:
         return null;

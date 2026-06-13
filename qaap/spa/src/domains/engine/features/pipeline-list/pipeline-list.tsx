@@ -35,11 +35,15 @@ export function PipelineList() {
   const [filter, setFilter] = useState<FilterTab>("all");
   const { data: jobs = [], isLoading, error } = useJobs();
 
-  const queuedCount = jobs.filter((j) => j.status === "queued").length;
-  const inProgressCount = jobs.filter((j) => j.status === "running").length;
-  const pausedCount = jobs.filter((j) => j.status === "paused").length;
-  const completedCount = jobs.filter((j) => j.status === "completed").length;
-  const failedCount = jobs.filter((j) => j.status === "failed").length;
+  const counts = jobs.reduce<Record<string, number>>((acc, j) => {
+    acc[j.status] = (acc[j.status] ?? 0) + 1;
+    return acc;
+  }, {});
+  const queuedCount = counts.queued ?? 0;
+  const inProgressCount = counts.running ?? 0;
+  const pausedCount = counts.paused ?? 0;
+  const completedCount = counts.completed ?? 0;
+  const failedCount = counts.failed ?? 0;
 
   const filtered = jobs.filter((j) => {
     if (filter === "all") return true;

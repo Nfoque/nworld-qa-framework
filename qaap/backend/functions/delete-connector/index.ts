@@ -1,29 +1,30 @@
-import { authenticateAndResolveTenant } from "../_shared/auth.ts";
+import { authenticateAndResolveTenant, requireRole } from "../_shared/auth.ts";
 import { error, ok, parseBody, preflight } from "../_shared/response.ts";
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return preflight();
-  if (req.method !== "POST") return error("METHOD_NOT_ALLOWED", 405);
+  if (req.method === "OPTIONS") return preflight(req);
+  if (req.method !== "POST") return error(req, "METHOD_NOT_ALLOWED", 405);
 
   const auth = await authenticateAndResolveTenant(req);
   if (auth instanceof Response) return auth;
 
-  if (!["superadmin", "admin"].includes(auth.role)) {
-    return error("FORBIDDEN", 403);
-  }
+  const denied = requireRole(req, auth, "superadmin", "admin");
+  if (denied) return denied;
 
   const body = await parseBody(req);
   if (body instanceof Response) return body;
   const { id } = body;
-  if (!id) return error("MISSING_FIELD: id required", 400);
+  if (!id) return error(req, "MISSING_FIELD: id required", 400);
 
-  const { error: dbErr } = await auth.serviceClient
+  const { data, error: dbErr } = await auth.serviceClient
     .from("connector_configs")
     .delete()
     .eq("id", id)
-    .eq("tenant_id", auth.tenantId);
+    .eq("tenant_id", auth.tenantId)
+    .select("id")
+    .single();
 
-  if (dbErr) return error(dbErr.message, 500);
+  if (dbErr || !data) return error(req, "NOT_FOUND", 404);
 
-  return ok({ deleted: true });
+  return ok(req, { deleted: true });
 });

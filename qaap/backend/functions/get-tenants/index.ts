@@ -6,12 +6,12 @@ import {
 import { error, ok, preflight } from "../_shared/response.ts";
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return preflight();
-  if (req.method !== "GET") return error("METHOD_NOT_ALLOWED", 405);
+  if (req.method === "OPTIONS") return preflight(req);
+  if (req.method !== "GET") return error(req, "METHOD_NOT_ALLOWED", 405);
 
   const client = createSupabaseClient(req);
   const user = await getAuthUser(client, req);
-  if (!user) return error("UNAUTHORIZED", 401);
+  if (!user) return error(req, "UNAUTHORIZED", 401);
 
   const serviceClient = createServiceClient();
 
@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
     .single();
 
   if (profile?.role !== "superadmin") {
-    return error("FORBIDDEN", 403);
+    return error(req, "FORBIDDEN", 403);
   }
 
   const { data: tenants, error: dbErr } = await serviceClient
@@ -30,9 +30,10 @@ Deno.serve(async (req) => {
     .select("id, slug, name, branding, created_at")
     .order("name", { ascending: true });
 
-  if (dbErr) return error(dbErr.message, 500);
+  if (dbErr) return error(req, dbErr.message, 500);
 
   return ok(
+    req,
     (tenants ?? []).map((t) => ({
       id: t.id,
       slug: t.slug,

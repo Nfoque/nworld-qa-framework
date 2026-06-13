@@ -3,8 +3,8 @@ import { error, ok, parseBody, preflight } from "../_shared/response.ts";
 import { validateGitHubToken } from "../_shared/connectors/github.ts";
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return preflight();
-  if (req.method !== "POST") return error("METHOD_NOT_ALLOWED", 405);
+  if (req.method === "OPTIONS") return preflight(req);
+  if (req.method !== "POST") return error(req, "METHOD_NOT_ALLOWED", 405);
 
   const auth = await authenticateAndResolveTenant(req);
   if (auth instanceof Response) return auth;
@@ -12,7 +12,9 @@ Deno.serve(async (req) => {
   const body = await parseBody(req);
   if (body instanceof Response) return body;
   const { connectorId, credentials: rawCredentials } = body;
-  if (!connectorId) return error("MISSING_FIELD: connectorId required", 400);
+  if (!connectorId) {
+    return error(req, "MISSING_FIELD: connectorId required", 400);
+  }
 
   const { data: connector } = await auth.serviceClient
     .from("connector_configs")
@@ -22,10 +24,11 @@ Deno.serve(async (req) => {
     .single();
 
   const token = rawCredentials?.token ?? connector?.credentials?.token;
-  if (!token) return error("NO_CREDENTIALS", 400);
+  if (!token) return error(req, "NO_CREDENTIALS", 400);
 
   if (connectorId !== "github") {
     return error(
+      req,
       `Test not implemented for connector: ${connectorId}`,
       400,
     );
@@ -53,10 +56,10 @@ Deno.serve(async (req) => {
       })
       .eq("id", connector.id);
 
-    if (updateErr) return error(updateErr.message, 500);
+    if (updateErr) return error(req, updateErr.message, 500);
   }
 
-  return ok({
+  return ok(req, {
     connectorId,
     status: newStatus,
     statusMessage,

@@ -23,6 +23,15 @@ export function useJob(jobId: string) {
         body: { jobId },
       }),
     enabled: !!jobId,
-    refetchInterval: 60000,
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      if (
+        status === "completed" ||
+        status === "failed" ||
+        status === "cancelled"
+      )
+        return false;
+      return 5000;
+    },
   });
 }

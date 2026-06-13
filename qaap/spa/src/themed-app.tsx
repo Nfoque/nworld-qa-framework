@@ -3,6 +3,7 @@ import { RouterProvider } from "@tanstack/react-router";
 import { useMemo } from "react";
 
 import { router } from "./router";
+import { ErrorBoundary } from "./shared/components/error-boundary";
 import { SnackbarProvider } from "./shared/components/snackbar-provider";
 import { useTenant } from "./shared/tenant/tenant-provider";
 import { createAppTheme } from "./shared/theme/theme";
@@ -16,9 +17,11 @@ export function ThemedApp() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <SnackbarProvider>
-        <RouterProvider router={router} />
-      </SnackbarProvider>
+      <ErrorBoundary>
+        <SnackbarProvider>
+          <RouterProvider router={router} />
+        </SnackbarProvider>
+      </ErrorBoundary>
     </ThemeProvider>
   );
 }

@@ -49,6 +49,24 @@ export interface EngineJob {
   steps: EngineJobStep[];
 }
 
+export interface ProposalPlan {
+  id: string;
+  name: string;
+  confidence?: number;
+  test_areas?: { scenarios?: unknown[] }[];
+}
+
+export interface ProposalData {
+  test_plans: ProposalPlan[];
+  coverage_gaps?: unknown[];
+  stats?: {
+    total_test_plans?: number;
+    total_test_areas?: number;
+    total_scenarios?: number;
+    avg_scenario_confidence?: number;
+  };
+}
+
 export interface PipelineStep {
   stepType: StepType;
   label: string;

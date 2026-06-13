@@ -2,6 +2,8 @@ import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
 import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
 import ErrorOutlineOutlinedIcon from "@mui/icons-material/ErrorOutlineOutlined";
 import HourglassTopOutlinedIcon from "@mui/icons-material/HourglassTopOutlined";
+import QueueOutlinedIcon from "@mui/icons-material/QueueOutlined";
+import RateReviewOutlinedIcon from "@mui/icons-material/RateReviewOutlined";
 import {
   Alert,
   Box,
@@ -14,25 +16,29 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { PipelineCard } from "./pipeline-card";
-import { isInProgress, useJobs } from "./pipeline-list.service";
+import { useJobs } from "./pipeline-list.service";
 import { PipelineListEmpty } from "./pipeline-list-empty";
 
 import { StatCard } from "@/shared/components/stat-card";
 
-type FilterTab = "all" | "in_progress" | "completed" | "failed";
+type FilterTab = "all" | "queued" | "in_progress" | "paused" | "completed" | "failed";
 
 export function PipelineList() {
   const { t } = useTranslation();
   const [filter, setFilter] = useState<FilterTab>("all");
   const { data: jobs = [], isLoading, error } = useJobs();
 
-  const inProgressCount = jobs.filter((j) => isInProgress(j.status)).length;
+  const queuedCount = jobs.filter((j) => j.status === "queued").length;
+  const inProgressCount = jobs.filter((j) => j.status === "running").length;
+  const pausedCount = jobs.filter((j) => j.status === "paused").length;
   const completedCount = jobs.filter((j) => j.status === "completed").length;
   const failedCount = jobs.filter((j) => j.status === "failed").length;
 
   const filtered = jobs.filter((j) => {
     if (filter === "all") return true;
-    if (filter === "in_progress") return isInProgress(j.status);
+    if (filter === "queued") return j.status === "queued";
+    if (filter === "in_progress") return j.status === "running";
+    if (filter === "paused") return j.status === "paused";
     if (filter === "completed") return j.status === "completed";
     return j.status === "failed";
   });
@@ -51,7 +57,7 @@ export function PipelineList() {
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
+          gridTemplateColumns: "repeat(6, 1fr)",
           gap: 1.5,
           mb: 2.5,
         }}
@@ -63,10 +69,22 @@ export function PipelineList() {
           color="#217BEE"
         />
         <StatCard
+          label={t("pipelines.queued")}
+          value={queuedCount}
+          icon={QueueOutlinedIcon}
+          color="#8B8FA3"
+        />
+        <StatCard
           label={t("pipelines.inProgress")}
           value={inProgressCount}
           icon={HourglassTopOutlinedIcon}
           color="#EC683E"
+        />
+        <StatCard
+          label={t("pipelines.paused")}
+          value={pausedCount}
+          icon={RateReviewOutlinedIcon}
+          color="#E68A00"
         />
         <StatCard
           label={t("pipelines.completed")}
@@ -99,7 +117,9 @@ export function PipelineList() {
         }}
       >
         <Tab label={t("pipelines.tabAll")} value="all" />
+        <Tab label={t("pipelines.tabQueued")} value="queued" />
         <Tab label={t("pipelines.tabInProgress")} value="in_progress" />
+        <Tab label={t("pipelines.tabPaused")} value="paused" />
         <Tab label={t("pipelines.tabCompleted")} value="completed" />
         <Tab label={t("pipelines.tabFailed")} value="failed" />
       </Tabs>

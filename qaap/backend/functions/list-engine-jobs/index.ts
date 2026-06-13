@@ -26,8 +26,37 @@ Deno.serve(async (req) => {
 
   if (dbErr) return error(dbErr.message, 500);
 
+  const jobIds = (data ?? []).map((r: Record<string, unknown>) => r.id);
+
+  const { data: allSteps } = jobIds.length
+    ? await serviceClient
+        .from("engine_job_steps")
+        .select("*")
+        .in("job_id", jobIds)
+        .order("position", { ascending: true })
+    : { data: [] };
+
+  const stepsByJob = new Map<string, Record<string, unknown>[]>();
+  for (const s of allSteps ?? []) {
+    const jid = s.job_id as string;
+    if (!stepsByJob.has(jid)) stepsByJob.set(jid, []);
+    stepsByJob.get(jid)!.push(s);
+  }
+
   const jobs = (data ?? []).map((row: Record<string, unknown>) => {
     const creator = row.creator as Record<string, unknown> | null;
+    const jobSteps = (stepsByJob.get(row.id as string) ?? []).map((s) => ({
+      id: s.id,
+      position: s.position,
+      stepType: s.step_type,
+      status: s.status,
+      input: s.input,
+      output: s.output,
+      meta: s.meta,
+      errorMessage: s.error_message,
+      startedAt: s.started_at,
+      completedAt: s.completed_at,
+    }));
     return {
       id: row.id,
       tenantId: row.tenant_id,
@@ -41,6 +70,7 @@ Deno.serve(async (req) => {
       completedAt: row.completed_at,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
+      steps: jobSteps,
     };
   });
 

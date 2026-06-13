@@ -7,21 +7,11 @@ export function useJobs() {
   return useQuery({
     queryKey: ["engine-jobs"],
     queryFn: () => invokeFunction<EngineJob[]>("list-engine-jobs", { method: "POST" }),
-    refetchInterval: 10000,
+    refetchInterval: 60000,
   });
 }
 
-const IN_PROGRESS_STATUSES = new Set([
-  "queued",
-  "collecting",
-  "extracting_features",
-  "awaiting_feature_review",
-  "extracting_plans",
-  "awaiting_plan_review",
-  "extracting_scenarios",
-  "awaiting_scenario_review",
-  "ready_for_codification",
-]);
+const IN_PROGRESS_STATUSES = new Set(["queued", "running"]);
 
 export function isInProgress(status: string): boolean {
   return IN_PROGRESS_STATUSES.has(status);

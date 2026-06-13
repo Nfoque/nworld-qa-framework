@@ -1,20 +1,36 @@
 export type JobStatus =
   | "queued"
-  | "collecting"
-  | "extracting_features"
-  | "awaiting_feature_review"
-  | "extracting_plans"
-  | "awaiting_plan_review"
-  | "extracting_scenarios"
-  | "awaiting_scenario_review"
-  | "ready_for_codification"
+  | "running"
+  | "paused"
   | "completed"
   | "failed"
   | "cancelled";
 
+export type StepType =
+  | "collect"
+  | "extract_features"
+  | "extract_plans"
+  | "extract_scenarios"
+  | "generate_proposal";
+
+export type StepStatus = "pending" | "running" | "completed" | "failed";
+
 export interface SelectedSource {
   connector: string;
   items: string[];
+}
+
+export interface EngineJobStep {
+  id: string;
+  position: number;
+  stepType: StepType;
+  status: StepStatus;
+  input: Record<string, unknown>;
+  output: Record<string, unknown> | null;
+  meta: Record<string, unknown>;
+  errorMessage?: string | null;
+  startedAt?: string | null;
+  completedAt?: string | null;
 }
 
 export interface EngineJob {
@@ -30,22 +46,19 @@ export interface EngineJob {
   completedAt?: string;
   createdAt: string;
   updatedAt: string;
+  steps: EngineJobStep[];
 }
 
-export interface PipelineStage {
-  key: JobStatus;
+export interface PipelineStep {
+  stepType: StepType;
   label: string;
   description: string;
 }
 
-export const PIPELINE_STAGES: PipelineStage[] = [
-  { key: "queued", label: "Queued", description: "Waiting to start processing" },
-  { key: "collecting", label: "Collecting", description: "Fetching raw data from connected sources" },
-  { key: "extracting_features", label: "Extracting Features", description: "Identifying high-level features from all sources" },
-  { key: "awaiting_feature_review", label: "Feature Review", description: "Review and approve discovered features" },
-  { key: "extracting_plans", label: "Extracting Test Plans", description: "Identifying testable areas per feature" },
-  { key: "awaiting_plan_review", label: "Plan Review", description: "Review and approve test areas" },
-  { key: "extracting_scenarios", label: "Extracting Scenarios", description: "Generating Gherkin test scenarios" },
-  { key: "awaiting_scenario_review", label: "Scenario Review", description: "Review and approve scenarios" },
-  { key: "ready_for_codification", label: "Ready for Codification", description: "Scenarios approved and ready for code generation" },
+export const PIPELINE_STEPS: PipelineStep[] = [
+  { stepType: "collect", label: "Collecting", description: "Fetching raw data from connected sources" },
+  { stepType: "extract_features", label: "Extracting Features", description: "Identifying high-level features from all sources" },
+  { stepType: "extract_plans", label: "Extracting Test Plans", description: "Identifying testable areas per feature" },
+  { stepType: "extract_scenarios", label: "Extracting Scenarios", description: "Generating Gherkin test scenarios" },
+  { stepType: "generate_proposal", label: "Generating Proposal", description: "Assembling the final proposal for review" },
 ];

@@ -23,6 +23,6 @@ export function useJob(jobId: string) {
         body: { jobId },
       }),
     enabled: !!jobId,
-    refetchInterval: 5000,
+    refetchInterval: 60000,
   });
 }

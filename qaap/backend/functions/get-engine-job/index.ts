@@ -32,7 +32,25 @@ Deno.serve(async (req) => {
 
   if (dbErr) return error("JOB_NOT_FOUND", 404);
 
+  const { data: stepsData } = await serviceClient
+    .from("engine_job_steps")
+    .select("*")
+    .eq("job_id", jobId)
+    .order("position", { ascending: true });
+
   const creator = data.creator as Record<string, unknown> | null;
+  const steps = (stepsData ?? []).map((s: Record<string, unknown>) => ({
+    id: s.id,
+    position: s.position,
+    stepType: s.step_type,
+    status: s.status,
+    input: s.input,
+    output: s.output,
+    meta: s.meta,
+    errorMessage: s.error_message,
+    startedAt: s.started_at,
+    completedAt: s.completed_at,
+  }));
 
   return ok({
     id: data.id,
@@ -47,5 +65,6 @@ Deno.serve(async (req) => {
     completedAt: data.completed_at,
     createdAt: data.created_at,
     updatedAt: data.updated_at,
+    steps,
   });
 });

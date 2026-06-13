@@ -14,7 +14,8 @@
     "language": "Idioma",
     "poweredBy": "desarrollado por",
     "pipelines": "Pipelines",
-    "contextSection": "Contexto"
+    "contextSection": "Contexto",
+    "llmProviders": "Proveedores LLM"
   },
   "login": {
     "subtitle": "QA Automation Platform",
@@ -227,5 +228,101 @@
     "summaryTestAreas": "{{count}} áreas de test",
     "summaryScenarios": "{{count}} escenarios · {{confidence}}% confianza media",
     "summaryProposal": "{{plans}} test plans · {{scenarios}} escenarios"
+  },
+  "llmProviders": {
+    "title": "Proveedores LLM",
+    "subtitle": "Configura modelos de IA, asigna tareas y monitoriza el uso de tokens.",
+    "addProvider": "Añadir Proveedor",
+    "loadError": "Error al cargar los proveedores LLM.",
+    "deleted": "Proveedor eliminado.",
+    "deleteError": "Error al eliminar el proveedor.",
+    "cannotDeleteDefault": "No se puede eliminar el proveedor por defecto. Establece otro como predeterminado primero.",
+    "deleteConfirm": "¿Seguro que quieres eliminar {{name}}? Esta acción no se puede deshacer.",
+    "providerAlreadyExists": "Este proveedor ya está configurado.",
+    "tabs": {
+      "providers": "Proveedores",
+      "matrix": "Matriz de Tareas",
+      "usage": "Uso y Costes"
+    },
+    "card": {
+      "apiKey": "API Key",
+      "baseUrl": "Base URL",
+      "configure": "Configurar",
+      "testConnection": "Probar Conexión",
+      "testing": "Probando...",
+      "testFailed": "La prueba de conexión ha fallado.",
+      "remove": "Eliminar",
+      "default": "Predeterminado"
+    },
+    "providers": {
+      "anthropic": {
+        "description": "Modelos Claude para razonamiento avanzado y generación de código."
+      },
+      "openai": {
+        "description": "Modelos GPT y o-series a través de la API de OpenAI."
+      },
+      "google": {
+        "description": "Modelos Gemini mediante el endpoint compatible con OpenAI de Google."
+      },
+      "ollama": {
+        "description": "Ejecuta modelos open-source localmente con Ollama."
+      },
+      "litellm": {
+        "description": "Proxy unificado para enrutar peticiones entre múltiples proveedores."
+      }
+    },
+    "dialog": {
+      "createTitle": "Añadir Proveedor LLM",
+      "editTitle": "Configurar {{name}}",
+      "provider": "Proveedor",
+      "displayName": "Nombre",
+      "baseUrl": "Base URL",
+      "apiKey": "API Key",
+      "apiKeySaved": "API key guardada",
+      "setDefault": "Establecer como proveedor predeterminado",
+      "testConnection": "Probar Conexión",
+      "testSuccess": "Conexión exitosa — {{count}} modelos disponibles",
+      "testError": "Conexión fallida: {{error}}",
+      "save": "Guardar",
+      "cancel": "Cancelar"
+    },
+    "matrix": {
+      "title": "Asignación Tarea-Modelo",
+      "subtitle": "Asigna qué modelo maneja cada tarea del pipeline.",
+      "task": "Tarea",
+      "description": "Descripción",
+      "assignedModel": "Modelo Asignado",
+      "provider": "Proveedor",
+      "save": "Guardar Cambios",
+      "saved": "Matriz de modelos guardada.",
+      "saveError": "Error al guardar la matriz de modelos.",
+      "reset": "Restablecer",
+      "noProvidersTitle": "Sin proveedores configurados",
+      "noProviders": "Configura al menos un proveedor LLM para asignar modelos a las tareas del pipeline.",
+      "goToProviders": "Configurar Proveedores"
+    },
+    "taskTypes": {
+      "extraction": "Extracción",
+      "classification": "Clasificación",
+      "generation": "Generación de Tests",
+      "review": "Revisión de Planes",
+      "codification": "Generación de Código",
+      "failure_analysis": "Análisis de Fallos",
+      "chat": "Asistente Chat"
+    },
+    "taskDescriptions": {
+      "extraction": "Extraer features y áreas de test del contexto",
+      "classification": "Clasificar fallos en categorías",
+      "generation": "Generar escenarios Gherkin a partir del contexto",
+      "review": "Segunda opinión sobre los planes generados",
+      "codification": "Convertir Gherkin a Playwright/Cypress/Karate",
+      "failure_analysis": "Análisis de causa raíz de tests fallidos",
+      "chat": "Chat interactivo con IA en el workspace"
+    },
+    "usage": {
+      "comingSoonTitle": "Próximamente",
+      "comingSoon": "El seguimiento de uso y costes estará disponible cuando el motor del pipeline esté en funcionamiento.",
+      "goToPipelines": "Ir a Pipelines"
+    }
   }
 }

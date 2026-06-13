@@ -14,7 +14,8 @@
     "language": "Language",
     "poweredBy": "powered by",
     "pipelines": "Pipelines",
-    "contextSection": "Context"
+    "contextSection": "Context",
+    "llmProviders": "LLM Providers"
   },
   "login": {
     "subtitle": "QA Automation Platform",
@@ -227,5 +228,101 @@
     "summaryTestAreas": "{{count}} test areas",
     "summaryScenarios": "{{count}} scenarios · {{confidence}}% avg confidence",
     "summaryProposal": "{{plans}} test plans · {{scenarios}} scenarios"
+  },
+  "llmProviders": {
+    "title": "LLM Providers",
+    "subtitle": "Configure AI models, assign tasks, and monitor token usage across providers.",
+    "addProvider": "Add Provider",
+    "loadError": "Failed to load LLM providers.",
+    "deleted": "Provider removed.",
+    "deleteError": "Failed to remove provider.",
+    "cannotDeleteDefault": "Cannot remove the default provider. Set another as default first.",
+    "deleteConfirm": "Are you sure you want to remove {{name}}? This cannot be undone.",
+    "providerAlreadyExists": "This provider is already configured.",
+    "tabs": {
+      "providers": "Providers",
+      "matrix": "Task Matrix",
+      "usage": "Usage & Costs"
+    },
+    "card": {
+      "apiKey": "API Key",
+      "baseUrl": "Base URL",
+      "configure": "Configure",
+      "testConnection": "Test Connection",
+      "testing": "Testing...",
+      "testFailed": "Connection test failed.",
+      "remove": "Remove",
+      "default": "Default"
+    },
+    "providers": {
+      "anthropic": {
+        "description": "Claude models for advanced reasoning and code generation."
+      },
+      "openai": {
+        "description": "GPT and o-series models via the OpenAI API."
+      },
+      "google": {
+        "description": "Gemini models through Google's OpenAI-compatible endpoint."
+      },
+      "ollama": {
+        "description": "Run open-source models locally with Ollama."
+      },
+      "litellm": {
+        "description": "Unified proxy to route requests across multiple providers."
+      }
+    },
+    "dialog": {
+      "createTitle": "Add LLM Provider",
+      "editTitle": "Configure {{name}}",
+      "provider": "Provider",
+      "displayName": "Display Name",
+      "baseUrl": "Base URL",
+      "apiKey": "API Key",
+      "apiKeySaved": "API key saved",
+      "setDefault": "Set as default provider",
+      "testConnection": "Test Connection",
+      "testSuccess": "Connection successful — {{count}} models available",
+      "testError": "Connection failed: {{error}}",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "matrix": {
+      "title": "Task-to-Model Assignment",
+      "subtitle": "Assign which model handles each pipeline task.",
+      "task": "Task",
+      "description": "Description",
+      "assignedModel": "Assigned Model",
+      "provider": "Provider",
+      "save": "Save Changes",
+      "saved": "Model matrix saved.",
+      "saveError": "Failed to save model matrix.",
+      "reset": "Reset",
+      "noProvidersTitle": "No providers configured",
+      "noProviders": "Configure at least one LLM provider to assign models to pipeline tasks.",
+      "goToProviders": "Configure Providers"
+    },
+    "taskTypes": {
+      "extraction": "Extraction",
+      "classification": "Classification",
+      "generation": "Test Generation",
+      "review": "Plan Review",
+      "codification": "Code Generation",
+      "failure_analysis": "Failure Analysis",
+      "chat": "Chat Assistant"
+    },
+    "taskDescriptions": {
+      "extraction": "Extract features and test areas from context",
+      "classification": "Classify failures into categories",
+      "generation": "Generate Gherkin scenarios from context",
+      "review": "Second-opinion review of generated plans",
+      "codification": "Convert Gherkin to Playwright/Cypress/Karate",
+      "failure_analysis": "Root cause analysis of failed tests",
+      "chat": "Interactive AI chat in workspace"
+    },
+    "usage": {
+      "comingSoonTitle": "Coming Soon",
+      "comingSoon": "Usage & costs tracking will be available once the engine pipeline is running.",
+      "goToPipelines": "Go to Pipelines"
+    }
   }
 }

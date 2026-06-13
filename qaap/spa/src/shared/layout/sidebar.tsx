@@ -9,6 +9,7 @@ import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import MenuBookOutlinedIcon from "@mui/icons-material/MenuBookOutlined";
 import MonitorHeartOutlinedIcon from "@mui/icons-material/MonitorHeartOutlined";
 import PlayCircleOutlinedIcon from "@mui/icons-material/PlayCircleOutlined";
+import PsychologyOutlinedIcon from "@mui/icons-material/PsychologyOutlined";
 import ScheduleOutlinedIcon from "@mui/icons-material/ScheduleOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import TranslateIcon from "@mui/icons-material/Translate";
@@ -41,6 +42,7 @@ import {
   useJobs,
 } from "@/domains/engine/features/pipeline-list/pipeline-list.service";
 import { useConnectors } from "@/domains/knowledge-base/features/connector-list/connector-list.service";
+import { useLlmProviders } from "@/domains/settings/features/llm-providers/llm-provider.service";
 import { useAuth } from "@/shared/auth/auth-provider";
 import { useTenant } from "@/shared/tenant/tenant-provider";
 
@@ -59,6 +61,7 @@ export function Sidebar() {
   } = useTenant();
   const { data: connectors } = useConnectors();
   const { data: jobs } = useJobs();
+  const { data: llmProviders } = useLlmProviders();
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const connectedCount =
@@ -94,6 +97,12 @@ export function Sidebar() {
   ];
 
   const contextNavItems = [
+    {
+      label: t("sidebar.llmProviders"),
+      icon: PsychologyOutlinedIcon,
+      to: "/settings" as const,
+      badge: llmProviders?.providers.filter((p) => p.status !== "not_configured").length || 0,
+    },
     {
       label: t("sidebar.connectors"),
       icon: CableOutlinedIcon,
@@ -229,22 +238,6 @@ export function Sidebar() {
           return showDivider ? (
             <Box key={item.label}>
               <Divider sx={{ my: 1 }} />
-              <Typography
-                variant="caption"
-                sx={{
-                  px: 1.5,
-                  pt: 0.5,
-                  pb: 0.25,
-                  display: "block",
-                  fontSize: 10,
-                  fontWeight: 600,
-                  color: "text.secondary",
-                  textTransform: "uppercase",
-                  letterSpacing: 0.5,
-                }}
-              >
-                {t("sidebar.contextSection")}
-              </Typography>
               {rendered}
             </Box>
           ) : (
@@ -278,93 +271,95 @@ export function Sidebar() {
           />
         </ListItemButton>
         <Collapse in={settingsOpen}>
-          <Box sx={{ px: 2, pb: 1.5 }}>
-            {/* Language */}
-            <Stack
-              direction="row"
-              spacing={1}
-              sx={{ alignItems: "center", mb: 1 }}
-            >
-              <TranslateIcon sx={{ fontSize: 16, color: "text.secondary" }} />
-              <Typography
-                variant="caption"
-                sx={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  color: "text.secondary",
-                }}
+          <Box sx={{ pb: 1.5 }}>
+            <Box sx={{ px: 2 }}>
+              {/* Language */}
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{ alignItems: "center", mb: 1 }}
               >
-                {t("sidebar.language")}
-              </Typography>
-            </Stack>
-            <ToggleButtonGroup
-              value={i18n.language?.startsWith("es") ? "es" : "en"}
-              exclusive
-              onChange={(_, lang) => {
-                if (lang) i18n.changeLanguage(lang);
-              }}
-              size="small"
-              fullWidth
-              sx={{
-                "& .MuiToggleButton-root": {
-                  fontSize: 12,
-                  fontWeight: 600,
-                  py: 0.5,
-                  textTransform: "none",
-                },
-              }}
-            >
-              <ToggleButton value="es">Español</ToggleButton>
-              <ToggleButton value="en">English</ToggleButton>
-            </ToggleButtonGroup>
-
-            {/* Workspace (superadmin only) */}
-            {isSuperadmin && (
-              <Box sx={{ mt: 2 }}>
+                <TranslateIcon sx={{ fontSize: 16, color: "text.secondary" }} />
                 <Typography
                   variant="caption"
                   sx={{
-                    color: "text.secondary",
                     fontSize: 11,
                     fontWeight: 600,
-                    mb: 0.75,
-                    display: "block",
+                    color: "text.secondary",
                   }}
                 >
-                  {t("sidebar.workspace")}
+                  {t("sidebar.language")}
                 </Typography>
-                {isLoadingTenants ? (
-                  <Skeleton variant="rounded" width="100%" height={34} />
-                ) : (
-                  <Select
-                    value={activeTenantId ?? ""}
-                    onChange={(e) => setActiveTenantId(e.target.value)}
-                    size="small"
-                    IconComponent={UnfoldMoreIcon}
+              </Stack>
+              <ToggleButtonGroup
+                value={i18n.language?.startsWith("es") ? "es" : "en"}
+                exclusive
+                onChange={(_, lang) => {
+                  if (lang) i18n.changeLanguage(lang);
+                }}
+                size="small"
+                fullWidth
+                sx={{
+                  "& .MuiToggleButton-root": {
+                    fontSize: 12,
+                    fontWeight: 600,
+                    py: 0.5,
+                    textTransform: "none",
+                  },
+                }}
+              >
+                <ToggleButton value="es">Español</ToggleButton>
+                <ToggleButton value="en">English</ToggleButton>
+              </ToggleButtonGroup>
+
+              {/* Workspace (superadmin only) */}
+              {isSuperadmin && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography
+                    variant="caption"
                     sx={{
-                      width: "100%",
-                      fontWeight: 700,
-                      fontFamily: "'Sora', sans-serif",
-                      fontSize: 13,
-                      "& .MuiSelect-select": { py: 0.75, px: 1 },
-                      "& .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "divider",
-                      },
+                      color: "text.secondary",
+                      fontSize: 11,
+                      fontWeight: 600,
+                      mb: 0.75,
+                      display: "block",
                     }}
                   >
-                    {tenants.map((tenant) => (
-                      <MenuItem
-                        key={tenant.id}
-                        value={tenant.id}
-                        sx={{ fontSize: 13 }}
-                      >
-                        {tenant.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                )}
-              </Box>
-            )}
+                    {t("sidebar.workspace")}
+                  </Typography>
+                  {isLoadingTenants ? (
+                    <Skeleton variant="rounded" width="100%" height={34} />
+                  ) : (
+                    <Select
+                      value={activeTenantId ?? ""}
+                      onChange={(e) => setActiveTenantId(e.target.value)}
+                      size="small"
+                      IconComponent={UnfoldMoreIcon}
+                      sx={{
+                        width: "100%",
+                        fontWeight: 700,
+                        fontFamily: "'Sora', sans-serif",
+                        fontSize: 13,
+                        "& .MuiSelect-select": { py: 0.75, px: 1 },
+                        "& .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "divider",
+                        },
+                      }}
+                    >
+                      {tenants.map((tenant) => (
+                        <MenuItem
+                          key={tenant.id}
+                          value={tenant.id}
+                          sx={{ fontSize: 13 }}
+                        >
+                          {tenant.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  )}
+                </Box>
+              )}
+            </Box>
           </Box>
         </Collapse>
       </Box>

@@ -10,6 +10,7 @@ import { EngineRun } from "@/domains/engine/features/engine-run/engine-run";
 import { PipelineList } from "@/domains/engine/features/pipeline-list/pipeline-list";
 import { ConnectorList } from "@/domains/knowledge-base/features/connector-list/connector-list";
 import { KnowledgeBase } from "@/domains/knowledge-base/features/knowledge-base/knowledge-base";
+import { LlmProviderList } from "@/domains/settings/features/llm-providers/llm-provider-list";
 import { AuthenticatedGuard } from "@/shared/auth/authenticated-guard";
 import { LoginGuard } from "@/shared/auth/login-guard";
 
@@ -65,6 +66,12 @@ const pipelineReviewRoute = createRoute({
   component: () => <div>Review (coming soon)</div>,
 });
 
+const settingsRoute = createRoute({
+  getParentRoute: () => authenticatedRoute,
+  path: "/settings",
+  component: LlmProviderList,
+});
+
 const routeTree = rootRoute.addChildren([
   loginRoute,
   authenticatedRoute.addChildren([
@@ -74,6 +81,7 @@ const routeTree = rootRoute.addChildren([
     pipelinesRoute,
     pipelineDetailRoute,
     pipelineReviewRoute,
+    settingsRoute,
   ]),
 ]);
 

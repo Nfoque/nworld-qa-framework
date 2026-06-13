@@ -16,8 +16,8 @@ import {
 import type { GitHubRepoResource } from "./knowledge-base.types";
 import { SelectionBar } from "./selection-bar";
 
-import { useConnectors } from "@/domains/knowledge-base/features/connector-list/connector-list.service";
 import { useCreateJob } from "@/domains/engine/features/engine-run/engine-run.service";
+import { useConnectors } from "@/domains/knowledge-base/features/connector-list/connector-list.service";
 import { StatCard } from "@/shared/components/stat-card";
 
 export function KnowledgeBase() {

@@ -5,11 +5,11 @@ import {
   Outlet,
 } from "@tanstack/react-router";
 
-import { ConnectorList } from "@/domains/knowledge-base/features/connector-list/connector-list";
 import { Home } from "@/domains/dashboard/features/home/home";
 import { EngineRun } from "@/domains/engine/features/engine-run/engine-run";
-import { KnowledgeBase } from "@/domains/knowledge-base/features/knowledge-base/knowledge-base";
 import { PipelineList } from "@/domains/engine/features/pipeline-list/pipeline-list";
+import { ConnectorList } from "@/domains/knowledge-base/features/connector-list/connector-list";
+import { KnowledgeBase } from "@/domains/knowledge-base/features/knowledge-base/knowledge-base";
 import { AuthenticatedGuard, LoginGuard } from "@/shared/auth/route-guards";
 
 const rootRoute = createRootRoute({

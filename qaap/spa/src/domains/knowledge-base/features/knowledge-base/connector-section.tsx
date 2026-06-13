@@ -53,7 +53,10 @@ export function ConnectorSection({
           ) : (
             <CableOutlinedIcon sx={{ fontSize: 22, color: "text.secondary" }} />
           )}
-          <Typography variant="subtitle1" sx={{ fontWeight: 600, fontSize: 15 }}>
+          <Typography
+            variant="subtitle1"
+            sx={{ fontWeight: 600, fontSize: 15 }}
+          >
             {connectorName}
           </Typography>
           <StatusBadge status={status} />

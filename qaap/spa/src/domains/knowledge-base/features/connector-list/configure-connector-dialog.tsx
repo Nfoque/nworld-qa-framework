@@ -53,47 +53,35 @@ export function ConfigureConnectorDialog({
   const isSaving = createConnector.isPending || updateConnector.isPending;
   const saveError = createConnector.error || updateConnector.error;
 
+  const existingRepos = connector.config.selectedRepos;
   const [token, setToken] = useState("");
   const [tokenChanged, setTokenChanged] = useState(false);
   const [showToken, setShowToken] = useState(false);
   const [validatedUser, setValidatedUser] = useState<string | null>(null);
   const [availableRepos, setAvailableRepos] = useState<GitHubRepo[]>([]);
-  const [selectedRepos, setSelectedRepos] = useState<Set<string>>(new Set());
+  const [selectedRepos, setSelectedRepos] = useState<Set<string>>(() =>
+    Array.isArray(existingRepos)
+      ? new Set(existingRepos as string[])
+      : new Set(),
+  );
   const [search, setSearch] = useState("");
 
   const isValidated = validatedUser !== null;
 
   useEffect(() => {
-    if (!open) return;
-    setToken("");
-    setTokenChanged(false);
-    setShowToken(false);
-    setSearch("");
-    setValidatedUser(null);
-    setAvailableRepos([]);
-    testConnector.reset();
-    createConnector.reset();
-    updateConnector.reset();
-
-    const existing = connector.config.selectedRepos;
-    setSelectedRepos(
-      Array.isArray(existing) ? new Set(existing as string[]) : new Set(),
-    );
-
-    if (hasStoredToken) {
-      testConnector.mutate(
-        { connectorId: "github" },
-        {
-          onSuccess: (data) => {
-            if (data.result.tokenValid) {
-              setValidatedUser(data.result.user ?? null);
-              setAvailableRepos(data.result.repos);
-            }
-          },
+    if (!hasStoredToken) return;
+    testConnector.mutate(
+      { connectorId: "github" },
+      {
+        onSuccess: (data) => {
+          if (data.result.tokenValid) {
+            setValidatedUser(data.result.user ?? null);
+            setAvailableRepos(data.result.repos);
+          }
         },
-      );
-    }
-  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+      },
+    );
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleValidate() {
     testConnector.mutate(
@@ -438,8 +426,7 @@ export function ConfigureConnectorDialog({
 
           {saveError && (
             <Alert severity="error" sx={{ fontSize: 13 }}>
-              {(saveError as Error).message ??
-                t("configureDialog.saveError")}
+              {(saveError as Error).message ?? t("configureDialog.saveError")}
             </Alert>
           )}
         </Stack>

@@ -90,7 +90,9 @@ export function PipelineCard({ job }: PipelineCardProps) {
   const running = isInProgress(job.status);
   const steps = job.steps ?? [];
   const activeStep = steps.find((s) => s.status === "running");
-  const activeStepLabel = activeStep ? t(STEP_I18N_KEYS[activeStep.stepType]) : null;
+  const activeStepLabel = activeStep
+    ? t(STEP_I18N_KEYS[activeStep.stepType])
+    : null;
 
   return (
     <Card
@@ -122,7 +124,11 @@ export function PipelineCard({ job }: PipelineCardProps) {
             mb: 1.25,
           }}
         >
-          <Stack direction="row" spacing={1} sx={{ alignItems: "center", minWidth: 0 }}>
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{ alignItems: "center", minWidth: 0 }}
+          >
             <Typography
               variant="subtitle2"
               sx={{ fontSize: 14, fontWeight: 600, flexShrink: 0 }}
@@ -130,14 +136,23 @@ export function PipelineCard({ job }: PipelineCardProps) {
               Pipeline{" "}
               <Typography
                 component="span"
-                sx={{ fontSize: 14, fontWeight: 600, fontFamily: "monospace", color: "text.secondary" }}
+                sx={{
+                  fontSize: 14,
+                  fontWeight: 600,
+                  fontFamily: "monospace",
+                  color: "text.secondary",
+                }}
               >
                 #{shortId}
               </Typography>
             </Typography>
             {activeStepLabel && (
               <>
-                <Box sx={{ color: "text.disabled", fontSize: 12, flexShrink: 0 }}>·</Box>
+                <Box
+                  sx={{ color: "text.disabled", fontSize: 12, flexShrink: 0 }}
+                >
+                  ·
+                </Box>
                 <Typography
                   variant="caption"
                   noWrap
@@ -207,7 +222,9 @@ export function PipelineCard({ job }: PipelineCardProps) {
         {/* Row 3: Segmented progress bar based on steps */}
         <Stack direction="row" spacing={0.5} sx={{ mb: 1.5 }}>
           {PIPELINE_STEPS.map((pipelineStep) => {
-            const step = steps.find((s) => s.stepType === pipelineStep.stepType);
+            const step = steps.find(
+              (s) => s.stepType === pipelineStep.stepType,
+            );
             const state = step
               ? step.status === "completed"
                 ? "completed"
@@ -294,7 +311,6 @@ export function PipelineCard({ job }: PipelineCardProps) {
             )}
           </Stack>
         </Stack>
-
       </CardActionArea>
 
       {/* Review proposal CTA — only when the pipeline is paused awaiting review */}
@@ -304,9 +320,14 @@ export function PipelineCard({ job }: PipelineCardProps) {
             variant="contained"
             size="small"
             fullWidth
-            startIcon={<FactCheckOutlinedIcon sx={{ fontSize: "16px !important" }} />}
+            startIcon={
+              <FactCheckOutlinedIcon sx={{ fontSize: "16px !important" }} />
+            }
             onClick={() =>
-              navigate({ to: "/engine/$jobId/review" as string, params: { jobId: job.id } })
+              navigate({
+                to: "/engine/$jobId/review" as string,
+                params: { jobId: job.id },
+              })
             }
             sx={{ fontWeight: 700, textTransform: "none" }}
           >

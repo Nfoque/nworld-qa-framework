@@ -16,12 +16,18 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { PipelineCard } from "./pipeline-card";
-import { useJobs } from "./pipeline-list.service";
 import { PipelineListEmpty } from "./pipeline-list-empty";
+import { useJobs } from "./pipeline-list.service";
 
 import { StatCard } from "@/shared/components/stat-card";
 
-type FilterTab = "all" | "queued" | "in_progress" | "paused" | "completed" | "failed";
+type FilterTab =
+  | "all"
+  | "queued"
+  | "in_progress"
+  | "paused"
+  | "completed"
+  | "failed";
 
 export function PipelineList() {
   const { t } = useTranslation();

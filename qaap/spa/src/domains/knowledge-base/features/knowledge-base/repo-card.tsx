@@ -40,9 +40,15 @@ export function RepoCard({
         }),
       }}
     >
-      <CardActionArea onClick={() => onToggle(fullName)} sx={{ height: "100%" }}>
+      <CardActionArea
+        onClick={() => onToggle(fullName)}
+        sx={{ height: "100%" }}
+      >
         <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
-          <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "flex-start" }}>
+          <Stack
+            direction="row"
+            sx={{ justifyContent: "space-between", alignItems: "flex-start" }}
+          >
             <Typography
               variant="body2"
               sx={{ fontWeight: 600, fontSize: 13, color: "text.primary" }}
@@ -50,14 +56,32 @@ export function RepoCard({
               {fullName}
             </Typography>
             {selected ? (
-              <CheckCircleIcon sx={{ fontSize: 20, color: "primary.main", ml: 1, flexShrink: 0 }} />
+              <CheckCircleIcon
+                sx={{
+                  fontSize: 20,
+                  color: "primary.main",
+                  ml: 1,
+                  flexShrink: 0,
+                }}
+              />
             ) : (
-              <RadioButtonUncheckedIcon sx={{ fontSize: 20, color: "text.disabled", ml: 1, flexShrink: 0 }} />
+              <RadioButtonUncheckedIcon
+                sx={{
+                  fontSize: 20,
+                  color: "text.disabled",
+                  ml: 1,
+                  flexShrink: 0,
+                }}
+              />
             )}
           </Stack>
 
           {isLoading ? (
-            <Skeleton variant="text" width="80%" sx={{ fontSize: 11, mt: 0.5 }} />
+            <Skeleton
+              variant="text"
+              width="80%"
+              sx={{ fontSize: 11, mt: 0.5 }}
+            />
           ) : resource?.description ? (
             <Typography
               variant="caption"
@@ -75,7 +99,11 @@ export function RepoCard({
             </Typography>
           ) : null}
 
-          <Stack direction="row" spacing={0.75} sx={{ mt: 1, alignItems: "center" }}>
+          <Stack
+            direction="row"
+            spacing={0.75}
+            sx={{ mt: 1, alignItems: "center" }}
+          >
             {isLoading ? (
               <Skeleton variant="rounded" width={60} height={18} />
             ) : (
@@ -89,9 +117,13 @@ export function RepoCard({
                 )}
                 {resource?.private !== undefined &&
                   (resource.private ? (
-                    <LockOutlinedIcon sx={{ fontSize: 14, color: "text.secondary" }} />
+                    <LockOutlinedIcon
+                      sx={{ fontSize: 14, color: "text.secondary" }}
+                    />
                   ) : (
-                    <PublicOutlinedIcon sx={{ fontSize: 14, color: "text.secondary" }} />
+                    <PublicOutlinedIcon
+                      sx={{ fontSize: 14, color: "text.secondary" }}
+                    />
                   ))}
               </>
             )}

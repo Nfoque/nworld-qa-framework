@@ -21,9 +21,7 @@ export function useKnowledgeBaseDetails(connectorId: string, enabled: boolean) {
   });
 }
 
-export function getSelectedRepos(
-  config: Record<string, unknown>,
-): string[] {
+export function getSelectedRepos(config: Record<string, unknown>): string[] {
   const repos = config.selectedRepos;
   return Array.isArray(repos)
     ? repos.filter((r): r is string => typeof r === "string")

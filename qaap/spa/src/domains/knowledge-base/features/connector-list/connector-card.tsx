@@ -312,11 +312,13 @@ export function ConnectorCard({ connector }: ConnectorCardProps) {
         )}
       </CardActions>
 
-      <ConfigureConnectorDialog
-        connector={connector}
-        open={configOpen}
-        onClose={() => setConfigOpen(false)}
-      />
+      {configOpen && (
+        <ConfigureConnectorDialog
+          connector={connector}
+          open
+          onClose={() => setConfigOpen(false)}
+        />
+      )}
     </Card>
   );
 }

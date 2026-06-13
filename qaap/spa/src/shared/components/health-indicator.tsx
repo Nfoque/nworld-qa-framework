@@ -16,13 +16,8 @@ export function HealthIndicator({ health }: HealthIndicatorProps) {
   const color = HEALTH_COLORS[health] ?? HEALTH_COLORS.healthy;
   return (
     <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-      <Box
-        sx={{ width: 6, height: 6, borderRadius: "50%", bgcolor: color }}
-      />
-      <Typography
-        variant="caption"
-        sx={{ fontWeight: 600, color }}
-      >
+      <Box sx={{ width: 6, height: 6, borderRadius: "50%", bgcolor: color }} />
+      <Typography variant="caption" sx={{ fontWeight: 600, color }}>
         {t(`health.${health}`, health)}
       </Typography>
     </Box>

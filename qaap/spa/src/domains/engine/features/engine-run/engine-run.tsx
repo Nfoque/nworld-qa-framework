@@ -4,20 +4,20 @@ import BugReportOutlinedIcon from "@mui/icons-material/BugReportOutlined";
 import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CircleOutlinedIcon from "@mui/icons-material/CircleOutlined";
+import CloseIcon from "@mui/icons-material/Close";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import DataObjectIcon from "@mui/icons-material/DataObject";
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import ErrorIcon from "@mui/icons-material/Error";
 import FactCheckOutlinedIcon from "@mui/icons-material/FactCheckOutlined";
 import GitHubIcon from "@mui/icons-material/GitHub";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import LayersOutlinedIcon from "@mui/icons-material/LayersOutlined";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutlineOutlined";
 import RadioButtonCheckedIcon from "@mui/icons-material/RadioButtonChecked";
 import SourceOutlinedIcon from "@mui/icons-material/SourceOutlined";
 import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-import CloseIcon from "@mui/icons-material/Close";
-import DataObjectIcon from "@mui/icons-material/DataObject";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import {
   Avatar,
   Box,
@@ -39,8 +39,6 @@ import { useNavigate, useParams } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { isInProgress } from "@/domains/engine/features/pipeline-list/pipeline-list.service";
-
 import { useJob } from "./engine-run.service";
 import {
   PIPELINE_STEPS,
@@ -48,6 +46,8 @@ import {
   type JobStatus,
   type StepType,
 } from "./engine-run.types";
+
+import { isInProgress } from "@/domains/engine/features/pipeline-list/pipeline-list.service";
 
 function getStepState(
   step: EngineJobStep | undefined,
@@ -65,7 +65,10 @@ function getStepState(
   }
 }
 
-function getProgress(steps: EngineJobStep[]): { current: number; total: number } {
+function getProgress(steps: EngineJobStep[]): {
+  current: number;
+  total: number;
+} {
   const completed = steps.filter((s) => s.status === "completed").length;
   return { current: completed, total: PIPELINE_STEPS.length };
 }
@@ -80,33 +83,60 @@ function getStepSummary(step: EngineJobStep | undefined): string | null {
       return Array.isArray(arr) ? arr.length : 0;
     };
     switch (stepType) {
-      case "extract_features": { const n = len(input, "raw_chunks"); return n ? `Processing ${n} chunks…` : null; }
-      case "extract_plans": { const n = len(input, "features"); return n ? `Processing ${n} features…` : null; }
-      case "extract_scenarios": { const n = len(input, "test_areas"); return n ? `Processing ${n} test areas…` : null; }
-      case "generate_proposal": { const n = len(input, "scenarios"); return n ? `Assembling ${n} scenarios…` : null; }
-      default: return null;
+      case "extract_features": {
+        const n = len(input, "raw_chunks");
+        return n ? `Processing ${n} chunks…` : null;
+      }
+      case "extract_plans": {
+        const n = len(input, "features");
+        return n ? `Processing ${n} features…` : null;
+      }
+      case "extract_scenarios": {
+        const n = len(input, "test_areas");
+        return n ? `Processing ${n} test areas…` : null;
+      }
+      case "generate_proposal": {
+        const n = len(input, "scenarios");
+        return n ? `Assembling ${n} scenarios…` : null;
+      }
+      default:
+        return null;
     }
   }
 
   if (status === "completed" && output) {
-    const len = (key: string) => { const arr = output[key]; return Array.isArray(arr) ? arr.length : 0; };
+    const len = (key: string) => {
+      const arr = output[key];
+      return Array.isArray(arr) ? arr.length : 0;
+    };
     const avgConf = (key: string) => {
       const arr = output[key];
       if (!Array.isArray(arr) || !arr.length) return 0;
       return Math.round(
-        (arr as Array<Record<string, unknown>>).reduce((s, x) => s + (typeof x.confidence === "number" ? x.confidence : 0), 0) / arr.length * 100,
+        ((arr as Array<Record<string, unknown>>).reduce(
+          (s, x) => s + (typeof x.confidence === "number" ? x.confidence : 0),
+          0,
+        ) /
+          arr.length) *
+          100,
       );
     };
     switch (stepType) {
       case "collect": {
         const n = len("raw_chunks");
         if (!n) return null;
-        const sources = new Set((output.raw_chunks as Array<Record<string, unknown>>).map((c) => c.source)).size;
+        const sources = new Set(
+          (output.raw_chunks as Array<Record<string, unknown>>).map(
+            (c) => c.source,
+          ),
+        ).size;
         return `${n} chunks · ${sources} source${sources !== 1 ? "s" : ""}`;
       }
       case "extract_features": {
         const n = len("features");
-        return n ? `${n} features · ${avgConf("features")}% avg confidence` : null;
+        return n
+          ? `${n} features · ${avgConf("features")}% avg confidence`
+          : null;
       }
       case "extract_plans": {
         const n = len("test_areas");
@@ -114,16 +144,25 @@ function getStepSummary(step: EngineJobStep | undefined): string | null {
       }
       case "extract_scenarios": {
         const n = len("scenarios");
-        return n ? `${n} scenarios · ${avgConf("scenarios")}% avg confidence` : null;
+        return n
+          ? `${n} scenarios · ${avgConf("scenarios")}% avg confidence`
+          : null;
       }
       case "generate_proposal": {
         const proposal = output.proposal as Record<string, unknown> | undefined;
         const stats = proposal?.stats as Record<string, unknown> | undefined;
-        const plans = typeof stats?.total_test_plans === "number" ? stats.total_test_plans : 0;
-        const scenarios = typeof stats?.total_scenarios === "number" ? stats.total_scenarios : 0;
+        const plans =
+          typeof stats?.total_test_plans === "number"
+            ? stats.total_test_plans
+            : 0;
+        const scenarios =
+          typeof stats?.total_scenarios === "number"
+            ? stats.total_scenarios
+            : 0;
         return plans ? `${plans} test plans · ${scenarios} scenarios` : null;
       }
-      default: return null;
+      default:
+        return null;
     }
   }
 
@@ -139,8 +178,12 @@ function formatMs(diffMs: number): string {
   return `${secs}s`;
 }
 
-function useLiveDuration(startTime: string, endTime?: string | null, isActive?: boolean): string {
-  const [now, setNow] = useState(Date.now());
+function useLiveDuration(
+  startTime: string,
+  endTime?: string | null,
+  isActive?: boolean,
+): string {
+  const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
     if (!isActive) return;
@@ -155,7 +198,11 @@ function useLiveDuration(startTime: string, endTime?: string | null, isActive?: 
 
 function StepDuration({ step }: { step: EngineJobStep }) {
   const isActive = step.status === "running";
-  const duration = useLiveDuration(step.startedAt!, step.completedAt, isActive);
+  const duration = useLiveDuration(
+    step.startedAt ?? step.createdAt,
+    step.completedAt,
+    isActive,
+  );
 
   return (
     <Typography
@@ -173,11 +220,26 @@ function StepDuration({ step }: { step: EngineJobStep }) {
 }
 
 const STEP_I18N_KEYS: Record<StepType, { label: string; desc: string }> = {
-  collect: { label: "pipeline.stageCollecting", desc: "pipeline.stageCollectingDesc" },
-  extract_features: { label: "pipeline.stageExtractingFeatures", desc: "pipeline.stageExtractingFeaturesDesc" },
-  extract_plans: { label: "pipeline.stageExtractingPlans", desc: "pipeline.stageExtractingPlansDesc" },
-  extract_scenarios: { label: "pipeline.stageExtractingScenarios", desc: "pipeline.stageExtractingScenariosDesc" },
-  generate_proposal: { label: "pipeline.stageGenerateProposal", desc: "pipeline.stageGenerateProposalDesc" },
+  collect: {
+    label: "pipeline.stageCollecting",
+    desc: "pipeline.stageCollectingDesc",
+  },
+  extract_features: {
+    label: "pipeline.stageExtractingFeatures",
+    desc: "pipeline.stageExtractingFeaturesDesc",
+  },
+  extract_plans: {
+    label: "pipeline.stageExtractingPlans",
+    desc: "pipeline.stageExtractingPlansDesc",
+  },
+  extract_scenarios: {
+    label: "pipeline.stageExtractingScenarios",
+    desc: "pipeline.stageExtractingScenariosDesc",
+  },
+  generate_proposal: {
+    label: "pipeline.stageGenerateProposal",
+    desc: "pipeline.stageGenerateProposalDesc",
+  },
 };
 
 const STATUS_LABELS: Record<
@@ -215,11 +277,21 @@ function InfoCard({
   return (
     <Card variant="outlined" sx={{ flex: 1, minWidth: 0 }}>
       <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
-        <Stack direction="row" spacing={1} sx={{ alignItems: "center", mb: 0.5 }}>
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{ alignItems: "center", mb: 0.5 }}
+        >
           <Icon sx={{ fontSize: 16, color: "text.secondary" }} />
           <Typography
             variant="caption"
-            sx={{ fontSize: 11, color: "text.secondary", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.3 }}
+            sx={{
+              fontSize: 11,
+              color: "text.secondary",
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: 0.3,
+            }}
           >
             {label}
           </Typography>
@@ -256,7 +328,13 @@ interface ProposalData {
   };
 }
 
-function MetricBox({ value, label }: { value: string | number; label: string }) {
+function MetricBox({
+  value,
+  label,
+}: {
+  value: string | number;
+  label: string;
+}) {
   return (
     <Box
       sx={{
@@ -270,8 +348,18 @@ function MetricBox({ value, label }: { value: string | number; label: string }) 
         textAlign: "center",
       }}
     >
-      <Typography sx={{ fontWeight: 700, fontSize: 18, lineHeight: 1.1 }}>{value}</Typography>
-      <Typography sx={{ fontSize: 10, color: "text.secondary", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.3 }}>
+      <Typography sx={{ fontWeight: 700, fontSize: 18, lineHeight: 1.1 }}>
+        {value}
+      </Typography>
+      <Typography
+        sx={{
+          fontSize: 10,
+          color: "text.secondary",
+          fontWeight: 600,
+          textTransform: "uppercase",
+          letterSpacing: 0.3,
+        }}
+      >
         {label}
       </Typography>
     </Box>
@@ -289,17 +377,25 @@ const JSON_COLORS = {
 } as const;
 
 function JsonValue({ value, depth }: { value: unknown; depth: number }) {
-  if (value === null) return <span style={{ color: JSON_COLORS.null, fontStyle: "italic" }}>null</span>;
-  if (typeof value === "boolean") return <span style={{ color: JSON_COLORS.boolean }}>{String(value)}</span>;
-  if (typeof value === "number") return <span style={{ color: JSON_COLORS.number }}>{value}</span>;
+  if (value === null)
+    return (
+      <span style={{ color: JSON_COLORS.null, fontStyle: "italic" }}>null</span>
+    );
+  if (typeof value === "boolean")
+    return <span style={{ color: JSON_COLORS.boolean }}>{String(value)}</span>;
+  if (typeof value === "number")
+    return <span style={{ color: JSON_COLORS.number }}>{value}</span>;
   if (typeof value === "string") {
     if (value.length > 300) {
       return <JsonLongString value={value} />;
     }
-    return <span style={{ color: JSON_COLORS.string }}>&quot;{value}&quot;</span>;
+    return (
+      <span style={{ color: JSON_COLORS.string }}>&quot;{value}&quot;</span>
+    );
   }
   if (Array.isArray(value)) return <JsonArray items={value} depth={depth} />;
-  if (typeof value === "object") return <JsonObject data={value as Record<string, unknown>} depth={depth} />;
+  if (typeof value === "object")
+    return <JsonObject data={value as Record<string, unknown>} depth={depth} />;
   return <span>{String(value)}</span>;
 }
 
@@ -310,8 +406,17 @@ function JsonLongString({ value }: { value: string }) {
     <span style={{ color: JSON_COLORS.string }}>
       &quot;{expanded ? value : `${preview}…`}&quot;
       <span
-        onClick={(e) => { e.stopPropagation(); setExpanded(!expanded); }}
-        style={{ color: JSON_COLORS.toggle, cursor: "pointer", marginLeft: 4, fontSize: 10, userSelect: "none" }}
+        onClick={(e) => {
+          e.stopPropagation();
+          setExpanded(!expanded);
+        }}
+        style={{
+          color: JSON_COLORS.toggle,
+          cursor: "pointer",
+          marginLeft: 4,
+          fontSize: 10,
+          userSelect: "none",
+        }}
       >
         {expanded ? "collapse" : `+${value.length - 120} chars`}
       </span>
@@ -319,38 +424,68 @@ function JsonLongString({ value }: { value: string }) {
   );
 }
 
-function JsonObject({ data, depth }: { data: Record<string, unknown>; depth: number }) {
+function JsonObject({
+  data,
+  depth,
+}: {
+  data: Record<string, unknown>;
+  depth: number;
+}) {
   const entries = Object.entries(data);
   const [collapsed, setCollapsed] = useState(false);
 
-  if (entries.length === 0) return <span style={{ color: JSON_COLORS.bracket }}>{"{}"}</span>;
+  if (entries.length === 0)
+    return <span style={{ color: JSON_COLORS.bracket }}>{"{}"}</span>;
 
   return (
     <span>
       <span
-        onClick={(e) => { e.stopPropagation(); setCollapsed(!collapsed); }}
-        style={{ cursor: "pointer", userSelect: "none", display: "inline-flex", alignItems: "center", verticalAlign: "middle" }}
+        onClick={(e) => {
+          e.stopPropagation();
+          setCollapsed(!collapsed);
+        }}
+        style={{
+          cursor: "pointer",
+          userSelect: "none",
+          display: "inline-flex",
+          alignItems: "center",
+          verticalAlign: "middle",
+        }}
       >
-        {collapsed
-          ? <KeyboardArrowRightIcon sx={{ fontSize: 14, color: JSON_COLORS.toggle }} />
-          : <KeyboardArrowDownIcon sx={{ fontSize: 14, color: JSON_COLORS.toggle }} />}
+        {collapsed ? (
+          <KeyboardArrowRightIcon
+            sx={{ fontSize: 14, color: JSON_COLORS.toggle }}
+          />
+        ) : (
+          <KeyboardArrowDownIcon
+            sx={{ fontSize: 14, color: JSON_COLORS.toggle }}
+          />
+        )}
       </span>
       <span style={{ color: JSON_COLORS.bracket }}>{"{"}</span>
       {collapsed ? (
         <span
-          onClick={(e) => { e.stopPropagation(); setCollapsed(false); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            setCollapsed(false);
+          }}
           style={{ color: JSON_COLORS.toggle, cursor: "pointer", fontSize: 11 }}
         >
-          {" "}{entries.length} keys…{" "}
+          {" "}
+          {entries.length} keys…{" "}
         </span>
       ) : (
         <div style={{ paddingLeft: 20 }}>
           {entries.map(([key, val], i) => (
             <div key={key} style={{ lineHeight: 1.7 }}>
-              <span style={{ color: JSON_COLORS.key, fontWeight: 500 }}>&quot;{key}&quot;</span>
+              <span style={{ color: JSON_COLORS.key, fontWeight: 500 }}>
+                &quot;{key}&quot;
+              </span>
               <span style={{ color: JSON_COLORS.bracket }}>: </span>
               <JsonValue value={val} depth={depth + 1} />
-              {i < entries.length - 1 && <span style={{ color: JSON_COLORS.bracket }}>,</span>}
+              {i < entries.length - 1 && (
+                <span style={{ color: JSON_COLORS.bracket }}>,</span>
+              )}
             </div>
           ))}
         </div>
@@ -363,7 +498,8 @@ function JsonObject({ data, depth }: { data: Record<string, unknown>; depth: num
 function JsonArray({ items, depth }: { items: unknown[]; depth: number }) {
   const [collapsed, setCollapsed] = useState(false);
 
-  if (items.length === 0) return <span style={{ color: JSON_COLORS.bracket }}>[]</span>;
+  if (items.length === 0)
+    return <span style={{ color: JSON_COLORS.bracket }}>[]</span>;
 
   const allPrimitive = items.every((i) => i === null || typeof i !== "object");
   if (allPrimitive && items.length <= 5) {
@@ -373,7 +509,9 @@ function JsonArray({ items, depth }: { items: unknown[]; depth: number }) {
         {items.map((item, i) => (
           <span key={i}>
             <JsonValue value={item} depth={depth + 1} />
-            {i < items.length - 1 && <span style={{ color: JSON_COLORS.bracket }}>, </span>}
+            {i < items.length - 1 && (
+              <span style={{ color: JSON_COLORS.bracket }}>, </span>
+            )}
           </span>
         ))}
         <span style={{ color: JSON_COLORS.bracket }}>]</span>
@@ -384,28 +522,58 @@ function JsonArray({ items, depth }: { items: unknown[]; depth: number }) {
   return (
     <span>
       <span
-        onClick={(e) => { e.stopPropagation(); setCollapsed(!collapsed); }}
-        style={{ cursor: "pointer", userSelect: "none", display: "inline-flex", alignItems: "center", verticalAlign: "middle" }}
+        onClick={(e) => {
+          e.stopPropagation();
+          setCollapsed(!collapsed);
+        }}
+        style={{
+          cursor: "pointer",
+          userSelect: "none",
+          display: "inline-flex",
+          alignItems: "center",
+          verticalAlign: "middle",
+        }}
       >
-        {collapsed
-          ? <KeyboardArrowRightIcon sx={{ fontSize: 14, color: JSON_COLORS.toggle }} />
-          : <KeyboardArrowDownIcon sx={{ fontSize: 14, color: JSON_COLORS.toggle }} />}
+        {collapsed ? (
+          <KeyboardArrowRightIcon
+            sx={{ fontSize: 14, color: JSON_COLORS.toggle }}
+          />
+        ) : (
+          <KeyboardArrowDownIcon
+            sx={{ fontSize: 14, color: JSON_COLORS.toggle }}
+          />
+        )}
       </span>
       <span style={{ color: JSON_COLORS.bracket }}>[</span>
       {collapsed ? (
         <span
-          onClick={(e) => { e.stopPropagation(); setCollapsed(false); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            setCollapsed(false);
+          }}
           style={{ color: JSON_COLORS.toggle, cursor: "pointer", fontSize: 11 }}
         >
-          {" "}{items.length} items…{" "}
+          {" "}
+          {items.length} items…{" "}
         </span>
       ) : (
         <div style={{ paddingLeft: 20 }}>
           {items.map((item, i) => (
             <div key={i} style={{ lineHeight: 1.7 }}>
-              <span style={{ color: JSON_COLORS.toggle, fontSize: 10, marginRight: 6, userSelect: "none" }}>{i}</span>
+              <span
+                style={{
+                  color: JSON_COLORS.toggle,
+                  fontSize: 10,
+                  marginRight: 6,
+                  userSelect: "none",
+                }}
+              >
+                {i}
+              </span>
               <JsonValue value={item} depth={depth + 1} />
-              {i < items.length - 1 && <span style={{ color: JSON_COLORS.bracket }}>,</span>}
+              {i < items.length - 1 && (
+                <span style={{ color: JSON_COLORS.bracket }}>,</span>
+              )}
             </div>
           ))}
         </div>
@@ -452,20 +620,42 @@ function StepDataModal({
 
   return (
     <Dialog open onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1, pr: 6 }}>
+      <DialogTitle
+        sx={{ display: "flex", alignItems: "center", gap: 1, pr: 6 }}
+      >
         <DataObjectIcon sx={{ fontSize: 20, color: "primary.main" }} />
-        <Typography variant="subtitle1" component="span" sx={{ fontWeight: 600 }}>
+        <Typography
+          variant="subtitle1"
+          component="span"
+          sx={{ fontWeight: 600 }}
+        >
           {t(i18nKeys.label)}
         </Typography>
         <Chip
           label={step.status}
           size="small"
-          color={step.status === "completed" ? "success" : step.status === "failed" ? "error" : "default"}
+          color={
+            step.status === "completed"
+              ? "success"
+              : step.status === "failed"
+                ? "error"
+                : "default"
+          }
           sx={{ ml: 1, height: 20, fontSize: 10, fontWeight: 600 }}
         />
         <Box sx={{ flex: 1 }} />
-        <IconButton onClick={handleCopy} size="small" title="Copy JSON" sx={{ mr: 1 }}>
-          <ContentCopyIcon sx={{ fontSize: 16, color: copied ? "success.main" : "text.secondary" }} />
+        <IconButton
+          onClick={handleCopy}
+          size="small"
+          title="Copy JSON"
+          sx={{ mr: 1 }}
+        >
+          <ContentCopyIcon
+            sx={{
+              fontSize: 16,
+              color: copied ? "success.main" : "text.secondary",
+            }}
+          />
         </IconButton>
         <IconButton
           onClick={onClose}
@@ -479,13 +669,21 @@ function StepDataModal({
         {tabs.length > 1 && (
           <Tabs
             value={safeTab}
-            onChange={(_, v) => { setTab(v); setCopied(false); }}
+            onChange={(_, v) => {
+              setTab(v);
+              setCopied(false);
+            }}
             sx={{
               px: 3,
               borderBottom: "1px solid",
               borderColor: "divider",
               minHeight: 36,
-              "& .MuiTab-root": { minHeight: 36, textTransform: "none", fontSize: 13, fontWeight: 500 },
+              "& .MuiTab-root": {
+                minHeight: 36,
+                textTransform: "none",
+                fontSize: 13,
+                fontWeight: 500,
+              },
             }}
           >
             {tabs.map((tb) => (
@@ -500,7 +698,8 @@ function StepDataModal({
             overflow: "auto",
             bgcolor: "#1e1e1e",
             color: "#d4d4d4",
-            fontFamily: "'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, monospace",
+            fontFamily:
+              "'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, monospace",
             fontSize: 12.5,
             lineHeight: 1.5,
           }}
@@ -518,8 +717,14 @@ export function EngineRun() {
   const navigate = useNavigate();
   const { data: job, isLoading } = useJob(jobId);
   const running = job ? isInProgress(job.status) : false;
-  const duration = useLiveDuration(job?.createdAt ?? "", job?.completedAt, running);
-  const [inspectedStep, setInspectedStep] = useState<EngineJobStep | null>(null);
+  const duration = useLiveDuration(
+    job?.createdAt ?? "",
+    job?.completedAt,
+    running,
+  );
+  const [inspectedStep, setInspectedStep] = useState<EngineJobStep | null>(
+    null,
+  );
 
   const handleStepClick = useCallback((step: EngineJobStep | undefined) => {
     if (!step) return;
@@ -563,12 +768,16 @@ export function EngineRun() {
   );
   const progress = getProgress(steps);
   const activeStep = steps.find((s) => s.status === "running");
-  const activeStepI18n = activeStep ? STEP_I18N_KEYS[activeStep.stepType] : null;
+  const activeStepI18n = activeStep
+    ? STEP_I18N_KEYS[activeStep.stepType]
+    : null;
 
   const proposalStep = steps.find(
     (s) => s.stepType === "generate_proposal" && s.status === "completed",
   );
-  const proposal = (proposalStep?.output as { proposal?: ProposalData } | undefined)?.proposal;
+  const proposal = (
+    proposalStep?.output as { proposal?: ProposalData } | undefined
+  )?.proposal;
   const topPlans = proposal
     ? [...proposal.test_plans]
         .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0))
@@ -594,16 +803,28 @@ export function EngineRun() {
         sx={{ justifyContent: "space-between", alignItems: "center", mb: 3 }}
       >
         <Box>
-          <Typography variant="h5" sx={{ fontWeight: 700, fontSize: 22, mb: 0.25 }}>
+          <Typography
+            variant="h5"
+            sx={{ fontWeight: 700, fontSize: 22, mb: 0.25 }}
+          >
             Pipeline{" "}
             <Typography
               component="span"
-              sx={{ fontWeight: 700, fontSize: 22, fontFamily: "monospace", color: "text.secondary" }}
+              sx={{
+                fontWeight: 700,
+                fontSize: 22,
+                fontFamily: "monospace",
+                color: "text.secondary",
+              }}
             >
               #{shortId}
             </Typography>
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ fontSize: 13 }}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ fontSize: 13 }}
+          >
             {new Date(job.createdAt).toLocaleString()}
           </Typography>
         </Box>
@@ -633,14 +854,21 @@ export function EngineRun() {
         />
         <InfoCard icon={PersonOutlineIcon} label={t("pipeline.createdBy")}>
           {job.createdByName ? (
-            <Stack direction="row" spacing={0.75} sx={{ alignItems: "center", mt: 0.25 }}>
+            <Stack
+              direction="row"
+              spacing={0.75}
+              sx={{ alignItems: "center", mt: 0.25 }}
+            >
               <Avatar
                 src={job.createdByAvatar ?? undefined}
                 sx={{ width: 20, height: 20, fontSize: 10 }}
               >
                 {job.createdByName[0]?.toUpperCase()}
               </Avatar>
-              <Typography variant="body2" sx={{ fontWeight: 600, fontSize: 13 }}>
+              <Typography
+                variant="body2"
+                sx={{ fontWeight: 600, fontSize: 13 }}
+              >
                 {job.createdByName}
               </Typography>
             </Stack>
@@ -652,7 +880,10 @@ export function EngineRun() {
         </InfoCard>
       </Stack>
 
-      <StepDataModal step={inspectedStep} onClose={() => setInspectedStep(null)} />
+      <StepDataModal
+        step={inspectedStep}
+        onClose={() => setInspectedStep(null)}
+      />
 
       {/* Two-column layout: Timeline | Sources + Current stage */}
       <Stack direction="row" spacing={3} sx={{ alignItems: "flex-start" }}>
@@ -674,15 +905,24 @@ export function EngineRun() {
 
             <Box>
               {PIPELINE_STEPS.map((pipelineStep, idx) => {
-                const step = steps.find((s) => s.stepType === pipelineStep.stepType);
+                const step = steps.find(
+                  (s) => s.stepType === pipelineStep.stepType,
+                );
                 const state = getStepState(step);
                 const isLast = idx === PIPELINE_STEPS.length - 1;
                 const i18nKeys = STEP_I18N_KEYS[pipelineStep.stepType];
                 const summary = getStepSummary(step);
-                const clickable = !!step && (hasData(step.input) || hasData(step.output) || hasData(step.meta));
+                const clickable =
+                  !!step &&
+                  (hasData(step.input) ||
+                    hasData(step.output) ||
+                    hasData(step.meta));
 
                 return (
-                  <Box key={pipelineStep.stepType} sx={{ display: "flex", gap: 1.5 }}>
+                  <Box
+                    key={pipelineStep.stepType}
+                    sx={{ display: "flex", gap: 1.5 }}
+                  >
                     {/* Rail column: icon + connecting line, both centered on 26px axis */}
                     <Box
                       sx={{
@@ -694,9 +934,22 @@ export function EngineRun() {
                       }}
                     >
                       {/* Icon — height matches the title row so it aligns with the title */}
-                      <Box sx={{ height: 26, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <Box
+                        sx={{
+                          height: 26,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
                         {state === "completed" && (
-                          <CheckCircleIcon sx={{ fontSize: 26, color: "success.main", display: "block" }} />
+                          <CheckCircleIcon
+                            sx={{
+                              fontSize: 26,
+                              color: "success.main",
+                              display: "block",
+                            }}
+                          />
                         )}
                         {state === "active" && (
                           <RadioButtonCheckedIcon
@@ -706,17 +959,35 @@ export function EngineRun() {
                               display: "block",
                               animation: "dotPulse 2s ease-in-out infinite",
                               "@keyframes dotPulse": {
-                                "0%, 100%": { opacity: 1, transform: "scale(1)" },
-                                "50%": { opacity: 0.5, transform: "scale(1.15)" },
+                                "0%, 100%": {
+                                  opacity: 1,
+                                  transform: "scale(1)",
+                                },
+                                "50%": {
+                                  opacity: 0.5,
+                                  transform: "scale(1.15)",
+                                },
                               },
                             }}
                           />
                         )}
                         {state === "error" && (
-                          <ErrorIcon sx={{ fontSize: 26, color: "error.main", display: "block" }} />
+                          <ErrorIcon
+                            sx={{
+                              fontSize: 26,
+                              color: "error.main",
+                              display: "block",
+                            }}
+                          />
                         )}
                         {state === "pending" && (
-                          <CircleOutlinedIcon sx={{ fontSize: 26, color: "grey.300", display: "block" }} />
+                          <CircleOutlinedIcon
+                            sx={{
+                              fontSize: 26,
+                              color: "grey.300",
+                              display: "block",
+                            }}
+                          />
                         )}
                       </Box>
                       {/* Connecting line — grows to fill the gap down to the next icon */}
@@ -728,7 +999,10 @@ export function EngineRun() {
                             my: 0.5,
                             minHeight: 12,
                             borderRadius: 1,
-                            bgcolor: state === "completed" ? "success.main" : "grey.200",
+                            bgcolor:
+                              state === "completed"
+                                ? "success.main"
+                                : "grey.200",
                           }}
                         />
                       )}
@@ -747,12 +1021,24 @@ export function EngineRun() {
                         "&:hover": clickable ? { bgcolor: "action.hover" } : {},
                       }}
                     >
-                      <Stack direction="row" spacing={1} sx={{ alignItems: "center", minHeight: 26 }}>
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        sx={{ alignItems: "center", minHeight: 26 }}
+                      >
                         <Typography
                           variant="body2"
                           sx={{
-                            fontWeight: state === "active" ? 700 : state === "completed" ? 500 : 400,
-                            color: state === "pending" ? "text.disabled" : "text.primary",
+                            fontWeight:
+                              state === "active"
+                                ? 700
+                                : state === "completed"
+                                  ? 500
+                                  : 400,
+                            color:
+                              state === "pending"
+                                ? "text.disabled"
+                                : "text.primary",
                             fontSize: 13,
                           }}
                         >
@@ -761,32 +1047,44 @@ export function EngineRun() {
                         {state === "active" && (
                           <CircularProgress size={14} thickness={5} />
                         )}
-                        {step?.startedAt && (state === "active" || state === "completed" || state === "error") && (
-                          <StepDuration step={step} />
-                        )}
-                        {step && (hasData(step.input) || hasData(step.output)) && (
-                          <Chip
-                            icon={<DataObjectIcon sx={{ fontSize: "14px !important" }} />}
-                            label="JSON"
-                            size="small"
-                            onClick={(e) => { e.stopPropagation(); handleStepClick(step); }}
-                            sx={{
-                              height: 22,
-                              fontSize: 11,
-                              fontWeight: 600,
-                              cursor: "pointer",
-                              bgcolor: "action.hover",
-                              color: "primary.main",
-                              "& .MuiChip-icon": { color: "primary.main" },
-                            }}
-                          />
-                        )}
+                        {step?.startedAt &&
+                          (state === "active" ||
+                            state === "completed" ||
+                            state === "error") && <StepDuration step={step} />}
+                        {step &&
+                          (hasData(step.input) || hasData(step.output)) && (
+                            <Chip
+                              icon={
+                                <DataObjectIcon
+                                  sx={{ fontSize: "14px !important" }}
+                                />
+                              }
+                              label="JSON"
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleStepClick(step);
+                              }}
+                              sx={{
+                                height: 22,
+                                fontSize: 11,
+                                fontWeight: 600,
+                                cursor: "pointer",
+                                bgcolor: "action.hover",
+                                color: "primary.main",
+                                "& .MuiChip-icon": { color: "primary.main" },
+                              }}
+                            />
+                          )}
                       </Stack>
                       <Typography
                         variant="caption"
                         sx={{
                           display: "block",
-                          color: state === "pending" ? "text.disabled" : "text.secondary",
+                          color:
+                            state === "pending"
+                              ? "text.disabled"
+                              : "text.secondary",
                           fontSize: 11,
                         }}
                       >
@@ -801,7 +1099,10 @@ export function EngineRun() {
                             fontSize: 11,
                             fontWeight: 600,
                             fontFamily: "monospace",
-                            color: state === "active" ? "primary.main" : "success.dark",
+                            color:
+                              state === "active"
+                                ? "primary.main"
+                                : "success.dark",
                           }}
                         >
                           {summary}
@@ -819,8 +1120,18 @@ export function EngineRun() {
                 size="large"
                 fullWidth
                 startIcon={<FactCheckOutlinedIcon />}
-                onClick={() => navigate({ to: "/engine/$jobId/review", params: { jobId: job.id } })}
-                sx={{ mt: 2.5, fontWeight: 700, textTransform: "none", py: 1.25 }}
+                onClick={() =>
+                  navigate({
+                    to: "/engine/$jobId/review",
+                    params: { jobId: job.id },
+                  })
+                }
+                sx={{
+                  mt: 2.5,
+                  fontWeight: 700,
+                  textTransform: "none",
+                  py: 1.25,
+                }}
               >
                 {t("pipeline.reviewProposal")}
               </Button>
@@ -837,7 +1148,10 @@ export function EngineRun() {
                   borderColor: "error.200",
                 }}
               >
-                <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5, color: "error.main" }}>
+                <Typography
+                  variant="body2"
+                  sx={{ fontWeight: 600, mb: 0.5, color: "error.main" }}
+                >
                   Error
                 </Typography>
                 <Typography variant="caption" sx={{ color: "error.dark" }}>
@@ -856,34 +1170,76 @@ export function EngineRun() {
               <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
                 <Typography
                   variant="caption"
-                  sx={{ fontSize: 11, color: "success.dark", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.3, mb: 1.5, display: "block" }}
+                  sx={{
+                    fontSize: 11,
+                    color: "success.dark",
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: 0.3,
+                    mb: 1.5,
+                    display: "block",
+                  }}
                 >
                   {t("pipeline.proposalSummary")}
                 </Typography>
                 <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
-                  <MetricBox value={proposal.stats?.total_test_plans ?? proposal.test_plans.length} label={t("pipeline.testPlans")} />
-                  <MetricBox value={proposal.stats?.total_test_areas ?? 0} label={t("pipeline.testAreas")} />
+                  <MetricBox
+                    value={
+                      proposal.stats?.total_test_plans ??
+                      proposal.test_plans.length
+                    }
+                    label={t("pipeline.testPlans")}
+                  />
+                  <MetricBox
+                    value={proposal.stats?.total_test_areas ?? 0}
+                    label={t("pipeline.testAreas")}
+                  />
                 </Stack>
                 <Stack direction="row" spacing={1}>
-                  <MetricBox value={proposal.stats?.total_scenarios ?? 0} label={t("pipeline.scenarios")} />
+                  <MetricBox
+                    value={proposal.stats?.total_scenarios ?? 0}
+                    label={t("pipeline.scenarios")}
+                  />
                   <MetricBox
                     value={`${Math.round((proposal.stats?.avg_scenario_confidence ?? 0) * 100)}%`}
                     label={t("pipeline.avgConfidence")}
                   />
                 </Stack>
 
-                {proposal.coverage_gaps && proposal.coverage_gaps.length > 0 && (
-                  <Stack direction="row" spacing={0.75} sx={{ alignItems: "center", mt: 1.5 }}>
-                    <WarningAmberOutlinedIcon sx={{ fontSize: 15, color: "warning.main" }} />
-                    <Typography variant="caption" sx={{ fontSize: 11, color: "text.secondary" }}>
-                      {t("pipeline.coverageGaps", { count: proposal.coverage_gaps.length })}
-                    </Typography>
-                  </Stack>
-                )}
+                {proposal.coverage_gaps &&
+                  proposal.coverage_gaps.length > 0 && (
+                    <Stack
+                      direction="row"
+                      spacing={0.75}
+                      sx={{ alignItems: "center", mt: 1.5 }}
+                    >
+                      <WarningAmberOutlinedIcon
+                        sx={{ fontSize: 15, color: "warning.main" }}
+                      />
+                      <Typography
+                        variant="caption"
+                        sx={{ fontSize: 11, color: "text.secondary" }}
+                      >
+                        {t("pipeline.coverageGaps", {
+                          count: proposal.coverage_gaps.length,
+                        })}
+                      </Typography>
+                    </Stack>
+                  )}
 
                 {topPlans.length > 0 && (
                   <>
-                    <Typography sx={{ fontSize: 10, color: "text.secondary", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.3, mt: 2, mb: 1 }}>
+                    <Typography
+                      sx={{
+                        fontSize: 10,
+                        color: "text.secondary",
+                        fontWeight: 600,
+                        textTransform: "uppercase",
+                        letterSpacing: 0.3,
+                        mt: 2,
+                        mb: 1,
+                      }}
+                    >
                       {t("pipeline.topPlans")}
                     </Typography>
                     <Stack spacing={0.75}>
@@ -893,14 +1249,42 @@ export function EngineRun() {
                           0,
                         );
                         return (
-                          <Stack key={plan.id} direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: "space-between" }}>
-                            <Typography variant="caption" noWrap sx={{ fontSize: 12, flex: 1, minWidth: 0 }}>
+                          <Stack
+                            key={plan.id}
+                            direction="row"
+                            spacing={1}
+                            sx={{
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                            }}
+                          >
+                            <Typography
+                              variant="caption"
+                              noWrap
+                              sx={{ fontSize: 12, flex: 1, minWidth: 0 }}
+                            >
                               {plan.name}
                             </Typography>
                             {scenarioCount > 0 && (
-                              <Chip label={scenarioCount} size="small" sx={{ height: 18, fontSize: 10, fontWeight: 600 }} />
+                              <Chip
+                                label={scenarioCount}
+                                size="small"
+                                sx={{
+                                  height: 18,
+                                  fontSize: 10,
+                                  fontWeight: 600,
+                                }}
+                              />
                             )}
-                            <Typography sx={{ fontSize: 11, fontFamily: "monospace", color: "success.dark", fontWeight: 600, flexShrink: 0 }}>
+                            <Typography
+                              sx={{
+                                fontSize: 11,
+                                fontFamily: "monospace",
+                                color: "success.dark",
+                                fontWeight: 600,
+                                flexShrink: 0,
+                              }}
+                            >
                               {Math.round((plan.confidence ?? 0) * 100)}%
                             </Typography>
                           </Stack>
@@ -945,11 +1329,19 @@ export function EngineRun() {
                 </Typography>
                 <Typography
                   variant="body2"
-                  sx={{ fontWeight: 700, fontSize: 14, color: "primary.main", mb: 0.25 }}
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: 14,
+                    color: "primary.main",
+                    mb: 0.25,
+                  }}
                 >
                   {t(activeStepI18n.label)}
                 </Typography>
-                <Typography variant="caption" sx={{ fontSize: 11, color: "text.secondary" }}>
+                <Typography
+                  variant="caption"
+                  sx={{ fontSize: 11, color: "text.secondary" }}
+                >
                   {t(activeStepI18n.desc)}
                 </Typography>
               </CardContent>
@@ -975,7 +1367,8 @@ export function EngineRun() {
               </Typography>
               <Stack direction="row" sx={{ flexWrap: "wrap", gap: 0.75 }}>
                 {job.selectedSources.flatMap((source) => {
-                  const Icon = CONNECTOR_ICONS[source.connector] ?? SourceOutlinedIcon;
+                  const Icon =
+                    CONNECTOR_ICONS[source.connector] ?? SourceOutlinedIcon;
                   return source.items.map((item) => (
                     <Chip
                       key={`${source.connector}:${item}`}

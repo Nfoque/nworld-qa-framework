@@ -9,8 +9,8 @@ import {
   type ReactNode,
 } from "react";
 
-import type { TenantBranding } from "@/shared/auth/auth.types";
 import { useAuth } from "@/shared/auth/auth-provider";
+import type { TenantBranding } from "@/shared/auth/auth.types";
 import {
   invokeFunction,
   setActiveTenantHeader,
@@ -68,29 +68,32 @@ export function TenantProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("qaap:activeTenantId", effectiveOverrideId);
     }
     if (prevTenantId.current && prevTenantId.current !== effectiveOverrideId) {
-      queryClient.resetQueries({ predicate: (q) => q.queryKey[0] !== "tenants" });
+      queryClient.resetQueries({
+        predicate: (q) => q.queryKey[0] !== "tenants",
+      });
     }
     prevTenantId.current = effectiveOverrideId;
   }, [effectiveOverrideId, queryClient]);
 
   const activeTenantId = effectiveOverrideId ?? profile?.tenantId ?? null;
   const activeTenant = tenants.find((t) => t.id === activeTenantId);
-  const activeTenantName =
-    activeTenant?.name ?? profile?.tenant?.name ?? null;
+  const activeTenantName = activeTenant?.name ?? profile?.tenant?.name ?? null;
   const resolvedBranding =
     activeTenant?.branding ?? profile?.tenant?.branding ?? {};
   const activeBranding = useMemo(
     () => resolvedBranding,
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [resolvedBranding.primaryColor, resolvedBranding.primaryColorDark, resolvedBranding.primaryColorLight],
+    [
+      resolvedBranding.primaryColor,
+      resolvedBranding.primaryColorDark,
+      resolvedBranding.primaryColorLight,
+    ],
   );
 
   const isBrandingReady = isSuperadmin ? !isLoadingTenants : !!profile;
 
   useEffect(() => {
-    document.title = activeTenantName
-      ? `QAAP - ${activeTenantName}`
-      : "QAAP";
+    document.title = activeTenantName ? `QAAP - ${activeTenantName}` : "QAAP";
   }, [activeTenantName]);
 
   return (

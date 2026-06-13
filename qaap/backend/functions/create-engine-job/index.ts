@@ -26,7 +26,10 @@ Deno.serve(async (req) => {
   const { selectedSources } = body;
 
   if (!Array.isArray(selectedSources) || selectedSources.length === 0) {
-    return error("MISSING_FIELDS: selectedSources (non-empty array) required", 400);
+    return error(
+      "MISSING_FIELDS: selectedSources (non-empty array) required",
+      400,
+    );
   }
 
   const { data, error: dbErr } = await serviceClient

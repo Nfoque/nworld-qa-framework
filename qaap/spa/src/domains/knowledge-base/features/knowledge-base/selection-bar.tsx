@@ -65,9 +65,7 @@ export function SelectionBar({
                 count: selectedItems.length,
               })}
             </Typography>
-            <Box
-              sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 0.5 }}
-            >
+            <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap", mt: 0.5 }}>
               {selectedItems.slice(0, 3).map((item) => (
                 <Chip
                   key={item}

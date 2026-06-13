@@ -14,6 +14,7 @@ interface ConnectorRow {
   display_name: string;
   description: string;
   config: Record<string, unknown>;
+  credentials: Record<string, unknown> | null;
   status: string;
   status_message: string | null;
   last_synced_at: string | null;
@@ -31,7 +32,7 @@ function toDto(row: ConnectorRow) {
     displayName: row.display_name,
     description: row.description,
     config: row.config,
-    hasCredentials: true,
+    hasCredentials: !!row.credentials,
     status: row.status,
     statusMessage: row.status_message,
     lastSyncedAt: row.last_synced_at,

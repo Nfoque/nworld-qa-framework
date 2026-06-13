@@ -6,7 +6,8 @@ import { invokeFunction } from "@/shared/config/supabase";
 export function useJobs() {
   return useQuery({
     queryKey: ["engine-jobs"],
-    queryFn: () => invokeFunction<EngineJob[]>("list-engine-jobs", { method: "POST" }),
+    queryFn: () =>
+      invokeFunction<EngineJob[]>("list-engine-jobs", { method: "POST" }),
     refetchInterval: 60000,
   });
 }

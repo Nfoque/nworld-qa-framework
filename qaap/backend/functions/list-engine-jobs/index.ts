@@ -30,10 +30,10 @@ Deno.serve(async (req) => {
 
   const { data: allSteps } = jobIds.length
     ? await serviceClient
-        .from("engine_job_steps")
-        .select("*")
-        .in("job_id", jobIds)
-        .order("position", { ascending: true })
+      .from("engine_job_steps")
+      .select("*")
+      .in("job_id", jobIds)
+      .order("position", { ascending: true })
     : { data: [] };
 
   const stepsByJob = new Map<string, Record<string, unknown>[]>();

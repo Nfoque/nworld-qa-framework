@@ -56,9 +56,29 @@ export interface PipelineStep {
 }
 
 export const PIPELINE_STEPS: PipelineStep[] = [
-  { stepType: "collect", label: "Collecting", description: "Fetching raw data from connected sources" },
-  { stepType: "extract_features", label: "Extracting Features", description: "Identifying high-level features from all sources" },
-  { stepType: "extract_plans", label: "Extracting Test Plans", description: "Identifying testable areas per feature" },
-  { stepType: "extract_scenarios", label: "Extracting Scenarios", description: "Generating Gherkin test scenarios" },
-  { stepType: "generate_proposal", label: "Generating Proposal", description: "Assembling the final proposal for review" },
+  {
+    stepType: "collect",
+    label: "Collecting",
+    description: "Fetching raw data from connected sources",
+  },
+  {
+    stepType: "extract_features",
+    label: "Extracting Features",
+    description: "Identifying high-level features from all sources",
+  },
+  {
+    stepType: "extract_plans",
+    label: "Extracting Test Plans",
+    description: "Identifying testable areas per feature",
+  },
+  {
+    stepType: "extract_scenarios",
+    label: "Extracting Scenarios",
+    description: "Generating Gherkin test scenarios",
+  },
+  {
+    stepType: "generate_proposal",
+    label: "Generating Proposal",
+    description: "Assembling the final proposal for review",
+  },
 ];

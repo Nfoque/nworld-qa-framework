@@ -28,6 +28,13 @@ qaap/
 │       ├── delete-connector/
 │       └── test-connector/ # Validate connector credentials
 │
+├── engine/                 # qaap-engine — autonomous pipeline worker (Node/Docker, to be built)
+│   ├── PIPELINE-EXECUTION-REFERENCE.md  # ← BUILD SPEC: end-to-end job processing (contracts, schemas, lessons)
+│   ├── README.md           # Engine architecture + state machine
+│   ├── ROADMAP.md          # Milestones toward the real engine
+│   ├── prompts/            # Verbatim LLM prompts (step 1–4)
+│   └── poc/runs/           # Artifacts from manual pipeline simulations (clau-lessons, …)
+│
 ├── documentation/          # Product specs, ADRs, scaffolding skills
 │   ├── product/            # Architecture, domain model, MVP phases, connectors, LLM pipeline, design, branding
 │   ├── adr/                # 17 ADRs (VSA, domain layer, stack adaptation, testing, dev env)
@@ -37,6 +44,12 @@ qaap/
 ├── package.json            # Root scripts (dev, lint, check, deploy)
 └── CLAUDE.md               # This file
 ```
+
+## The Engine (pipeline)
+
+The autonomous 5-step pipeline (`collect → extract_features → extract_plans → extract_scenarios → generate_proposal`) is specced in [`engine/PIPELINE-EXECUTION-REFERENCE.md`](engine/PIPELINE-EXECUTION-REFERENCE.md) — the canonical reference for how one `engine_job` is processed end-to-end (data model `engine_jobs`/`engine_job_steps`, `tick()`/`buildInput()`, per-step input/output contracts, prompts, the pipeline→domain mapping, and lessons from the clau-lessons simulation). Read it before touching engine or proposal code.
+
+Project tasks live in **dwork** under the `qaap` project (`source_path: qaap/`).
 
 ## Tech Stack
 

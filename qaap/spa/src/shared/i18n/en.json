@@ -123,7 +123,8 @@
     "sourcesSelected": "{{count}} source selected",
     "sourcesSelected_plural": "{{count}} sources selected",
     "more": "+{{count}} more",
-    "generate": "Generate"
+    "generate": "Generate",
+    "creating": "Creating…"
   },
   "status": {
     "approved": "Approved",

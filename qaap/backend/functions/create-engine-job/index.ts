@@ -55,6 +55,41 @@ Deno.serve(async (req) => {
 
   if (dbErr) return error(req, dbErr.message, 500);
 
+  // Pre-create the 5 pipeline steps as `pending` (positions 1..5). The SPA
+  // renders the full pipeline from the moment the job is queued, and the worker's
+  // tick() finds the first pending step. The worker also has an idempotent
+  // "ensure 5 steps exist" safety net, but creation happens here for explicitness.
+  const STEP_SEQUENCE = [
+    { position: 1, step_type: "collect" },
+    { position: 2, step_type: "extract_features" },
+    { position: 3, step_type: "extract_plans" },
+    { position: 4, step_type: "extract_scenarios" },
+    { position: 5, step_type: "generate_proposal" },
+  ];
+
+  const { error: stepsErr } = await auth.serviceClient
+    .from("engine_job_steps")
+    .insert(
+      STEP_SEQUENCE.map((s) => ({
+        job_id: data.id,
+        position: s.position,
+        step_type: s.step_type,
+        status: "pending",
+      })),
+    );
+
+  if (stepsErr) return error(req, `STEPS_INIT_FAILED: ${stepsErr.message}`, 500);
+
+  // Enqueue the job for the standalone engine worker (pgmq). The worker polls
+  // `engine_jobs_queue` and drives the job through its 5 steps. If this fails the
+  // job row exists but no worker would pick it up, so surface the error.
+  const { error: queueErr } = await auth.serviceClient.rpc(
+    "enqueue_engine_job",
+    { p_job_id: data.id, p_tenant_id: data.tenant_id },
+  );
+
+  if (queueErr) return error(req, `ENQUEUE_FAILED: ${queueErr.message}`, 500);
+
   return ok(req, {
     id: data.id,
     tenantId: data.tenant_id,

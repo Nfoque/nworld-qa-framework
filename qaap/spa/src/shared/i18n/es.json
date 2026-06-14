@@ -123,7 +123,8 @@
     "sourcesSelected": "{{count}} fuente seleccionada",
     "sourcesSelected_plural": "{{count}} fuentes seleccionadas",
     "more": "+{{count}} más",
-    "generate": "Generar"
+    "generate": "Generar",
+    "creating": "Creando…"
   },
   "status": {
     "approved": "Aprobado",

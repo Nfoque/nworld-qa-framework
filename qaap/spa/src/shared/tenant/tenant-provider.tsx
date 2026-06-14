@@ -38,7 +38,7 @@ interface TenantState {
 const TenantContext = createContext<TenantState | null>(null);
 
 export function TenantProvider({ children }: { children: ReactNode }) {
-  const { profile } = useAuth();
+  const { profile, loading: authLoading } = useAuth();
   const isSuperadmin = profile?.role === "superadmin";
   const [overrideTenantId, setOverrideTenantId] = useState<string | null>(
     () => {
@@ -90,7 +90,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     ],
   );
 
-  const isBrandingReady = isSuperadmin ? !isLoadingTenants : !!profile;
+  const isBrandingReady = !authLoading && (isSuperadmin ? !isLoadingTenants : true);
 
   useEffect(() => {
     document.title = activeTenantName ? `QAAP - ${activeTenantName}` : "QAAP";

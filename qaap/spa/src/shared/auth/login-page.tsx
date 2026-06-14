@@ -1,5 +1,4 @@
 import GoogleIcon from "@mui/icons-material/Google";
-import RocketLaunchIcon from "@mui/icons-material/RocketLaunch";
 import { Alert, Box, Button, Paper, Stack, Typography } from "@mui/material";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -36,25 +35,15 @@ export function LoginPage() {
       <Paper sx={{ p: 5, width: 420, maxWidth: "90vw" }}>
         <Stack spacing={3} sx={{ alignItems: "center" }}>
           <Box
-            sx={{
-              width: 64,
-              height: 64,
-              borderRadius: 3,
-              bgcolor: "primary.main",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <RocketLaunchIcon sx={{ fontSize: 32, color: "#fff" }} />
-          </Box>
+            component="img"
+            src="/logos/qaap-logo-full.png"
+            alt="QAAP"
+            sx={{ height: 48, objectFit: "contain" }}
+          />
 
-          <Stack spacing={0.5} sx={{ alignItems: "center" }}>
-            <Typography variant="h4">QAAP</Typography>
-            <Typography variant="body2" color="text.secondary">
-              {t("login.subtitle")}
-            </Typography>
-          </Stack>
+          <Typography variant="body2" color="text.secondary">
+            {t("login.subtitle")}
+          </Typography>
 
           {error && (
             <Alert severity="error" sx={{ width: "100%" }}>
@@ -81,6 +70,24 @@ export function LoginPage() {
           >
             {t("login.ssoNote")}
           </Typography>
+
+          <Stack
+            direction="row"
+            spacing={0.5}
+            sx={{ alignItems: "center", pt: 1 }}
+          >
+            <Typography
+              sx={{ fontSize: 9, color: "text.secondary", fontWeight: 500 }}
+            >
+              {t("sidebar.poweredBy")}
+            </Typography>
+            <Box
+              component="img"
+              src="/logos/nfq-logo.png"
+              alt="NFQ"
+              sx={{ height: 14, objectFit: "contain" }}
+            />
+          </Stack>
         </Stack>
       </Paper>
     </Box>

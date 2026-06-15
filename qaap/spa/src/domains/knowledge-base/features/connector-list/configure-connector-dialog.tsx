@@ -143,7 +143,7 @@ export function ConfigureConnectorDialog({
         payload.credentials = { token: token.trim() };
       }
       updateConnector.mutate(
-        payload as Parameters<typeof updateConnector.mutate>[0],
+        payload as unknown as Parameters<typeof updateConnector.mutate>[0],
         {
           onSuccess: onClose,
         },

@@ -12,7 +12,6 @@ import {
   Collapse,
   List,
   ListItemButton,
-  ListItemIcon,
   ListItemText,
   Stack,
   Typography,
@@ -360,7 +359,7 @@ export function PlanTreePanel({
                             {/* Scenarios */}
                             <Collapse in={areaExpanded}>
                               <Box>
-                                {area.scenarios.map((scenario, scenarioIdx) => {
+                                {area.scenarios.map((scenario) => {
                                   const effectiveStatus = getEffectiveStatus(
                                     scenario,
                                     overrides,

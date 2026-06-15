@@ -96,7 +96,7 @@ export function ConfigureLlmProviderDialog({
       if (isDefault !== provider!.isDefault) input.isDefault = isDefault;
       if (testResult?.success) input.availableModels = testResult.models;
       updateProvider.mutate(
-        input as Parameters<typeof updateProvider.mutate>[0],
+        input as unknown as Parameters<typeof updateProvider.mutate>[0],
         { onSuccess: onClose },
       );
     } else {

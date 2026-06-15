@@ -417,6 +417,8 @@
     "description": "Description",
     "noDescription": "No description available for this scenario.",
     "save": "Save",
+    "saved": "Scenario saved successfully",
+    "saveError": "Failed to save scenario",
     "edit": "Edit",
     "preview": "Preview"
   }

@@ -44,12 +44,12 @@ export function DescriptionEditor({
     <Box
       sx={{
         p: 2.5,
-        fontSize: 13,
-        lineHeight: 1.7,
+        fontSize: 14,
+        lineHeight: 1.8,
         overflow: "auto",
         height: "100%",
         "& h1, & h2, & h3": {
-          fontSize: 14,
+          fontSize: 16,
           fontWeight: 600,
           mt: 2,
           mb: 1,

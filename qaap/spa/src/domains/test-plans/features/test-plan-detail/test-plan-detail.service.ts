@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { invokeFunction } from "@/shared/config/supabase";
 
@@ -51,5 +51,24 @@ export function useTestPlan(planId: string) {
         method: "POST",
         body: { planId },
       }),
+  });
+}
+
+interface UpdateScenarioInput {
+  scenarioId: string;
+  description?: string | null;
+  gherkinText?: string;
+}
+
+export function useUpdateScenario(planId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: UpdateScenarioInput) =>
+      invokeFunction<TestPlanScenario>("update-scenario", {
+        method: "PUT",
+        body: input as unknown as Record<string, unknown>,
+      }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["test-plan", planId] }),
   });
 }

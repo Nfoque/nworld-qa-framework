@@ -417,6 +417,8 @@
     "description": "Descripción",
     "noDescription": "No hay descripción disponible para este escenario.",
     "save": "Guardar",
+    "saved": "Escenario guardado correctamente",
+    "saveError": "Error al guardar el escenario",
     "edit": "Editar",
     "preview": "Vista previa"
   }

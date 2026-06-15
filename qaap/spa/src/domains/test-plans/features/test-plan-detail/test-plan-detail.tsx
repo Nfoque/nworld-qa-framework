@@ -29,13 +29,14 @@ import { ConfidenceBar } from "./confidence-bar";
 import { DescriptionEditor } from "./description-editor";
 import { GherkinEditor } from "./gherkin-editor";
 import { ScenarioSidebar } from "./scenario-sidebar";
-import { useTestPlan } from "./test-plan-detail.service";
+import { useTestPlan, useUpdateScenario } from "./test-plan-detail.service";
 
 import { testPlanDetailRoute } from "@/router";
 import { DetailPageHeader } from "@/shared/components/detail-page-header";
 import { EmptyState } from "@/shared/components/empty-state";
 import { ModalityBadge } from "@/shared/components/modality-badge";
 import { ResizeHandle } from "@/shared/components/resize-handle";
+import { useSnackbar } from "@/shared/components/snackbar-provider";
 import { StatusBadge } from "@/shared/components/status-badge";
 import { useSidebar } from "@/shared/layout/sidebar-context";
 
@@ -73,7 +74,9 @@ export function TestPlanDetail() {
   const navigate = useNavigate();
   const { planId } = testPlanDetailRoute.useParams();
   const { data: plan, isLoading, error } = useTestPlan(planId);
+  const updateScenario = useUpdateScenario(planId);
   const { setCollapsed } = useSidebar();
+  const { showSnackbar } = useSnackbar();
 
   useEffect(() => {
     setCollapsed(true);
@@ -152,6 +155,30 @@ export function TestPlanDetail() {
     );
     setChatWidth(chatWidthRef.current);
   }, []);
+
+  function handleSave() {
+    if (!selectedScenario || !hasDraft) return;
+    const input: Record<string, unknown> = { scenarioId: selectedScenario.id };
+    if (descriptionDraft !== null) input.description = descriptionDraft;
+    if (gherkinDraft !== null) {
+      const raw = gherkinDraft.replace(/^@\S+.*\n/, "");
+      input.gherkinText = raw;
+    }
+    updateScenario.mutate(
+      input as Parameters<typeof updateScenario.mutate>[0],
+      {
+        onSuccess: () => {
+          setGherkinDraft(null);
+          setDescriptionDraft(null);
+          setDescriptionEditing(false);
+          showSnackbar(t("testPlanDetail.saved"));
+        },
+        onError: () => {
+          showSnackbar(t("testPlanDetail.saveError"), "error");
+        },
+      },
+    );
+  }
 
   if (isLoading) {
     return (
@@ -366,7 +393,15 @@ export function TestPlanDetail() {
                 <Button
                   size="small"
                   variant="contained"
-                  startIcon={<SaveOutlinedIcon sx={{ fontSize: 14 }} />}
+                  onClick={handleSave}
+                  disabled={updateScenario.isPending}
+                  startIcon={
+                    updateScenario.isPending ? (
+                      <CircularProgress size={14} />
+                    ) : (
+                      <SaveOutlinedIcon sx={{ fontSize: 14 }} />
+                    )
+                  }
                   sx={{
                     fontSize: 12,
                     textTransform: "none",

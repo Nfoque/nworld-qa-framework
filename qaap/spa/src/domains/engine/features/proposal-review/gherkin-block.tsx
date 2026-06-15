@@ -12,10 +12,7 @@ function highlightGherkin(text: string): React.ReactNode[] {
     return (
       <span key={i}>
         {indent}
-        <Box
-          component="span"
-          sx={{ fontWeight: 700, color: "primary.main" }}
-        >
+        <Box component="span" sx={{ fontWeight: 700, color: "primary.main" }}>
           {keyword}
           {colon}
         </Box>

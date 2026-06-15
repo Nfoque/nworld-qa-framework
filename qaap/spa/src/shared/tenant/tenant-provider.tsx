@@ -90,7 +90,8 @@ export function TenantProvider({ children }: { children: ReactNode }) {
     ],
   );
 
-  const isBrandingReady = !authLoading && (isSuperadmin ? !isLoadingTenants : true);
+  const isBrandingReady =
+    !authLoading && (isSuperadmin ? !isLoadingTenants : true);
 
   useEffect(() => {
     document.title = activeTenantName ? `QAAP - ${activeTenantName}` : "QAAP";

@@ -19,9 +19,16 @@ Deno.serve(async (req) => {
   if (dbErr) return error(req, dbErr.message, 500);
 
   const rows = data ?? [];
-  const creatorIds = [...new Set(rows.map((r: Record<string, unknown>) => r.created_by).filter(Boolean))] as string[];
+  const creatorIds = [
+    ...new Set(
+      rows.map((r: Record<string, unknown>) => r.created_by).filter(Boolean),
+    ),
+  ] as string[];
 
-  let profileMap: Record<string, { name: string | null; avatar_url: string | null }> = {};
+  const profileMap: Record<
+    string,
+    { name: string | null; avatar_url: string | null }
+  > = {};
   if (creatorIds.length > 0) {
     const { data: profiles } = await auth.serviceClient
       .from("user_profiles")
@@ -47,8 +54,7 @@ Deno.serve(async (req) => {
       created_at: row.created_at,
       created_by_name: profile?.name ?? null,
       created_by_avatar: profile?.avatar_url ?? null,
-      scenario_count:
-        ((row.scenarios as { count: number }[])?.[0]?.count) ?? 0,
+      scenario_count: ((row.scenarios as { count: number }[])?.[0]?.count) ?? 0,
     };
   });
 

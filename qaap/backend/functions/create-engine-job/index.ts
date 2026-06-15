@@ -78,7 +78,9 @@ Deno.serve(async (req) => {
       })),
     );
 
-  if (stepsErr) return error(req, `STEPS_INIT_FAILED: ${stepsErr.message}`, 500);
+  if (stepsErr) {
+    return error(req, `STEPS_INIT_FAILED: ${stepsErr.message}`, 500);
+  }
 
   // Enqueue the job for the standalone engine worker (pgmq). The worker polls
   // `engine_jobs_queue` and drives the job through its 5 steps. If this fails the

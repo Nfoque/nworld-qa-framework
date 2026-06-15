@@ -11,6 +11,7 @@ const STATUS_COLORS: Record<string, ChipProps["color"]> = {
   failed: "error",
   pending: "warning",
   rejected: "error",
+  modified: "info",
   connected: "success",
   not_configured: "default",
   error: "error",

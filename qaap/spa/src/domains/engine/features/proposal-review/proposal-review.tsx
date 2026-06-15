@@ -26,11 +26,11 @@ import {
   loadOverrides,
   saveOverrides,
 } from "./proposal-review.utils";
-import { ResizeHandle } from "./resize-handle";
 import { ScenarioDetail } from "./scenario-detail";
 
-import { PipelineHeader } from "@/domains/engine/components/pipeline-header";
 import { pipelineReviewRoute } from "@/router";
+import { DetailPageHeader } from "@/shared/components/detail-page-header";
+import { ResizeHandle } from "@/shared/components/resize-handle";
 import { useSnackbar } from "@/shared/components/snackbar-provider";
 import { useSidebar } from "@/shared/layout/sidebar-context";
 
@@ -102,7 +102,10 @@ export function ProposalReview() {
     if (!treeWidthRef.current && treeCardRef.current) {
       treeWidthRef.current = treeCardRef.current.offsetWidth;
     }
-    treeWidthRef.current = Math.max(260, Math.min(900, treeWidthRef.current + delta));
+    treeWidthRef.current = Math.max(
+      260,
+      Math.min(900, treeWidthRef.current + delta),
+    );
     setTreeWidth(treeWidthRef.current);
   }, []);
 
@@ -217,14 +220,12 @@ export function ProposalReview() {
         overflow: "hidden",
       }}
     >
-      <PipelineHeader
+      <DetailPageHeader
         title={t("review.title")}
         jobId={job.id}
         status={job.status}
         createdAt={job.createdAt}
-        onBack={() =>
-          navigate({ to: "/pipelines/$jobId", params: { jobId } })
-        }
+        onBack={() => navigate({ to: "/pipelines/$jobId", params: { jobId } })}
         subtitle={<ReviewChips state={state} />}
         action={
           <Stack direction="row" spacing={1}>
@@ -235,7 +236,11 @@ export function ProposalReview() {
               onClick={() =>
                 navigate({ to: "/pipelines/$jobId", params: { jobId } })
               }
-              sx={{ fontWeight: 600, textTransform: "none", color: "text.secondary" }}
+              sx={{
+                fontWeight: 600,
+                textTransform: "none",
+                color: "text.secondary",
+              }}
             >
               {t("review.dismissProposal")}
             </Button>

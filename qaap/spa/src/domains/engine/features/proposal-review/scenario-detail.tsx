@@ -2,14 +2,7 @@ import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import RestoreIcon from "@mui/icons-material/Restore";
-import {
-  Box,
-  Button,
-  Chip,
-  Stack,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Chip, Stack, TextField, Typography } from "@mui/material";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -49,13 +42,9 @@ export function ScenarioDetail({
 
   const area = proposal ? getSelectedArea(proposal, selection) : null;
 
-  const original = proposal
-    ? getSelectedScenario(proposal, selection)
-    : null;
+  const original = proposal ? getSelectedScenario(proposal, selection) : null;
 
-  const scenario = original
-    ? getEffectiveScenario(original, overrides)
-    : null;
+  const scenario = original ? getEffectiveScenario(original, overrides) : null;
 
   const effectiveStatus = original
     ? getEffectiveStatus(original, overrides)
@@ -117,7 +106,11 @@ export function ScenarioDetail({
         )}
 
         {/* Metadata row */}
-        <Stack direction="row" spacing={1.5} sx={{ mt: "8px !important", alignItems: "center", flexWrap: "wrap" }}>
+        <Stack
+          direction="row"
+          spacing={1.5}
+          sx={{ mt: "8px !important", alignItems: "center", flexWrap: "wrap" }}
+        >
           <Chip
             label={scenario.source_model}
             size="small"
@@ -198,17 +191,10 @@ export function ScenarioDetail({
         <Stack direction="row" spacing={1}>
           {editing ? (
             <>
-              <Button
-                variant="contained"
-                size="small"
-                onClick={saveEdit}
-              >
+              <Button variant="contained" size="small" onClick={saveEdit}>
                 {t("review.saveEdit")}
               </Button>
-              <Button
-                size="small"
-                onClick={() => setEditing(false)}
-              >
+              <Button size="small" onClick={() => setEditing(false)}>
                 {t("review.cancelEdit")}
               </Button>
             </>

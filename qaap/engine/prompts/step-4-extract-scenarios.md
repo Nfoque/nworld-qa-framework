@@ -40,6 +40,7 @@ You are a senior QA automation engineer generating test scenarios in Gherkin for
      - A scenario testing backend computation or non-observable behavior MUST score below 0.50.
      - A scenario requiring async system events (AI job completion, webhook) MUST cap at 0.70.
      - confidence >= 0.85 is RESERVED for scenarios where the user action is browser-triggerable, every assertion is about visible UI state, and preconditions are achievable via browser or fixtures.
+   - `description`: a Markdown-formatted description in natural language of what this scenario does and tests. Write it as a self-contained summary a non-technical stakeholder can read without seeing the Gherkin. Structure it with: (1) what user action is being tested, (2) what the expected outcome is, (3) any preconditions or edge cases involved. Use Markdown formatting (headers, lists, bold) to make it scannable. This is the human-readable "acceptance criteria" view of the scenario.
    - `rationale`: a plain-language explanation a QA reviewer can understand without reading source code. Explain WHAT this scenario validates and WHY it matters (business rule, user expectation, risk). Do NOT cite chunk IDs, internal variable names, or implementation details — those belong in `source_refs`. If confidence is below 1.0, briefly note what is uncertain.
    - `source_refs`: chunk IDs that support this scenario
 
@@ -132,11 +133,12 @@ Generate a shared Background and concrete Gherkin test scenarios for this test a
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "test_area_id", "name", "gherkin", "source_refs", "confidence", "rationale"],
+        "required": ["id", "test_area_id", "name", "description", "gherkin", "source_refs", "confidence", "rationale"],
         "properties": {
           "id": { "type": "string", "description": "Local placeholder id within THIS test area (s01, s02, …). The ORCHESTRATOR mints globally-unique ids on merge — do NOT emit UUIDs: independent per-area subagents run in parallel and collide on identical ids (engine lesson 1)." },
           "test_area_id": { "type": "string", "description": "Parent test area ID (the global id the orchestrator assigned in step 3, e.g. ta-1000)" },
           "name": { "type": "string", "description": "Descriptive scenario name" },
+          "description": { "type": "string", "description": "Markdown-formatted natural-language description of what this scenario does and tests. Serves as a human-readable acceptance criteria view. Use Markdown formatting (lists, bold) for scannability." },
           "gherkin": { "type": "string", "description": "Scenario-specific Gherkin (Scenario: Given/When/Then). Do NOT include the Background steps here — they are prepended automatically." },
           "source_refs": {
             "type": "array",

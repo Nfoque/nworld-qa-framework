@@ -40,7 +40,8 @@ export function AcceptDialog({
 
           <Stack spacing={0.5}>
             <Typography variant="body2">
-              • {t("review.acceptPlans", {
+              •{" "}
+              {t("review.acceptPlans", {
                 count: state.proposal?.test_plans.length ?? 0,
               })}
             </Typography>
@@ -64,11 +65,7 @@ export function AcceptDialog({
         <Button onClick={onCancel} disabled={accepting}>
           {t("review.cancel")}
         </Button>
-        <Button
-          variant="contained"
-          onClick={onConfirm}
-          disabled={accepting}
-        >
+        <Button variant="contained" onClick={onConfirm} disabled={accepting}>
           {accepting ? t("review.accepting") : t("review.confirm")}
         </Button>
       </DialogActions>

@@ -12,6 +12,7 @@ import { ProposalReview } from "@/domains/engine/features/proposal-review/propos
 import { ConnectorList } from "@/domains/knowledge-base/features/connector-list/connector-list";
 import { KnowledgeBase } from "@/domains/knowledge-base/features/knowledge-base/knowledge-base";
 import { LlmProviderList } from "@/domains/settings/features/llm-providers/llm-provider-list";
+import { TestPlanDetail } from "@/domains/test-plans/features/test-plan-detail/test-plan-detail";
 import { TestPlanList } from "@/domains/test-plans/features/test-plan-list/test-plan-list";
 import { AuthenticatedGuard } from "@/shared/auth/authenticated-guard";
 import { LoginGuard } from "@/shared/auth/login-guard";
@@ -74,6 +75,12 @@ const testPlansRoute = createRoute({
   component: TestPlanList,
 });
 
+export const testPlanDetailRoute = createRoute({
+  getParentRoute: () => authenticatedRoute,
+  path: "/test-plans/$planId",
+  component: TestPlanDetail,
+});
+
 const settingsRoute = createRoute({
   getParentRoute: () => authenticatedRoute,
   path: "/settings",
@@ -90,6 +97,7 @@ const routeTree = rootRoute.addChildren([
     pipelineDetailRoute,
     pipelineReviewRoute,
     testPlansRoute,
+    testPlanDetailRoute,
     settingsRoute,
   ]),
 ]);

@@ -10,9 +10,7 @@ import type {
 
 import type { EngineJobStep } from "@/domains/engine/features/engine-run/engine-run.types";
 
-export function extractProposal(
-  steps: EngineJobStep[],
-): Proposal | null {
+export function extractProposal(steps: EngineJobStep[]): Proposal | null {
   const proposalStep = steps.find(
     (s) => s.stepType === "generate_proposal" && s.status === "completed",
   );
@@ -114,7 +112,11 @@ export function buildAcceptPayload(
 
 export function getSelectedScenario(
   proposal: Proposal,
-  selection: { planId: string | null; areaId: string | null; scenarioId: string | null },
+  selection: {
+    planId: string | null;
+    areaId: string | null;
+    scenarioId: string | null;
+  },
 ): ProposalScenario | null {
   if (!selection.planId || !selection.areaId || !selection.scenarioId)
     return null;

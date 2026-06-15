@@ -25,10 +25,13 @@ Deno.serve(async (req) => {
       .single(),
   ]);
 
-  if (providersResult.error) return error(req, providersResult.error.message, 500);
+  if (providersResult.error) {
+    return error(req, providersResult.error.message, 500);
+  }
 
   return ok(req, {
     providers: (providersResult.data as LlmProviderRow[]).map(toLlmProviderDto),
-    matrix: (tenantResult.data?.llm_model_matrix as Record<string, unknown>) ?? {},
+    matrix: (tenantResult.data?.llm_model_matrix as Record<string, unknown>) ??
+      {},
   });
 });

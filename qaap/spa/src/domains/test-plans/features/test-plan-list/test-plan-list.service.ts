@@ -20,6 +20,7 @@ export interface TestPlan {
 export function useTestPlans() {
   return useQuery({
     queryKey: ["test-plans"],
-    queryFn: () => invokeFunction<TestPlan[]>("list-test-plans", { method: "GET" }),
+    queryFn: () =>
+      invokeFunction<TestPlan[]>("list-test-plans", { method: "GET" }),
   });
 }

@@ -13,6 +13,7 @@ interface ProposalScenario {
 }
 
 interface ProposalTestArea {
+  name?: string;
   scenarios: ProposalScenario[];
 }
 
@@ -67,7 +68,11 @@ Deno.serve(async (req) => {
 
   if (jobErr || !job) return error(req, "JOB_NOT_FOUND", 404);
   if (job.status !== "paused") {
-    return error(req, `CONFLICT: job status is '${job.status}', expected 'paused'`, 409);
+    return error(
+      req,
+      `CONFLICT: job status is '${job.status}', expected 'paused'`,
+      409,
+    );
   }
 
   const testPlanIds: string[] = [];
@@ -111,6 +116,7 @@ Deno.serve(async (req) => {
           source_model: scenario.source_model,
           review_status: scenario.review_status,
           sort_order: scenario.sort_order ?? 0,
+          category: area.name || null,
         });
       }
     }

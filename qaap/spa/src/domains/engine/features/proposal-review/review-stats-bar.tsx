@@ -18,11 +18,7 @@ export function ReviewStatsBar({
   const review = computeReviewStats(state);
 
   return (
-    <Stack
-      direction="row"
-      spacing={1.5}
-      sx={{ alignItems: "center", mt: 2 }}
-    >
+    <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", mt: 2 }}>
       <Typography variant="body2" sx={{ color: "text.secondary" }}>
         {t("review.reviewProgress")}:
       </Typography>

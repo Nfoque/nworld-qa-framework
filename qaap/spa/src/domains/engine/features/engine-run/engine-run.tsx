@@ -43,10 +43,10 @@ import { MetricBox } from "./metric-box";
 import { StepDataModal } from "./step-data-modal";
 import { StepDuration } from "./step-duration";
 
-import { PipelineHeader } from "@/domains/engine/components/pipeline-header";
 import { SourceChips } from "@/domains/engine/components/source-chips";
 import { isInProgress } from "@/domains/engine/features/pipeline-list/pipeline-list.service";
 import { pipelineDetailRoute } from "@/router";
+import { DetailPageHeader } from "@/shared/components/detail-page-header";
 import { useLiveDuration } from "@/shared/hooks/use-live-duration";
 
 export function EngineRun() {
@@ -119,7 +119,7 @@ export function EngineRun() {
 
   return (
     <Box sx={{ p: 3 }}>
-      <PipelineHeader
+      <DetailPageHeader
         title={t("pipeline.title")}
         jobId={job.id}
         status={job.status}

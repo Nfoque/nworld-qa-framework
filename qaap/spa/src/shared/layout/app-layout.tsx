@@ -15,6 +15,7 @@ export function AppLayout() {
             flexGrow: 1,
             overflow: "auto",
             bgcolor: "background.default",
+            height: "100vh",
           }}
         >
           <Outlet />

@@ -87,7 +87,7 @@ export function TestPlanDetail() {
   const [descriptionDraft, setDescriptionDraft] = useState<string | null>(null);
   const [descriptionEditing, setDescriptionEditing] = useState(false);
 
-  const scenarios = plan?.scenarios ?? [];
+  const scenarios = useMemo(() => plan?.scenarios ?? [], [plan?.scenarios]);
 
   const selectedScenario = useMemo(
     () => scenarios.find((s) => s.id === selectedId) ?? scenarios[0] ?? null,
@@ -328,13 +328,31 @@ export function TestPlanDetail() {
               </Box>
             ))}
 
-            <Box sx={{ ml: "auto", display: "flex", alignItems: "center", gap: 0.5, mr: 1 }}>
+            <Box
+              sx={{
+                ml: "auto",
+                display: "flex",
+                alignItems: "center",
+                gap: 0.5,
+                mr: 1,
+              }}
+            >
               {activeTab === "description" && selectedScenario && (
-                <Tooltip title={descriptionEditing ? t("testPlanDetail.preview") : t("testPlanDetail.edit")}>
+                <Tooltip
+                  title={
+                    descriptionEditing
+                      ? t("testPlanDetail.preview")
+                      : t("testPlanDetail.edit")
+                  }
+                >
                   <IconButton
                     size="small"
                     onClick={() => setDescriptionEditing(!descriptionEditing)}
-                    sx={{ color: descriptionEditing ? "primary.main" : "text.secondary" }}
+                    sx={{
+                      color: descriptionEditing
+                        ? "primary.main"
+                        : "text.secondary",
+                    }}
                   >
                     {descriptionEditing ? (
                       <VisibilityOutlinedIcon sx={{ fontSize: 16 }} />

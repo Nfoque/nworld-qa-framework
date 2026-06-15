@@ -64,11 +64,13 @@ export function ConfigureLlmProviderDialog({
 
   if (!provider) return null;
 
+  const p = provider;
+
   function handleTest() {
     testProvider.mutate(
       {
-        providerId: provider!.id ?? undefined,
-        providerName: provider!.providerName,
+        providerId: p.id ?? undefined,
+        providerName: p.providerName,
         baseUrl,
         apiKey,
       },
@@ -89,11 +91,11 @@ export function ConfigureLlmProviderDialog({
   }
 
   function handleSave() {
-    if (isEdit && provider!.id) {
-      const input: Record<string, unknown> = { id: provider!.id };
-      if (baseUrl !== provider!.baseUrl) input.baseUrl = baseUrl;
+    if (isEdit && p.id) {
+      const input: Record<string, unknown> = { id: p.id };
+      if (baseUrl !== p.baseUrl) input.baseUrl = baseUrl;
       if (apiKeyChanged) input.apiKey = apiKey;
-      if (isDefault !== provider!.isDefault) input.isDefault = isDefault;
+      if (isDefault !== p.isDefault) input.isDefault = isDefault;
       if (testResult?.success) input.availableModels = testResult.models;
       updateProvider.mutate(
         input as unknown as Parameters<typeof updateProvider.mutate>[0],
@@ -102,8 +104,8 @@ export function ConfigureLlmProviderDialog({
     } else {
       createProvider.mutate(
         {
-          providerName: provider!.providerName,
-          displayName: provider!.displayName,
+          providerName: p.providerName,
+          displayName: p.displayName,
           baseUrl,
           apiKey: apiKey || undefined,
           availableModels: testResult?.models,

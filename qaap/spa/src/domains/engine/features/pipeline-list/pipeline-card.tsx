@@ -213,7 +213,8 @@ export function PipelineCard({ job }: PipelineCardProps) {
             <Stack direction="row" spacing={0.75} sx={{ alignItems: "center" }}>
               <Avatar
                 src={job.createdByAvatar ?? undefined}
-                sx={{ width: 18, height: 18, fontSize: 9 }}
+                slotProps={{ img: { referrerPolicy: "no-referrer" } }}
+                sx={{ width: 20, height: 20, fontSize: 9 }}
               >
                 {job.createdByName[0]?.toUpperCase()}
               </Avatar>

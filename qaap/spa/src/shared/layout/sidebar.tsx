@@ -501,6 +501,7 @@ export function Sidebar() {
           >
             <Avatar
               src={profile.avatarUrl ?? undefined}
+              slotProps={{ img: { referrerPolicy: "no-referrer" } }}
               sx={{
                 width: 32,
                 height: 32,

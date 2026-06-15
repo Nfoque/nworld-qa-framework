@@ -102,6 +102,7 @@ export function PlanRow({ plan }: { plan: TestPlan }) {
           <>
             <Avatar
               src={plan.created_by_avatar ?? undefined}
+              slotProps={{ img: { referrerPolicy: "no-referrer" } }}
               sx={{ width: 20, height: 20, fontSize: 9 }}
             >
               {plan.created_by_name[0]?.toUpperCase()}

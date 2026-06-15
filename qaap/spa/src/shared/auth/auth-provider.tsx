@@ -26,10 +26,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  async function loadProfile() {
+  async function syncGoogleAvatar(providerToken: string) {
+    try {
+      const res = await fetch(
+        "https://www.googleapis.com/oauth2/v3/userinfo",
+        { headers: { Authorization: `Bearer ${providerToken}` } },
+      );
+      if (!res.ok) return;
+      const info = await res.json();
+      if (info.picture) {
+        await invokeFunction("update-avatar", {
+          method: "POST",
+          body: { avatarUrl: info.picture },
+        });
+      }
+    } catch {
+      /* best-effort */
+    }
+  }
+
+  async function loadProfile(providerToken?: string | null) {
     try {
       const data = await invokeFunction<UserProfile>("get-profile");
-      setProfile(data);
+      if (!data.avatarUrl && providerToken) {
+        await syncGoogleAvatar(providerToken);
+        const refreshed = await invokeFunction<UserProfile>("get-profile");
+        setProfile(refreshed);
+      } else {
+        setProfile(data);
+      }
     } catch {
       setProfile(null);
     }
@@ -40,7 +65,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (session) loadProfile().finally(() => setLoading(false));
+      if (session)
+        loadProfile(session.provider_token).finally(() => setLoading(false));
       else {
         setProfile(null);
         setLoading(false);
@@ -53,7 +79,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithGoogle = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: window.location.origin },
+      options: {
+        redirectTo: window.location.origin,
+        scopes: "openid email profile",
+      },
     });
     if (error) throw error;
   };

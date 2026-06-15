@@ -88,14 +88,15 @@ export function TestPlanDetail() {
 
   function handleSave() {
     if (!selectedScenario || !hasDraft) return;
-    const input: Record<string, unknown> = { scenarioId: selectedScenario.id };
-    if (descriptionDraft !== null) input.description = descriptionDraft;
-    if (gherkinDraft !== null) {
-      const raw = gherkinDraft.replace(/^@\S+.*\n/, "");
-      input.gherkinText = raw;
-    }
+    const input: Parameters<typeof updateScenario.mutate>[0] = {
+      scenarioId: selectedScenario.id,
+      ...(descriptionDraft !== null && { description: descriptionDraft }),
+      ...(gherkinDraft !== null && {
+        gherkinText: gherkinDraft.replace(/^@\S+.*\n/, ""),
+      }),
+    };
     updateScenario.mutate(
-      input as Parameters<typeof updateScenario.mutate>[0],
+      input,
       {
         onSuccess: () => {
           setGherkinDraft(null);

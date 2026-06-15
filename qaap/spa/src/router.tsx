@@ -8,9 +8,11 @@ import {
 import { Home } from "@/domains/dashboard/features/home/home";
 import { EngineRun } from "@/domains/engine/features/engine-run/engine-run";
 import { PipelineList } from "@/domains/engine/features/pipeline-list/pipeline-list";
+import { ProposalReview } from "@/domains/engine/features/proposal-review/proposal-review";
 import { ConnectorList } from "@/domains/knowledge-base/features/connector-list/connector-list";
 import { KnowledgeBase } from "@/domains/knowledge-base/features/knowledge-base/knowledge-base";
 import { LlmProviderList } from "@/domains/settings/features/llm-providers/llm-provider-list";
+import { TestPlanList } from "@/domains/test-plans/features/test-plan-list/test-plan-list";
 import { AuthenticatedGuard } from "@/shared/auth/authenticated-guard";
 import { LoginGuard } from "@/shared/auth/login-guard";
 
@@ -60,10 +62,16 @@ export const pipelineDetailRoute = createRoute({
   component: EngineRun,
 });
 
-const pipelineReviewRoute = createRoute({
+export const pipelineReviewRoute = createRoute({
   getParentRoute: () => authenticatedRoute,
   path: "/pipelines/$jobId/review",
-  component: () => <div>Review (coming soon)</div>,
+  component: ProposalReview,
+});
+
+const testPlansRoute = createRoute({
+  getParentRoute: () => authenticatedRoute,
+  path: "/test-plans",
+  component: TestPlanList,
 });
 
 const settingsRoute = createRoute({
@@ -81,6 +89,7 @@ const routeTree = rootRoute.addChildren([
     pipelinesRoute,
     pipelineDetailRoute,
     pipelineReviewRoute,
+    testPlansRoute,
     settingsRoute,
   ]),
 ]);

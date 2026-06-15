@@ -43,8 +43,8 @@ import { MetricBox } from "./metric-box";
 import { StepDataModal } from "./step-data-modal";
 import { StepDuration } from "./step-duration";
 
+import { PipelineHeader } from "@/domains/engine/components/pipeline-header";
 import { SourceChips } from "@/domains/engine/components/source-chips";
-import { STATUS_LABELS } from "@/domains/engine/engine.constants";
 import { isInProgress } from "@/domains/engine/features/pipeline-list/pipeline-list.service";
 import { pipelineDetailRoute } from "@/router";
 import { useLiveDuration } from "@/shared/hooks/use-live-duration";
@@ -95,11 +95,6 @@ export function EngineRun() {
   }
 
   const steps = job.steps ?? [];
-  const statusInfo = STATUS_LABELS[job.status] ?? {
-    labelKey: job.status,
-    color: "default" as const,
-  };
-  const shortId = job.id.slice(0, 8);
   const totalSources = job.selectedSources.reduce(
     (sum, s) => sum + s.items.length,
     0,
@@ -124,54 +119,13 @@ export function EngineRun() {
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* Back button */}
-      <Button
-        startIcon={<ArrowBackIcon />}
-        onClick={() => navigate({ to: "/pipelines" })}
-        size="small"
-        color="inherit"
-        sx={{ mb: 2 }}
-      >
-        {t("pipeline.backToPipelines")}
-      </Button>
-
-      {/* Header: Title + Status */}
-      <Stack
-        direction="row"
-        sx={{ justifyContent: "space-between", alignItems: "center", mb: 3 }}
-      >
-        <Box>
-          <Typography
-            variant="h5"
-            sx={{ fontWeight: 700, fontSize: 22, mb: 0.25 }}
-          >
-            Pipeline{" "}
-            <Typography
-              component="span"
-              sx={{
-                fontWeight: 700,
-                fontSize: 22,
-                fontFamily: "monospace",
-                color: "text.secondary",
-              }}
-            >
-              #{shortId}
-            </Typography>
-          </Typography>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ fontSize: 13 }}
-          >
-            {new Date(job.createdAt).toLocaleString()}
-          </Typography>
-        </Box>
-        <Chip
-          label={t(statusInfo.labelKey)}
-          color={statusInfo.color}
-          sx={{ fontWeight: 600, fontSize: 13, height: 32, px: 1 }}
-        />
-      </Stack>
+      <PipelineHeader
+        title={t("pipeline.title")}
+        jobId={job.id}
+        status={job.status}
+        createdAt={job.createdAt}
+        onBack={() => navigate({ to: "/pipelines" })}
+      />
 
       {/* Info cards row */}
       <Stack direction="row" spacing={2} sx={{ mb: 3 }}>

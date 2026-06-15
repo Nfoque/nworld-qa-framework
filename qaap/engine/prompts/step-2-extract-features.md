@@ -14,7 +14,7 @@ A "feature" is a major capability visible to the user — something that would h
 1. ONLY output features you can back with evidence from the provided chunks. Never invent features.
 2. Each feature MUST include:
    - `confidence` (0.0-1.0): how confident you are this is a real, distinct feature
-   - `rationale`: why you believe this is a feature, citing specific chunks
+   - `rationale`: a plain-language explanation of what this feature does for the user and why it is a distinct capability. Write for a QA reviewer who has not read the source code. Do NOT cite chunk IDs or code identifiers — those belong in `source_refs`.
    - `source_refs`: array of chunk IDs that support this feature
 3. Features MUST be at the right abstraction level:
    - TOO BROAD: "Frontend" (that's a layer, not a feature)

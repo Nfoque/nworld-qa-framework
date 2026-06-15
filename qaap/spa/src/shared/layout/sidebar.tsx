@@ -2,6 +2,8 @@ import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
 import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
 import AutoAwesomeOutlinedIcon from "@mui/icons-material/AutoAwesomeOutlined";
 import CableOutlinedIcon from "@mui/icons-material/CableOutlined";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -31,6 +33,7 @@ import {
   Stack,
   ToggleButton,
   ToggleButtonGroup,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { Link, useMatchRoute } from "@tanstack/react-router";
@@ -44,9 +47,13 @@ import {
 import { useConnectors } from "@/domains/knowledge-base/features/connector-list/connector-list.service";
 import { useLlmProviders } from "@/domains/settings/features/llm-providers/llm-provider.service";
 import { useAuth } from "@/shared/auth/auth-provider";
+import { useSidebar } from "@/shared/layout/sidebar-context";
 import { useTenant } from "@/shared/tenant/tenant-provider";
 
 export const SIDEBAR_WIDTH = 240;
+export const SIDEBAR_COLLAPSED_WIDTH = 68;
+
+const TRANSITION = "width 0.2s ease-in-out";
 
 export function Sidebar() {
   const { t, i18n } = useTranslation();
@@ -62,7 +69,10 @@ export function Sidebar() {
   const { data: connectors } = useConnectors();
   const { data: jobs } = useJobs();
   const { data: llmProviders } = useLlmProviders();
+  const { collapsed, setCollapsed } = useSidebar();
   const [settingsOpen, setSettingsOpen] = useState(false);
+
+  const width = collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH;
 
   const connectedCount =
     connectors?.filter((c) => c.status === "connected").length || 0;
@@ -73,12 +83,12 @@ export function Sidebar() {
     {
       label: t("sidebar.dashboard"),
       icon: DashboardOutlinedIcon,
-      to: "/" as const,
+      to: null,
     },
     {
       label: t("sidebar.testPlans"),
       icon: DescriptionOutlinedIcon,
-      to: null,
+      to: "/test-plans" as const,
     },
     { label: t("sidebar.health"), icon: MonitorHeartOutlinedIcon, to: null },
     {
@@ -101,7 +111,9 @@ export function Sidebar() {
       label: t("sidebar.llmProviders"),
       icon: PsychologyOutlinedIcon,
       to: "/settings" as const,
-      badge: llmProviders?.providers.filter((p) => p.status !== "not_configured").length || 0,
+      badge:
+        llmProviders?.providers.filter((p) => p.status !== "not_configured")
+          .length || 0,
     },
     {
       label: t("sidebar.connectors"),
@@ -126,46 +138,85 @@ export function Sidebar() {
     <Drawer
       variant="permanent"
       sx={{
-        width: SIDEBAR_WIDTH,
+        width,
         flexShrink: 0,
+        transition: TRANSITION,
         "& .MuiDrawer-paper": {
-          width: SIDEBAR_WIDTH,
+          width,
+          transition: TRANSITION,
           boxSizing: "border-box",
           bgcolor: "background.paper",
           display: "flex",
           flexDirection: "column",
+          overflowX: "hidden",
         },
       }}
     >
       {/* Header */}
-      <Box sx={{ px: 2, pt: 2, pb: 1 }}>
-        <Box
-          component="img"
-          src="/logos/qaap-logo-full.png"
-          alt="QAAP"
-          sx={{ height: 32, objectFit: "contain", display: "block" }}
-        />
+      <Box
+        sx={{
+          px: collapsed ? 1 : 2,
+          pt: 1.5,
+          pb: 1,
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: collapsed ? "center" : "space-between",
+        }}
+      >
         <Box
           sx={{
             display: "flex",
-            alignItems: "center",
-            gap: 0.5,
-            mt: 0.5,
-            px: 0.5,
+            flexDirection: "column",
+            alignItems: collapsed ? "center" : "flex-start",
           }}
         >
-          <Typography
-            sx={{ fontSize: 9, color: "text.secondary", fontWeight: 500 }}
-          >
-            {t("sidebar.poweredBy")}
-          </Typography>
           <Box
             component="img"
-            src="/logos/nfq-logo.png"
-            alt="NFQ"
-            sx={{ height: 14, objectFit: "contain" }}
+            src={
+              collapsed
+                ? "/logos/qaap-logo-img.png"
+                : "/logos/qaap-logo-full.png"
+            }
+            alt="QAAP"
+            sx={{
+              height: collapsed ? 24 : 32,
+              objectFit: "contain",
+              display: "block",
+            }}
           />
+          {!collapsed && (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 0.5,
+                mt: 0.5,
+                px: 0.5,
+              }}
+            >
+              <Typography
+                sx={{ fontSize: 9, color: "text.secondary", fontWeight: 500 }}
+              >
+                {t("sidebar.poweredBy")}
+              </Typography>
+              <Box
+                component="img"
+                src="/logos/nfq-logo.png"
+                alt="NFQ"
+                sx={{ height: 14, objectFit: "contain" }}
+              />
+            </Box>
+          )}
         </Box>
+        {!collapsed && (
+          <IconButton
+            size="small"
+            onClick={() => setCollapsed(true)}
+            sx={{ color: "text.secondary", mt: 0.25 }}
+          >
+            <ChevronLeftIcon fontSize="small" />
+          </IconButton>
+        )}
       </Box>
 
       {/* Navigation */}
@@ -183,6 +234,9 @@ export function Sidebar() {
                 borderRadius: 1.5,
                 mb: 0.25,
                 py: 0.75,
+                pr: collapsed ? 1 : 1.25,
+                pl: collapsed ? 1 : 0.25,
+                justifyContent: collapsed ? "center" : "flex-start",
                 ...(isActive && {
                   bgcolor: "primary.light",
                   color: "primary.main",
@@ -191,36 +245,69 @@ export function Sidebar() {
                 }),
               }}
             >
-              <ListItemIcon sx={{ minWidth: 36 }}>
+              <ListItemIcon
+                sx={{
+                  minWidth: collapsed ? 0 : 36,
+                  justifyContent: "center",
+                }}
+              >
                 <item.icon fontSize="small" />
               </ListItemIcon>
-              <ListItemText
-                primary={item.label}
-                slotProps={{
-                  primary: {
-                    sx: { fontSize: 13, fontWeight: isActive ? 600 : 500 },
-                  },
-                }}
-              />
-              {!!item.badge && (
+              {!collapsed && (
+                <>
+                  <ListItemText
+                    primary={item.label}
+                    slotProps={{
+                      primary: {
+                        sx: {
+                          fontSize: 13,
+                          fontWeight: isActive ? 600 : 500,
+                        },
+                      },
+                    }}
+                  />
+                  {!!item.badge && (
+                    <Box
+                      sx={{
+                        bgcolor: "primary.main",
+                        color: "#fff",
+                        fontSize: 10,
+                        fontWeight: 700,
+                        px: 0.75,
+                        py: 0.125,
+                        borderRadius: 2.5,
+                        lineHeight: 1.5,
+                        minWidth: 18,
+                        textAlign: "center",
+                      }}
+                    >
+                      {item.badge}
+                    </Box>
+                  )}
+                </>
+              )}
+              {collapsed && !!item.badge && (
                 <Box
                   sx={{
+                    position: "absolute",
+                    top: 6,
+                    right: 8,
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
                     bgcolor: "primary.main",
-                    color: "#fff",
-                    fontSize: 10,
-                    fontWeight: 700,
-                    px: 0.75,
-                    py: 0.125,
-                    borderRadius: 2.5,
-                    lineHeight: 1.5,
-                    minWidth: 18,
-                    textAlign: "center",
                   }}
-                >
-                  {item.badge}
-                </Box>
+                />
               )}
             </ListItemButton>
+          );
+
+          const wrappedButton = collapsed ? (
+            <Tooltip title={item.label} placement="right" arrow>
+              <span>{button}</span>
+            </Tooltip>
+          ) : (
+            button
           );
 
           const rendered = item.to ? (
@@ -229,10 +316,10 @@ export function Sidebar() {
               to={item.to}
               style={{ textDecoration: "none", color: "inherit" }}
             >
-              {button}
+              {wrappedButton}
             </Link>
           ) : (
-            <Box key={item.label}>{button}</Box>
+            <Box key={item.label}>{wrappedButton}</Box>
           );
 
           return showDivider ? (
@@ -246,172 +333,213 @@ export function Sidebar() {
         })}
       </List>
 
-      {/* Settings accordion */}
-      <Box sx={{ px: 1, borderTop: "1px solid", borderColor: "divider" }}>
-        <ListItemButton
-          onClick={() => setSettingsOpen(!settingsOpen)}
-          sx={{ borderRadius: 1.5, my: 0.5, py: 0.75 }}
-        >
-          <ListItemIcon sx={{ minWidth: 36 }}>
-            <SettingsOutlinedIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText
-            primary={t("sidebar.settings")}
-            slotProps={{
-              primary: { sx: { fontSize: 13, fontWeight: 500 } },
-            }}
-          />
-          <ExpandMoreIcon
-            sx={{
-              fontSize: 18,
-              color: "text.secondary",
-              transform: settingsOpen ? "rotate(180deg)" : "none",
-              transition: "transform 0.2s",
-            }}
-          />
-        </ListItemButton>
-        <Collapse in={settingsOpen}>
-          <Box sx={{ pb: 1.5 }}>
-            <Box sx={{ px: 2 }}>
-              {/* Language */}
-              <Stack
-                direction="row"
-                spacing={1}
-                sx={{ alignItems: "center", mb: 1 }}
-              >
-                <TranslateIcon sx={{ fontSize: 16, color: "text.secondary" }} />
-                <Typography
-                  variant="caption"
-                  sx={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: "text.secondary",
-                  }}
+      {/* Settings accordion — hidden when collapsed */}
+      {!collapsed && (
+        <Box sx={{ px: 1, borderTop: "1px solid", borderColor: "divider" }}>
+          <ListItemButton
+            onClick={() => setSettingsOpen(!settingsOpen)}
+            sx={{ borderRadius: 1.5, my: 0.5, py: 0.75 }}
+          >
+            <ListItemIcon sx={{ minWidth: 36 }}>
+              <SettingsOutlinedIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText
+              primary={t("sidebar.settings")}
+              slotProps={{
+                primary: { sx: { fontSize: 13, fontWeight: 500 } },
+              }}
+            />
+            <ExpandMoreIcon
+              sx={{
+                fontSize: 18,
+                color: "text.secondary",
+                transform: settingsOpen ? "rotate(180deg)" : "none",
+                transition: "transform 0.2s",
+              }}
+            />
+          </ListItemButton>
+          <Collapse in={settingsOpen}>
+            <Box sx={{ pb: 1.5 }}>
+              <Box sx={{ px: 2 }}>
+                {/* Language */}
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  sx={{ alignItems: "center", mb: 1 }}
                 >
-                  {t("sidebar.language")}
-                </Typography>
-              </Stack>
-              <ToggleButtonGroup
-                value={i18n.language?.startsWith("es") ? "es" : "en"}
-                exclusive
-                onChange={(_, lang) => {
-                  if (lang) i18n.changeLanguage(lang);
-                }}
-                size="small"
-                fullWidth
-                sx={{
-                  "& .MuiToggleButton-root": {
-                    fontSize: 12,
-                    fontWeight: 600,
-                    py: 0.5,
-                    textTransform: "none",
-                  },
-                }}
-              >
-                <ToggleButton value="es">Español</ToggleButton>
-                <ToggleButton value="en">English</ToggleButton>
-              </ToggleButtonGroup>
-
-              {/* Workspace (superadmin only) */}
-              {isSuperadmin && (
-                <Box sx={{ mt: 2 }}>
+                  <TranslateIcon
+                    sx={{ fontSize: 16, color: "text.secondary" }}
+                  />
                   <Typography
                     variant="caption"
                     sx={{
-                      color: "text.secondary",
                       fontSize: 11,
                       fontWeight: 600,
-                      mb: 0.75,
-                      display: "block",
+                      color: "text.secondary",
                     }}
                   >
-                    {t("sidebar.workspace")}
+                    {t("sidebar.language")}
                   </Typography>
-                  {isLoadingTenants ? (
-                    <Skeleton variant="rounded" width="100%" height={34} />
-                  ) : (
-                    <Select
-                      value={activeTenantId ?? ""}
-                      onChange={(e) => setActiveTenantId(e.target.value)}
-                      size="small"
-                      IconComponent={UnfoldMoreIcon}
+                </Stack>
+                <ToggleButtonGroup
+                  value={i18n.language?.startsWith("es") ? "es" : "en"}
+                  exclusive
+                  onChange={(_, lang) => {
+                    if (lang) i18n.changeLanguage(lang);
+                  }}
+                  size="small"
+                  fullWidth
+                  sx={{
+                    "& .MuiToggleButton-root": {
+                      fontSize: 12,
+                      fontWeight: 600,
+                      py: 0.5,
+                      textTransform: "none",
+                    },
+                  }}
+                >
+                  <ToggleButton value="es">Español</ToggleButton>
+                  <ToggleButton value="en">English</ToggleButton>
+                </ToggleButtonGroup>
+
+                {/* Workspace (superadmin only) */}
+                {isSuperadmin && (
+                  <Box sx={{ mt: 2 }}>
+                    <Typography
+                      variant="caption"
                       sx={{
-                        width: "100%",
-                        fontWeight: 700,
-                        fontFamily: "'Sora', sans-serif",
-                        fontSize: 13,
-                        "& .MuiSelect-select": { py: 0.75, px: 1 },
-                        "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "divider",
-                        },
+                        color: "text.secondary",
+                        fontSize: 11,
+                        fontWeight: 600,
+                        mb: 0.75,
+                        display: "block",
                       }}
                     >
-                      {tenants.map((tenant) => (
-                        <MenuItem
-                          key={tenant.id}
-                          value={tenant.id}
-                          sx={{ fontSize: 13 }}
-                        >
-                          {tenant.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  )}
-                </Box>
-              )}
+                      {t("sidebar.workspace")}
+                    </Typography>
+                    {isLoadingTenants ? (
+                      <Skeleton variant="rounded" width="100%" height={34} />
+                    ) : (
+                      <Select
+                        value={activeTenantId ?? ""}
+                        onChange={(e) => setActiveTenantId(e.target.value)}
+                        size="small"
+                        IconComponent={UnfoldMoreIcon}
+                        sx={{
+                          width: "100%",
+                          fontWeight: 700,
+                          fontFamily: "'Sora', sans-serif",
+                          fontSize: 13,
+                          "& .MuiSelect-select": { py: 0.75, px: 1 },
+                          "& .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "divider",
+                          },
+                        }}
+                      >
+                        {tenants.map((tenant) => (
+                          <MenuItem
+                            key={tenant.id}
+                            value={tenant.id}
+                            sx={{ fontSize: 13 }}
+                          >
+                            {tenant.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    )}
+                  </Box>
+                )}
+              </Box>
             </Box>
-          </Box>
-        </Collapse>
-      </Box>
+          </Collapse>
+        </Box>
+      )}
+
+      {/* Expand toggle (collapsed only) */}
+      {collapsed && (
+        <Box
+          sx={{
+            px: 1,
+            py: 0.5,
+            borderTop: "1px solid",
+            borderColor: "divider",
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <IconButton
+            size="small"
+            onClick={() => setCollapsed(false)}
+            sx={{ color: "text.secondary" }}
+          >
+            <ChevronRightIcon fontSize="small" />
+          </IconButton>
+        </Box>
+      )}
 
       {/* User profile */}
       {profile && (
         <Box
           sx={{
-            p: 2,
+            p: collapsed ? 1 : 2,
             borderTop: "1px solid",
             borderColor: "divider",
             display: "flex",
             alignItems: "center",
-            gap: 1.5,
+            justifyContent: collapsed ? "center" : "flex-start",
+            gap: collapsed ? 0 : 1.5,
           }}
         >
-          <Avatar
-            src={profile.avatarUrl ?? undefined}
-            sx={{
-              width: 32,
-              height: 32,
-              bgcolor: "primary.main",
-              fontSize: 13,
-              fontWeight: 700,
-            }}
+          <Tooltip
+            title={
+              collapsed
+                ? `${profile.name || profile.email} · ${profile.role}`
+                : ""
+            }
+            placement="right"
+            arrow
           >
-            {(profile.name?.[0] ?? profile.email[0]).toUpperCase()}
-          </Avatar>
-          <Box sx={{ minWidth: 0, flex: 1 }}>
-            <Typography
-              variant="body2"
-              sx={{ fontWeight: 600, fontSize: 13, lineHeight: 1.3 }}
-              noWrap
+            <Avatar
+              src={profile.avatarUrl ?? undefined}
+              sx={{
+                width: 32,
+                height: 32,
+                bgcolor: "primary.main",
+                fontSize: 13,
+                fontWeight: 700,
+              }}
             >
-              {profile.name || profile.email}
-            </Typography>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ fontSize: 11 }}
-              noWrap
-            >
-              {profile.role}
-            </Typography>
-          </Box>
-          <IconButton
-            size="small"
-            onClick={signOut}
-            sx={{ color: "text.secondary" }}
-          >
-            <LogoutOutlinedIcon fontSize="small" />
-          </IconButton>
+              {(profile.name?.[0] ?? profile.email[0]).toUpperCase()}
+            </Avatar>
+          </Tooltip>
+          {!collapsed && (
+            <>
+              <Box sx={{ minWidth: 0, flex: 1 }}>
+                <Typography
+                  variant="body2"
+                  sx={{ fontWeight: 600, fontSize: 13, lineHeight: 1.3 }}
+                  noWrap
+                >
+                  {profile.name || profile.email}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontSize: 11 }}
+                  noWrap
+                >
+                  {profile.role}
+                </Typography>
+              </Box>
+              <IconButton
+                size="small"
+                onClick={signOut}
+                sx={{ color: "text.secondary" }}
+              >
+                <LogoutOutlinedIcon fontSize="small" />
+              </IconButton>
+            </>
+          )}
         </Box>
       )}
     </Drawer>

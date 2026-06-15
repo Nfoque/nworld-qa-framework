@@ -160,6 +160,18 @@ VITE_SUPABASE_ANON_KEY=<anon-key>
 - **Strict convention contracts**: Prohibitive rules > descriptive guidelines
 - **Every LLM call logged** to prompt_logs table (non-negotiable NFR)
 
+## Library Documentation (context7)
+
+When writing code that uses project libraries, consult the **context7** MCP server (`resolve-library-id` → `query-docs`) to verify the current API instead of relying on training data. Prioritize for version-sensitive libraries:
+
+- MUI v9 (`/mui/material-ui/v7.2.0` — closest available)
+- TanStack Router, TanStack Query v5
+- Supabase JS SDK
+- React 19, Vite 8
+- Playwright
+
+Skip for trivial/stable APIs (basic HTML, standard JS built-ins).
+
 ## Related Documentation
 
 - [Product specs](documentation/product/) — Architecture, domain model, MVP phases, connectors, LLM pipeline, design, branding

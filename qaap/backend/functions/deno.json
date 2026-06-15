@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "lib": ["deno.window"]
+  },
+  "imports": {
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@^2"
+  },
+  "test": {
+    "include": ["**/*.test.ts"],
+    "permissions": {
+      "env": true,
+      "net": true,
+      "read": true
+    }
+  }
+}

@@ -24,69 +24,73 @@ QAAP enables QA experts to automate the creation and maintenance of end-to-end t
 - **Multi-LLM orchestration**: Configure different models per task, no provider lock-in
 - **Cucumber/Gherkin standard**: Framework-agnostic test representation
 - **Health dashboard**: Pass rate trends, flaky test tracking, degradation alerts
-- **Deployable anywhere**: Cloud SaaS or on-premise via Docker/Kubernetes
 
 ## Project Structure
 
 ```
 qaap/
-├── documentation/      # Product documentation
-│   ├── architecture-plan.md
-│   ├── design-handoff.md
-│   ├── domain-model.md
-│   ├── mvp-phases.md
-│   ├── connector-spec.md
-│   ├── llm-pipeline-spec.md
-│   └── decisions/
+├── spa/                    # React 19 SPA (Vite + MUI v9)
+│   └── src/
+│       ├── domains/        # connectors, dashboard
+│       └── shared/         # auth, layout, theme, components, config, tenant
 │
-└── code/               # Application monorepo
-    ├── apps/
-    │   ├── api/        # Fastify + tRPC backend
-    │   └── web/        # React 19 + MUI frontend
-    ├── packages/
-    │   ├── db/         # PostgreSQL schema (Drizzle)
-    │   └── shared/     # Shared types and validators
-    └── tooling/        # Dev tooling configs
+├── backend/                # Supabase (Edge Functions + PostgreSQL)
+│   ├── migrations/         # 10 SQL migrations
+│   └── functions/          # 7 Deno Edge Functions + shared utils
+│
+├── documentation/          # Product specs, ADRs, scaffolding skills
+│   ├── product/            # 7 product spec documents
+│   ├── adr/                # 17 architecture decision records
+│   └── skills/             # 7 Claude Code scaffolding skills
+│
+├── prototypes/             # HTML/JSX prototypes (Netlify demos)
+└── package.json            # Root scripts (dev, lint, check, deploy)
 ```
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | React 19, Vite, MUI v6, TanStack Router/Query, Zustand |
-| Backend | Fastify, tRPC v11, Better Auth, BullMQ |
-| Database | PostgreSQL 16 (RLS), pgvector, Drizzle ORM |
-| Queue | Redis (Valkey) + BullMQ |
-| LLM | OpenAI-compatible API, LiteLLM gateway |
-| Monorepo | Turborepo + pnpm |
-| Deploy | Docker Compose / Helm (Kubernetes) |
+| Frontend | React 19, Vite 8, TypeScript 6, MUI v9, TanStack Query v5, TanStack Router |
+| Backend | Supabase Edge Functions (Deno) |
+| Database | PostgreSQL with RLS (multi-tenant via tenant_id) |
+| Auth | Supabase Auth (Google OAuth) |
+| LLM | OpenAI-compatible API (no SDK lock-in) |
+| Deployment | Vercel (SPA) + Supabase (backend) |
 
 ## Getting Started
 
 ```bash
-cd qaap/code
-pnpm install
-docker compose up -d    # PostgreSQL + Redis
-pnpm dev                # Start API + Web
+cd qaap
+npm install --prefix spa    # Install SPA dependencies
+npm run dev                 # Start dev server at http://localhost:5173
 ```
 
-- Frontend: http://localhost:5173
-- API: http://localhost:3000
+Backend (requires [Supabase CLI](https://supabase.com/docs/guides/cli)):
+
+```bash
+cd qaap/backend
+supabase start              # Start local Supabase stack
+supabase functions serve    # Serve Edge Functions locally
+```
 
 ## Documentation
 
 See [documentation/](documentation/) for full product specs:
-- [Architecture Plan](documentation/architecture-plan.md) — System design and tech decisions
-- [Domain Model](documentation/domain-model.md) — All entities and relationships
-- [MVP Phases](documentation/mvp-phases.md) — Roadmap from MVP to enterprise
-- [Connector Spec](documentation/connector-spec.md) — Integration plugin architecture
-- [LLM Pipeline Spec](documentation/llm-pipeline-spec.md) — AI orchestration layer
-- [Design Handoff](documentation/design-handoff.md) — UI/UX design brief
+- [Architecture Plan](documentation/product/architecture-plan.md) — System design and tech decisions
+- [Domain Model](documentation/product/domain-model.md) — All entities and relationships
+- [MVP Phases](documentation/product/mvp-phases.md) — Roadmap from MVP to enterprise
+- [Connector Spec](documentation/product/connector-spec.md) — Integration plugin architecture
+- [LLM Pipeline Spec](documentation/product/llm-pipeline-spec.md) — AI orchestration layer
+- [Design Handoff](documentation/product/design-handoff.md) — UI/UX design brief
+- [NFQ Branding](documentation/product/nfq-branding.md) — Branding guidelines
+
+For development details, see [CLAUDE.md](CLAUDE.md).
 
 ## Research Foundation
 
-QAAP builds on consolidated QA automation research in the parent repository:
-- 13 analyzed articles on LLM-based testing (2022-2026)
+QAAP builds on consolidated QA automation research in the [parent repository](../README.md):
+- 13 analyzed articles on LLM-based testing (2022–2026)
 - Client signals from real enterprise engagements
 - Validated patterns: properties over content, confidence-based routing, living datasets, static-analysis-first, strict convention contracts, normalisation steps, observation-based debug
 

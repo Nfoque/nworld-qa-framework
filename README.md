@@ -18,15 +18,18 @@ For the SaaS product, see [qaap/README.md](qaap/README.md).
 │   ├── patterns.md                 Recurring patterns across sources
 │   └── client-signals.md          Market signals (sanitized)
 │
-├── news/                        Articles and publications on QA + LLMs (14 processed)
+├── news/                        Articles and publications on QA + LLMs (13 processed)
 │
 ├── references/                  External repos studied (code, ADRs, postmortems)
 │
 ├── clients/                     Transcripts and analysis per client (gitignored)
 │
-├── qa-framework/        The framework — skills, protocol, parsers, ADRs
+├── qa-framework/                The framework — skills, protocol, parsers, ADRs
 │
-└── qaap/                        The SaaS product — documentation + code monorepo
+└── qaap/                        The SaaS product
+    ├── spa/                        React 19 SPA (Vite + MUI v9)
+    ├── backend/                    Supabase Edge Functions + PostgreSQL
+    └── documentation/              Product specs, 17 ADRs, scaffolding skills
 ```
 
 ## Research -> product flow

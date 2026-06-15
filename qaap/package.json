@@ -1,0 +1,23 @@
+{
+  "name": "qaap",
+  "private": true,
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "npm run dev --prefix spa",
+    "build": "npm run build --prefix spa",
+    "lint": "npm run lint --prefix spa && npm run deno:lint",
+    "lint:fix": "npm run lint:fix --prefix spa && npm run deno:lint",
+    "format": "npm run format --prefix spa && npm run deno:fmt",
+    "format:check": "npm run format:check --prefix spa",
+    "test": "echo 'No unit tests configured'",
+    "types:check": "npm run types:check --prefix spa",
+    "deno:check": "deno check --config backend/functions/deno.json 'backend/functions/**/*.ts'",
+    "deno:lint": "deno lint --config backend/functions/deno.json backend/functions/",
+    "deno:fmt": "deno fmt backend/functions/",
+    "deno:test": "deno test --allow-read --allow-env --allow-net --config backend/functions/deno.json backend/functions/",
+    "check:spa": "npm run check --prefix spa",
+    "check:backend": "npm run deno:lint && npm run deno:fmt && npm run deno:check",
+    "check": "npm run check:spa && npm run check:backend",
+    "deploy:functions": "cd backend && supabase functions deploy --project-ref zxdbfubcisgcfentbstg"
+  }
+}

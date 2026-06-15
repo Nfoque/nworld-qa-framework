@@ -3,22 +3,26 @@ import { useCallback, useRef } from "react";
 
 export function ResizeHandle({
   onResize,
+  direction = "horizontal",
 }: {
-  onResize: (deltaX: number) => void;
+  onResize: (delta: number) => void;
+  direction?: "horizontal" | "vertical";
 }) {
   const dragging = useRef(false);
-  const lastX = useRef(0);
+  const lastPos = useRef(0);
+  const isVertical = direction === "vertical";
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
       e.preventDefault();
       dragging.current = true;
-      lastX.current = e.clientX;
+      lastPos.current = isVertical ? e.clientY : e.clientX;
 
       const handleMouseMove = (ev: MouseEvent) => {
         if (!dragging.current) return;
-        const delta = ev.clientX - lastX.current;
-        lastX.current = ev.clientX;
+        const pos = isVertical ? ev.clientY : ev.clientX;
+        const delta = pos - lastPos.current;
+        lastPos.current = pos;
         onResize(delta);
       };
 
@@ -32,19 +36,20 @@ export function ResizeHandle({
 
       document.addEventListener("mousemove", handleMouseMove);
       document.addEventListener("mouseup", handleMouseUp);
-      document.body.style.cursor = "col-resize";
+      document.body.style.cursor = isVertical ? "row-resize" : "col-resize";
       document.body.style.userSelect = "none";
     },
-    [onResize],
+    [onResize, isVertical],
   );
 
   return (
     <Box
       onMouseDown={handleMouseDown}
       sx={{
-        width: 8,
+        ...(isVertical
+          ? { height: 8, cursor: "row-resize" }
+          : { width: 8, cursor: "col-resize" }),
         flexShrink: 0,
-        cursor: "col-resize",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -56,8 +61,7 @@ export function ResizeHandle({
     >
       <Box
         sx={{
-          width: 3,
-          height: 40,
+          ...(isVertical ? { height: 3, width: 40 } : { width: 3, height: 40 }),
           borderRadius: 1,
           bgcolor: "grey.300",
           transition: "background-color 0.15s",

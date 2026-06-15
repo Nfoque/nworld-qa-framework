@@ -3,14 +3,16 @@ import BugReportOutlinedIcon from "@mui/icons-material/BugReportOutlined";
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import WebOutlinedIcon from "@mui/icons-material/WebOutlined";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import {
   Alert,
   Box,
   Card,
   Chip,
   CircularProgress,
+  IconButton,
   InputAdornment,
-  Stack,
   TextField,
   Typography,
 } from "@mui/material";
@@ -36,7 +38,10 @@ export function TestPlanList() {
   const [search, setSearch] = useState("");
   const [modalityFilter, setModalityFilter] = useState<string>("all");
   const [frameworkFilter, setFrameworkFilter] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<"name" | "scenarios">("name");
+  const [projectFilter, setProjectFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<"name" | "project" | "scenarios">("name");
+  const [page, setPage] = useState(0);
+  const PAGE_SIZE = 10;
   const { data: plans = [], isLoading, error } = useTestPlans();
 
   const totalScenarios = plans.reduce((sum, p) => sum + p.scenario_count, 0);
@@ -56,6 +61,13 @@ export function TestPlanList() {
     () => ["all", ...new Set(plans.map((p) => p.target_framework))],
     [plans],
   );
+  const projects = useMemo(
+    () => [
+      "all",
+      ...new Set(plans.map((p) => p.engine_job_name).filter(Boolean)),
+    ],
+    [plans],
+  );
 
   const filtered = useMemo(() => {
     return plans
@@ -64,16 +76,27 @@ export function TestPlanList() {
           return false;
         if (frameworkFilter !== "all" && p.target_framework !== frameworkFilter)
           return false;
+        if (
+          projectFilter !== "all" &&
+          p.engine_job_name !== projectFilter
+        )
+          return false;
         if (search && !p.name.toLowerCase().includes(search.toLowerCase()))
           return false;
         return true;
       })
-      .sort((a, b) =>
-        sortBy === "scenarios"
-          ? b.scenario_count - a.scenario_count
-          : a.name.localeCompare(b.name),
-      );
-  }, [plans, modalityFilter, frameworkFilter, search, sortBy]);
+      .sort((a, b) => {
+        if (sortBy === "scenarios") return b.scenario_count - a.scenario_count;
+        if (sortBy === "project")
+          return (a.engine_job_name ?? "").localeCompare(b.engine_job_name ?? "") || a.name.localeCompare(b.name);
+        return a.name.localeCompare(b.name);
+      });
+  }, [plans, modalityFilter, frameworkFilter, projectFilter, search, sortBy]);
+
+  const safePagedPage = Math.min(page, Math.max(0, Math.ceil(filtered.length / PAGE_SIZE) - 1));
+  if (safePagedPage !== page) setPage(safePagedPage);
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paginated = filtered.slice(safePagedPage * PAGE_SIZE, (safePagedPage + 1) * PAGE_SIZE);
 
   return (
     <Box sx={{ p: 3 }}>
@@ -123,109 +146,80 @@ export function TestPlanList() {
       </Box>
 
       {/* Filters + Search */}
-      <Stack
-        direction="row"
-        sx={{ justifyContent: "space-between", alignItems: "center", mb: 2 }}
-      >
-        <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
-          <Stack direction="row" spacing={0.75} sx={{ alignItems: "center" }}>
-            <Typography
-              sx={{
-                fontSize: 11,
-                fontWeight: 600,
-                color: "text.secondary",
-                textTransform: "uppercase",
-                mr: 0.75,
-              }}
-            >
-              {t("tables.type")}
+      <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, flexWrap: "wrap", rowGap: 1, mb: 2 }}>
+        {projects.length > 2 && (
+          <>
+            <Typography sx={{ fontSize: 11, fontWeight: 600, color: "text.secondary", textTransform: "uppercase" }}>
+              {t("testPlans.project")}
             </Typography>
-            {modalities.map((m) => (
+            {projects.map((p) => (
               <Chip
-                key={m}
-                label={
-                  m === "all" ? "All" : m.charAt(0).toUpperCase() + m.slice(1)
-                }
+                key={p ?? "all"}
+                label={p === "all" ? "All" : p}
                 size="small"
-                variant={modalityFilter === m ? "filled" : "outlined"}
-                color={modalityFilter === m ? "primary" : "default"}
-                onClick={() => setModalityFilter(m)}
-                sx={{
-                  fontSize: 12,
-                  fontWeight: modalityFilter === m ? 600 : 400,
-                }}
+                variant={projectFilter === p ? "filled" : "outlined"}
+                color={projectFilter === p ? "primary" : "default"}
+                onClick={() => setProjectFilter(p!)}
+                sx={{ fontSize: 12, fontWeight: projectFilter === p ? 600 : 400 }}
               />
             ))}
-          </Stack>
-          <Box
-            sx={{ height: 20, borderLeft: "1px solid", borderColor: "divider" }}
+          </>
+        )}
+        <Typography sx={{ fontSize: 11, fontWeight: 600, color: "text.secondary", textTransform: "uppercase", ml: projects.length > 2 ? 1.5 : 0 }}>
+          {t("tables.type")}
+        </Typography>
+        {modalities.map((m) => (
+          <Chip
+            key={m}
+            label={m === "all" ? "All" : m.charAt(0).toUpperCase() + m.slice(1)}
+            size="small"
+            variant={modalityFilter === m ? "filled" : "outlined"}
+            color={modalityFilter === m ? "primary" : "default"}
+            onClick={() => setModalityFilter(m)}
+            sx={{ fontSize: 12, fontWeight: modalityFilter === m ? 600 : 400 }}
           />
-          <Stack direction="row" spacing={0.75} sx={{ alignItems: "center" }}>
-            <Typography
-              sx={{
-                fontSize: 11,
-                fontWeight: 600,
-                color: "text.secondary",
-                textTransform: "uppercase",
-                mr: 0.75,
-              }}
-            >
-              Framework
-            </Typography>
-            {frameworks.map((f) => (
-              <Chip
-                key={f}
-                label={
-                  f === "all" ? "All" : f.charAt(0).toUpperCase() + f.slice(1)
-                }
-                size="small"
-                variant={frameworkFilter === f ? "filled" : "outlined"}
-                color={frameworkFilter === f ? "primary" : "default"}
-                onClick={() => setFrameworkFilter(f)}
-                sx={{
-                  fontSize: 12,
-                  fontWeight: frameworkFilter === f ? 600 : 400,
-                }}
-              />
-            ))}
-          </Stack>
-          <Box
-            sx={{ height: 20, borderLeft: "1px solid", borderColor: "divider" }}
+        ))}
+        <Typography sx={{ fontSize: 11, fontWeight: 600, color: "text.secondary", textTransform: "uppercase", ml: 1.5 }}>
+          Framework
+        </Typography>
+        {frameworks.map((f) => (
+          <Chip
+            key={f}
+            label={f === "all" ? "All" : f.charAt(0).toUpperCase() + f.slice(1)}
+            size="small"
+            variant={frameworkFilter === f ? "filled" : "outlined"}
+            color={frameworkFilter === f ? "primary" : "default"}
+            onClick={() => setFrameworkFilter(f)}
+            sx={{ fontSize: 12, fontWeight: frameworkFilter === f ? 600 : 400 }}
           />
-          <Stack direction="row" spacing={0.75} sx={{ alignItems: "center" }}>
-            <Typography
-              sx={{
-                fontSize: 11,
-                fontWeight: 600,
-                color: "text.secondary",
-                textTransform: "uppercase",
-                mr: 0.75,
-              }}
-            >
-              {t("testPlans.sortBy")}
-            </Typography>
-            <Chip
-              label="A-Z"
-              size="small"
-              variant={sortBy === "name" ? "filled" : "outlined"}
-              color={sortBy === "name" ? "primary" : "default"}
-              onClick={() => setSortBy("name")}
-              sx={{ fontSize: 12, fontWeight: sortBy === "name" ? 600 : 400 }}
-            />
-            <Chip
-              label={t("tables.scenarios")}
-              size="small"
-              variant={sortBy === "scenarios" ? "filled" : "outlined"}
-              color={sortBy === "scenarios" ? "primary" : "default"}
-              onClick={() => setSortBy("scenarios")}
-              sx={{
-                fontSize: 12,
-                fontWeight: sortBy === "scenarios" ? 600 : 400,
-              }}
-            />
-          </Stack>
-        </Stack>
-
+        ))}
+        <Typography sx={{ fontSize: 11, fontWeight: 600, color: "text.secondary", textTransform: "uppercase", ml: 1.5 }}>
+          {t("testPlans.sortBy")}
+        </Typography>
+        <Chip
+          label="A-Z"
+          size="small"
+          variant={sortBy === "name" ? "filled" : "outlined"}
+          color={sortBy === "name" ? "primary" : "default"}
+          onClick={() => setSortBy("name")}
+          sx={{ fontSize: 12, fontWeight: sortBy === "name" ? 600 : 400 }}
+        />
+        <Chip
+          label={t("testPlans.project")}
+          size="small"
+          variant={sortBy === "project" ? "filled" : "outlined"}
+          color={sortBy === "project" ? "primary" : "default"}
+          onClick={() => setSortBy("project")}
+          sx={{ fontSize: 12, fontWeight: sortBy === "project" ? 600 : 400 }}
+        />
+        <Chip
+          label={t("tables.scenarios")}
+          size="small"
+          variant={sortBy === "scenarios" ? "filled" : "outlined"}
+          color={sortBy === "scenarios" ? "primary" : "default"}
+          onClick={() => setSortBy("scenarios")}
+          sx={{ fontSize: 12, fontWeight: sortBy === "scenarios" ? 600 : 400 }}
+        />
         <TextField
           size="small"
           placeholder={t("testPlans.searchPlans")}
@@ -240,9 +234,9 @@ export function TestPlanList() {
               ),
             },
           }}
-          sx={{ width: 220, "& .MuiOutlinedInput-root": { fontSize: 13 } }}
+          sx={{ width: 200, ml: "auto", "& .MuiOutlinedInput-root": { fontSize: 13 } }}
         />
-      </Stack>
+      </Box>
 
       {/* Loading */}
       {isLoading && (
@@ -287,6 +281,9 @@ export function TestPlanList() {
               borderColor: "divider",
             }}
           >
+            <Typography sx={HEADER_CELL_SX}>
+              {t("testPlans.project")}
+            </Typography>
             <Typography sx={HEADER_CELL_SX}>{t("tables.name")}</Typography>
             <Typography sx={{ ...HEADER_CELL_SX, textAlign: "center" }}>
               {t("tables.type")}
@@ -302,10 +299,41 @@ export function TestPlanList() {
             </Typography>
           </Box>
 
-          {filtered.map((plan) => (
+          {paginated.map((plan) => (
             <PlanRow key={plan.id} plan={plan} />
           ))}
         </Card>
+      )}
+
+      {/* Pagination */}
+      {!isLoading && totalPages > 1 && (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 1.5,
+            mt: 2,
+          }}
+        >
+          <IconButton
+            size="small"
+            disabled={page === 0}
+            onClick={() => setPage((p) => p - 1)}
+          >
+            <ChevronLeftIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+          <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
+            {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, filtered.length)} / {filtered.length}
+          </Typography>
+          <IconButton
+            size="small"
+            disabled={page >= totalPages - 1}
+            onClick={() => setPage((p) => p + 1)}
+          >
+            <ChevronRightIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+        </Box>
       )}
     </Box>
   );

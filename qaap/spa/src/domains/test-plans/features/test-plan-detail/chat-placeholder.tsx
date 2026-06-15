@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import { useTranslation } from "react-i18next";
 
-export function ChatPlaceholder() {
+export function ChatPlaceholder({ compact = false }: { compact?: boolean }) {
   const { t } = useTranslation();
 
   return (
@@ -26,20 +26,26 @@ export function ChatPlaceholder() {
           display: "flex",
           alignItems: "center",
           gap: 1,
-          px: 2,
-          height: 44,
+          px: compact ? 1.5 : 2,
+          height: compact ? 32 : 44,
           flexShrink: 0,
           borderBottom: "1px solid",
           borderColor: "divider",
         }}
       >
         <ChatBubbleOutlinedIcon
-          sx={{ fontSize: 16, color: "text.secondary" }}
+          sx={{ fontSize: compact ? 14 : 16, color: "text.secondary" }}
         />
         <Typography
-          sx={{ fontSize: 13, fontWeight: 600, color: "text.secondary" }}
+          sx={{
+            fontSize: compact ? 12 : 13,
+            fontWeight: 600,
+            color: "text.secondary",
+          }}
         >
-          {t("testPlanDetail.aiAssistant")}
+          {compact
+            ? t("testPlanDetail.terminal")
+            : t("testPlanDetail.aiAssistant")}
         </Typography>
       </Box>
 

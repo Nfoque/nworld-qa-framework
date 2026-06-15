@@ -385,7 +385,10 @@
     "searchPlans": "Buscar planes...",
     "loadError": "Error al cargar los planes de test. Inténtalo de nuevo.",
     "empty": "Aún no hay planes de test. Acepta una propuesta de pipeline para crear tu primer plan.",
-    "emptyFiltered": "Ningún plan coincide con los filtros actuales."
+    "emptyFiltered": "Ningún plan coincide con los filtros actuales.",
+    "ungrouped": "Sin agrupar",
+    "plans": "planes",
+    "project": "Proyecto"
   },
   "testPlanDetail": {
     "scenarios": "Escenarios",
@@ -420,6 +423,24 @@
     "saved": "Escenario guardado correctamente",
     "saveError": "Error al guardar el escenario",
     "edit": "Editar",
-    "preview": "Vista previa"
+    "preview": "Vista previa",
+    "layoutStandard": "Standard",
+    "layoutIde": "IDE",
+    "layoutAiFirst": "AI-First",
+    "splitView": "Split View",
+    "terminal": "Terminal",
+    "planOverview": "Resumen del Plan",
+    "approved": "Aprobados",
+    "pending": "Pendientes",
+    "rejected": "Rechazados",
+    "confidence": "Confianza",
+    "sources": "Fuentes",
+    "planContext": "Contexto del Plan",
+    "testScenarios": "Escenarios de Test",
+    "approve": "Aprobar",
+    "reject": "Rechazar",
+    "aiFirstWelcome": "Plan de test generado con {{count}} escenarios. Revisa, edita o pide a la IA que los modifique.",
+    "aiFirstPlaceholderMsg": "He analizado las fuentes de contexto y generado escenarios de test para este plan. Puedes expandir cada tarjeta para revisar el Gherkin, aprobar, editar o rechazar escenarios. Pídeme modificar, explicar o generar nuevos escenarios.",
+    "aiFirstInputPlaceholder": "Pide a QAAP AI modificar, explicar o generar escenarios…"
   }
 }

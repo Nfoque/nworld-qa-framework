@@ -78,7 +78,6 @@ export function ScenarioItem({
           {scenario.title}
         </Typography>
         <Typography sx={{ fontSize: 10.5, color: "text.disabled" }} noWrap>
-          {scenario.category ? `${scenario.category} · ` : ""}
           {Math.round(scenario.confidence * 100)}%
         </Typography>
       </Box>

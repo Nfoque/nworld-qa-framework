@@ -4,8 +4,9 @@ import { useNavigate } from "@tanstack/react-router";
 import type { TestPlan } from "./test-plan-list.service";
 
 import { ModalityBadge } from "@/shared/components/modality-badge";
+import { getProjectColor } from "@/shared/utils/project-colors";
 
-const GRID_COLUMNS = "minmax(200px, 2fr) 80px 80px 160px 90px";
+const GRID_COLUMNS = "120px minmax(200px, 2fr) 80px 80px 160px 90px";
 
 function formatRelativeTime(dateStr: string): string {
   const now = Date.now();
@@ -28,6 +29,7 @@ export { GRID_COLUMNS };
 
 export function PlanRow({ plan }: { plan: TestPlan }) {
   const navigate = useNavigate();
+  const projectColor = getProjectColor(plan.engine_job_name);
 
   return (
     <Box
@@ -45,12 +47,22 @@ export function PlanRow({ plan }: { plan: TestPlan }) {
         alignItems: "center",
         borderBottom: "1px solid",
         borderColor: "divider",
+        borderLeft: `3px solid ${projectColor}`,
         cursor: "pointer",
         transition: "background-color 0.15s",
         "&:hover": { bgcolor: "action.hover" },
         "&:last-child": { borderBottom: "none" },
       }}
     >
+      {/* Project */}
+      <Typography
+        sx={{ fontSize: 12, color: projectColor, fontWeight: 600 }}
+        noWrap
+        title={plan.engine_job_name ?? ""}
+      >
+        {plan.engine_job_name ?? "—"}
+      </Typography>
+
       {/* Name + framework */}
       <Box sx={{ minWidth: 0, pr: 2 }}>
         <Typography

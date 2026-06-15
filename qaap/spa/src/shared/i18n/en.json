@@ -385,7 +385,10 @@
     "searchPlans": "Search plans...",
     "loadError": "Failed to load test plans. Please try again.",
     "empty": "No test plans yet. Accept a pipeline proposal to create your first plan.",
-    "emptyFiltered": "No plans match the current filters."
+    "emptyFiltered": "No plans match the current filters.",
+    "ungrouped": "Ungrouped",
+    "plans": "plans",
+    "project": "Project"
   },
   "testPlanDetail": {
     "scenarios": "Scenarios",
@@ -420,6 +423,24 @@
     "saved": "Scenario saved successfully",
     "saveError": "Failed to save scenario",
     "edit": "Edit",
-    "preview": "Preview"
+    "preview": "Preview",
+    "layoutStandard": "Standard",
+    "layoutIde": "IDE",
+    "layoutAiFirst": "AI-First",
+    "splitView": "Split View",
+    "terminal": "Terminal",
+    "planOverview": "Plan Overview",
+    "approved": "Approved",
+    "pending": "Pending",
+    "rejected": "Rejected",
+    "confidence": "Confidence",
+    "sources": "Sources",
+    "planContext": "Plan Context",
+    "testScenarios": "Test Scenarios",
+    "approve": "Approve",
+    "reject": "Reject",
+    "aiFirstWelcome": "Test plan generated with {{count}} scenarios. Review, edit, or ask the AI to modify them.",
+    "aiFirstPlaceholderMsg": "I've analyzed the context sources and generated test scenarios for this plan. You can expand each card to review the Gherkin, approve, edit, or reject scenarios. Ask me to modify, explain, or generate new scenarios.",
+    "aiFirstInputPlaceholder": "Ask QAAP AI to modify, explain, or generate scenarios…"
   }
 }

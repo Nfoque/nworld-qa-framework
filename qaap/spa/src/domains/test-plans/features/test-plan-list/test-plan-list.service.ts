@@ -10,6 +10,7 @@ export interface TestPlan {
   status: string;
   target_framework: string;
   engine_job_id: string | null;
+  engine_job_name: string | null;
   created_by: string;
   created_at: string;
   created_by_name: string | null;

@@ -34,6 +34,7 @@ export interface TestPlanDetail {
   target_framework: string;
   target_environments: string[];
   engine_job_id: string | null;
+  engine_job_name: string | null;
   created_by: string;
   created_at: string;
   updated_at: string;

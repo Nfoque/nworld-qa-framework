@@ -40,6 +40,24 @@ Deno.serve(async (req) => {
     }
   }
 
+  const jobIds = [
+    ...new Set(
+      rows.map((r: Record<string, unknown>) => r.engine_job_id).filter(Boolean),
+    ),
+  ] as string[];
+
+  const jobNameMap: Record<string, string | null> = {};
+  if (jobIds.length > 0) {
+    const { data: jobs } = await auth.serviceClient
+      .from("engine_jobs")
+      .select("id, name")
+      .in("id", jobIds);
+
+    for (const j of jobs ?? []) {
+      jobNameMap[j.id] = j.name;
+    }
+  }
+
   const plans = rows.map((row: Record<string, unknown>) => {
     const profile = profileMap[row.created_by as string];
     return {
@@ -50,6 +68,7 @@ Deno.serve(async (req) => {
       status: row.status,
       target_framework: row.target_framework,
       engine_job_id: row.engine_job_id,
+      engine_job_name: jobNameMap[row.engine_job_id as string] ?? null,
       created_by: row.created_by,
       created_at: row.created_at,
       created_by_name: profile?.name ?? null,

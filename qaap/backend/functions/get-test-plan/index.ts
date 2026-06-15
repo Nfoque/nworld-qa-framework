@@ -60,8 +60,19 @@ Deno.serve(async (req) => {
 
   if (srcErr) return error(req, srcErr.message, 500);
 
+  let engineJobName: string | null = null;
+  if (plan.engine_job_id) {
+    const { data: job } = await auth.serviceClient
+      .from("engine_jobs")
+      .select("name")
+      .eq("id", plan.engine_job_id)
+      .single();
+    if (job) engineJobName = job.name;
+  }
+
   return ok(req, {
     ...plan,
+    engine_job_name: engineJobName,
     created_by_name: createdByName,
     created_by_avatar: createdByAvatar,
     scenarios: scenarios ?? [],

@@ -1,73 +1,32 @@
 import ChatBubbleOutlinedIcon from "@mui/icons-material/ChatBubbleOutlined";
-import CodeOutlinedIcon from "@mui/icons-material/CodeOutlined";
-import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
-import NotesOutlinedIcon from "@mui/icons-material/NotesOutlined";
 import PlayArrowOutlinedIcon from "@mui/icons-material/PlayArrowOutlined";
-import PlayCircleOutlinedIcon from "@mui/icons-material/PlayCircleOutlined";
-import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
-import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import {
   Alert,
   Box,
   Button,
-  Card,
-  CardContent,
   CircularProgress,
-  IconButton,
   Stack,
-  Tooltip,
   Typography,
 } from "@mui/material";
 import { useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { ChatPlaceholder } from "./chat-placeholder";
-import { ConfidenceBar } from "./confidence-bar";
-import { DescriptionEditor } from "./description-editor";
-import { GherkinEditor } from "./gherkin-editor";
-import { ScenarioSidebar } from "./scenario-sidebar";
+import { LayoutAiFirst } from "./layout-ai-first";
+import { LayoutIde } from "./layout-ide";
+import { LayoutStandard } from "./layout-standard";
+import { LayoutSwitcher } from "./layout-switcher";
 import { useTestPlan, useUpdateScenario } from "./test-plan-detail.service";
+import type { LayoutVariant, Tab } from "./test-plan-detail.types";
 
 import { testPlanDetailRoute } from "@/router";
 import { DetailPageHeader } from "@/shared/components/detail-page-header";
-import { EmptyState } from "@/shared/components/empty-state";
 import { ModalityBadge } from "@/shared/components/modality-badge";
-import { ResizeHandle } from "@/shared/components/resize-handle";
+import { getProjectColor } from "@/shared/utils/project-colors";
 import { useSnackbar } from "@/shared/components/snackbar-provider";
 import { StatusBadge } from "@/shared/components/status-badge";
 import { useSidebar } from "@/shared/layout/sidebar-context";
-
-type Tab = "description" | "gherkin" | "code" | "executions";
-
-const TABS: {
-  id: Tab;
-  labelKey: string;
-  icon: typeof DescriptionOutlinedIcon;
-}[] = [
-  {
-    id: "description",
-    labelKey: "testPlanDetail.description",
-    icon: NotesOutlinedIcon,
-  },
-  {
-    id: "gherkin",
-    labelKey: "testPlanDetail.gherkin",
-    icon: DescriptionOutlinedIcon,
-  },
-  {
-    id: "code",
-    labelKey: "testPlanDetail.generatedCode",
-    icon: CodeOutlinedIcon,
-  },
-  {
-    id: "executions",
-    labelKey: "testPlanDetail.executions",
-    icon: PlayCircleOutlinedIcon,
-  },
-];
 
 export function TestPlanDetail() {
   const { t } = useTranslation();
@@ -83,6 +42,7 @@ export function TestPlanDetail() {
     return () => setCollapsed(false);
   }, [setCollapsed]);
 
+  const [layout, setLayout] = useState<LayoutVariant>("standard");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("description");
   const [chatOpen, setChatOpen] = useState(true);
@@ -125,36 +85,6 @@ export function TestPlanDetail() {
   const descriptionContent =
     descriptionDraft ?? selectedScenario?.description ?? "";
   const hasDraft = gherkinDraft !== null || descriptionDraft !== null;
-
-  // Resize: sidebar
-  const [sidebarWidth, setSidebarWidth] = useState<number | null>(null);
-  const sidebarWidthRef = useRef(0);
-  const sidebarCardRef = useRef<HTMLDivElement>(null);
-  const handleSidebarResize = useCallback((delta: number) => {
-    if (!sidebarWidthRef.current && sidebarCardRef.current) {
-      sidebarWidthRef.current = sidebarCardRef.current.offsetWidth;
-    }
-    sidebarWidthRef.current = Math.max(
-      200,
-      Math.min(500, sidebarWidthRef.current + delta),
-    );
-    setSidebarWidth(sidebarWidthRef.current);
-  }, []);
-
-  // Resize: chat
-  const [chatWidth, setChatWidth] = useState<number | null>(null);
-  const chatWidthRef = useRef(0);
-  const chatCardRef = useRef<HTMLDivElement>(null);
-  const handleChatResize = useCallback((delta: number) => {
-    if (!chatWidthRef.current && chatCardRef.current) {
-      chatWidthRef.current = chatCardRef.current.offsetWidth;
-    }
-    chatWidthRef.current = Math.max(
-      200,
-      Math.min(500, chatWidthRef.current - delta),
-    );
-    setChatWidth(chatWidthRef.current);
-  }, []);
 
   function handleSave() {
     if (!selectedScenario || !hasDraft) return;
@@ -204,6 +134,24 @@ export function TestPlanDetail() {
     );
   }
 
+  const layoutProps = {
+    plan,
+    scenarios,
+    selectedScenario,
+    onSelectScenario: setSelectedId,
+    activeTab,
+    onTabChange: setActiveTab,
+    gherkinContent,
+    descriptionContent,
+    descriptionEditing,
+    onDescriptionEditToggle: () => setDescriptionEditing(!descriptionEditing),
+    onGherkinChange: setGherkinDraft,
+    onDescriptionChange: setDescriptionDraft,
+    hasDraft,
+    onSave: handleSave,
+    isSaving: updateScenario.isPending,
+  };
+
   return (
     <Box
       sx={{
@@ -219,6 +167,19 @@ export function TestPlanDetail() {
         onBack={() => navigate({ to: "/test-plans" })}
         subtitle={
           <>
+            {plan.engine_job_name && (
+              <Typography
+                sx={{
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: getProjectColor(plan.engine_job_name),
+                  borderLeft: `3px solid ${getProjectColor(plan.engine_job_name)}`,
+                  pl: 0.75,
+                }}
+              >
+                {plan.engine_job_name}
+              </Typography>
+            )}
             <ModalityBadge modality={plan.modality} />
             <StatusBadge status={plan.status} />
             {sourceModel && (
@@ -229,24 +190,27 @@ export function TestPlanDetail() {
           </>
         }
         action={
-          <Stack direction="row" spacing={1}>
-            <Button
-              size="small"
-              variant="outlined"
-              color="inherit"
-              startIcon={<ChatBubbleOutlinedIcon sx={{ fontSize: 16 }} />}
-              onClick={() => setChatOpen(!chatOpen)}
-              sx={{
-                fontSize: 12,
-                textTransform: "none",
-                fontWeight: 600,
-                color: "text.secondary",
-              }}
-            >
-              {chatOpen
-                ? t("testPlanDetail.hideChat")
-                : t("testPlanDetail.showChat")}
-            </Button>
+          <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+            <LayoutSwitcher value={layout} onChange={setLayout} />
+            {layout === "standard" && (
+              <Button
+                size="small"
+                variant="outlined"
+                color="inherit"
+                startIcon={<ChatBubbleOutlinedIcon sx={{ fontSize: 16 }} />}
+                onClick={() => setChatOpen(!chatOpen)}
+                sx={{
+                  fontSize: 12,
+                  textTransform: "none",
+                  fontWeight: 600,
+                  color: "text.secondary",
+                }}
+              >
+                {chatOpen
+                  ? t("testPlanDetail.hideChat")
+                  : t("testPlanDetail.showChat")}
+              </Button>
+            )}
             <Button
               size="small"
               variant="outlined"
@@ -274,241 +238,11 @@ export function TestPlanDetail() {
         }
       />
 
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "stretch",
-          mt: 2,
-          flex: 1,
-          minHeight: 0,
-        }}
-      >
-        {/* Scenario sidebar */}
-        <Card
-          ref={sidebarCardRef}
-          variant="outlined"
-          sx={{
-            ...(sidebarWidth != null
-              ? { width: sidebarWidth, flexShrink: 0 }
-              : { flex: "0 0 260px" }),
-            minWidth: 200,
-            overflow: "hidden",
-          }}
-        >
-          <CardContent sx={{ p: 0, "&:last-child": { pb: 0 }, height: "100%" }}>
-            <ScenarioSidebar
-              scenarios={scenarios}
-              selectedId={selectedScenario?.id ?? null}
-              onSelect={setSelectedId}
-            />
-          </CardContent>
-        </Card>
-
-        <ResizeHandle onResize={handleSidebarResize} />
-
-        {/* Editor area */}
-        <Card
-          variant="outlined"
-          sx={{
-            flex: 1,
-            minWidth: 0,
-            display: "flex",
-            flexDirection: "column",
-            overflow: "hidden",
-          }}
-        >
-          {/* Tabs */}
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              height: 44,
-              flexShrink: 0,
-              borderBottom: "1px solid",
-              borderColor: "divider",
-            }}
-          >
-            {TABS.map((tab) => (
-              <Box
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 0.75,
-                  px: 2,
-                  height: "100%",
-                  cursor: "pointer",
-                  fontSize: 13,
-                  fontWeight: activeTab === tab.id ? 600 : 400,
-                  color:
-                    activeTab === tab.id ? "primary.main" : "text.secondary",
-                  borderBottom: "2px solid",
-                  borderColor:
-                    activeTab === tab.id ? "primary.main" : "transparent",
-                  transition: "all 0.15s",
-                  "&:hover": { color: "text.primary" },
-                }}
-              >
-                <tab.icon sx={{ fontSize: 16 }} />
-                {t(tab.labelKey)}
-              </Box>
-            ))}
-
-            <Box
-              sx={{
-                ml: "auto",
-                display: "flex",
-                alignItems: "center",
-                gap: 0.5,
-                mr: 1,
-              }}
-            >
-              {activeTab === "description" && selectedScenario && (
-                <Tooltip
-                  title={
-                    descriptionEditing
-                      ? t("testPlanDetail.preview")
-                      : t("testPlanDetail.edit")
-                  }
-                >
-                  <IconButton
-                    size="small"
-                    onClick={() => setDescriptionEditing(!descriptionEditing)}
-                    sx={{
-                      color: descriptionEditing
-                        ? "primary.main"
-                        : "text.secondary",
-                    }}
-                  >
-                    {descriptionEditing ? (
-                      <VisibilityOutlinedIcon sx={{ fontSize: 16 }} />
-                    ) : (
-                      <EditOutlinedIcon sx={{ fontSize: 16 }} />
-                    )}
-                  </IconButton>
-                </Tooltip>
-              )}
-              {hasDraft && (
-                <Button
-                  size="small"
-                  variant="contained"
-                  onClick={handleSave}
-                  disabled={updateScenario.isPending}
-                  startIcon={
-                    updateScenario.isPending ? (
-                      <CircularProgress size={14} />
-                    ) : (
-                      <SaveOutlinedIcon sx={{ fontSize: 14 }} />
-                    )
-                  }
-                  sx={{
-                    fontSize: 12,
-                    textTransform: "none",
-                    fontWeight: 600,
-                  }}
-                >
-                  {t("testPlanDetail.save")}
-                </Button>
-              )}
-            </Box>
-          </Box>
-
-          {/* Tab content */}
-          <Box sx={{ flex: 1, overflow: "auto" }}>
-            {activeTab === "description" &&
-              (selectedScenario ? (
-                <DescriptionEditor
-                  content={descriptionContent}
-                  editing={descriptionEditing}
-                  onChange={(value) => setDescriptionDraft(value)}
-                />
-              ) : (
-                <EmptyState
-                  icon={
-                    <NotesOutlinedIcon
-                      sx={{ fontSize: 48, color: "text.disabled" }}
-                    />
-                  }
-                  title={t("testPlanDetail.noScenarios")}
-                />
-              ))}
-            {activeTab === "gherkin" &&
-              (selectedScenario ? (
-                <GherkinEditor
-                  content={gherkinContent}
-                  onChange={(value) => setGherkinDraft(value)}
-                />
-              ) : (
-                <EmptyState
-                  icon={
-                    <DescriptionOutlinedIcon
-                      sx={{ fontSize: 48, color: "text.disabled" }}
-                    />
-                  }
-                  title={t("testPlanDetail.noScenarios")}
-                />
-              ))}
-            {activeTab === "code" && (
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: "100%",
-                }}
-              >
-                <Typography sx={{ color: "text.disabled", fontSize: 13 }}>
-                  {t("testPlanDetail.codePlaceholder")}
-                </Typography>
-              </Box>
-            )}
-            {activeTab === "executions" && (
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: "100%",
-                }}
-              >
-                <Typography sx={{ color: "text.disabled", fontSize: 13 }}>
-                  {t("testPlanDetail.executionsPlaceholder")}
-                </Typography>
-              </Box>
-            )}
-          </Box>
-
-          <ConfidenceBar scenarios={scenarios} />
-        </Card>
-
-        {/* Chat panel */}
-        {chatOpen && (
-          <>
-            <ResizeHandle onResize={handleChatResize} />
-            <Card
-              ref={chatCardRef}
-              variant="outlined"
-              sx={{
-                ...(chatWidth != null
-                  ? { width: chatWidth, flexShrink: 0 }
-                  : { flex: "0 0 300px" }),
-                minWidth: 200,
-              }}
-            >
-              <CardContent
-                sx={{
-                  p: 0,
-                  "&:last-child": { pb: 0 },
-                  height: "100%",
-                }}
-              >
-                <ChatPlaceholder />
-              </CardContent>
-            </Card>
-          </>
-        )}
-      </Box>
+      {layout === "standard" && (
+        <LayoutStandard {...layoutProps} chatOpen={chatOpen} />
+      )}
+      {layout === "ide" && <LayoutIde {...layoutProps} />}
+      {layout === "ai-first" && <LayoutAiFirst {...layoutProps} />}
     </Box>
   );
 }

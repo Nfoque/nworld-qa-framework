@@ -42,10 +42,19 @@ Deno.serve(async (req) => {
     );
   }
 
+  const allItems = selectedSources.flatMap(
+    (s: { items: string[] }) => s.items,
+  );
+  const jobName =
+    allItems.length <= 2
+      ? allItems.join(", ")
+      : `${allItems[0]} +${allItems.length - 1} more`;
+
   const { data, error: dbErr } = await auth.serviceClient
     .from("engine_jobs")
     .insert({
       tenant_id: auth.tenantId,
+      name: jobName,
       status: "queued",
       selected_sources: selectedSources,
       created_by: auth.userId,

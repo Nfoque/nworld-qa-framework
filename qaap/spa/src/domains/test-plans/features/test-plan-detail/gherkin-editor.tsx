@@ -1,5 +1,11 @@
 import { Box } from "@mui/material";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 
 const FONT_FAMILY = "'JetBrains Mono', 'Fira Code', monospace";
 const FONT_SIZE = 13;

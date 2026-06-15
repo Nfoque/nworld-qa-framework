@@ -6,7 +6,11 @@ import { useLiveDuration } from "@/shared/hooks/use-live-duration";
 
 export function StepDuration({ step }: { step: EngineJobStep }) {
   const isActive = step.status === "running";
-  const duration = useLiveDuration(step.startedAt ?? new Date().toISOString(), step.completedAt, isActive);
+  const duration = useLiveDuration(
+    step.startedAt ?? new Date().toISOString(),
+    step.completedAt,
+    isActive,
+  );
 
   return (
     <Typography

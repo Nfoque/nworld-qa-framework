@@ -1,5 +1,6 @@
 import { authenticateAndResolveTenant, requireRole } from "../_shared/auth.ts";
 import { error, ok, parseBody, preflight } from "../_shared/response.ts";
+import { validateUpstreamUrl } from "../_shared/url-safety.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return preflight(req);
@@ -30,7 +31,13 @@ Deno.serve(async (req) => {
     return error(req, "MISSING_FIELDS: baseUrl, apiKey required", 400);
   }
 
-  const modelsUrl = `${baseUrl.replace(/\/$/, "")}/models`;
+  // SSRF guard: reject private/loopback IP literals and non-https URLs before
+  // the apiKey leaves this process (see audits/pentesting/.../REPORT.md M2).
+  const safe = validateUpstreamUrl(baseUrl);
+  if (!safe.ok) {
+    return error(req, `INVALID_BASE_URL: ${safe.reason}`, 400);
+  }
+  const modelsUrl = `${safe.url.toString().replace(/\/$/, "")}/models`;
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };

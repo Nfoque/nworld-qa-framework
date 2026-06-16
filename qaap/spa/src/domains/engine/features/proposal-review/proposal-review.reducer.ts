@@ -26,7 +26,12 @@ export type ReviewAction =
   | {
       type: "EDIT_SCENARIO";
       scenarioId: string;
-      changes: { title?: string; gherkin_text?: string };
+      changes: {
+        name?: string;
+        description?: string;
+        rationale?: string;
+        gherkin?: string;
+      };
     }
   | { type: "RESET_SCENARIO"; scenarioId: string }
   | { type: "APPROVE_ALL_IN_AREA"; planId: string; areaId: string }
@@ -39,11 +44,11 @@ export const INITIAL_STATE: ReviewState = {
   expanded: {},
 };
 
-function collapseAllPlans(proposal: Proposal): Record<string, boolean> {
+function collapseAllFeatures(proposal: Proposal): Record<string, boolean> {
   const exp: Record<string, boolean> = {};
-  for (const p of proposal.test_plans) {
-    exp[p.id] = false;
-    for (const a of p.test_areas) exp[a.id] = false;
+  for (const f of proposal.features) {
+    exp[f.id] = false;
+    for (const a of f.test_areas) exp[a.id] = false;
   }
   return exp;
 }
@@ -54,16 +59,16 @@ export function reviewReducer(
 ): ReviewState {
   switch (action.type) {
     case "INIT": {
-      const firstPlan = action.proposal.test_plans[0];
-      const firstArea = firstPlan?.test_areas[0];
+      const firstFeature = action.proposal.features[0];
+      const firstArea = firstFeature?.test_areas[0];
       const firstScenario = firstArea?.scenarios[0];
-      const expanded = collapseAllPlans(action.proposal);
-      if (firstPlan) expanded[firstPlan.id] = true;
+      const expanded = collapseAllFeatures(action.proposal);
+      if (firstFeature) expanded[firstFeature.id] = true;
       if (firstArea) expanded[firstArea.id] = true;
       return {
         proposal: action.proposal,
         selection: {
-          planId: firstPlan?.id ?? null,
+          planId: firstFeature?.id ?? null,
           areaId: firstArea?.id ?? null,
           scenarioId: firstScenario?.id ?? null,
         },
@@ -74,18 +79,18 @@ export function reviewReducer(
 
     case "RESTORE_OVERRIDES": {
       if (state.proposal) {
-        for (const plan of state.proposal.test_plans) {
-          for (const area of plan.test_areas) {
+        for (const feature of state.proposal.features) {
+          for (const area of feature.test_areas) {
             for (const scenario of area.scenarios) {
               if (!action.overrides.get(scenario.id)?.review_status) {
-                const expanded = collapseAllPlans(state.proposal);
-                expanded[plan.id] = true;
+                const expanded = collapseAllFeatures(state.proposal);
+                expanded[feature.id] = true;
                 expanded[area.id] = true;
                 return {
                   ...state,
                   overrides: action.overrides,
                   selection: {
-                    planId: plan.id,
+                    planId: feature.id,
                     areaId: area.id,
                     scenarioId: scenario.id,
                   },
@@ -103,29 +108,29 @@ export function reviewReducer(
       if (!state.proposal) return state;
       const wasOpen = state.expanded[action.planId];
       const expanded: Record<string, boolean> = { ...state.expanded };
-      for (const p of state.proposal.test_plans) {
-        expanded[p.id] = false;
-        for (const a of p.test_areas) expanded[a.id] = false;
+      for (const f of state.proposal.features) {
+        expanded[f.id] = false;
+        for (const a of f.test_areas) expanded[a.id] = false;
       }
       if (!wasOpen) {
         expanded[action.planId] = true;
-        const plan = state.proposal.test_plans.find(
-          (p) => p.id === action.planId,
+        const feature = state.proposal.features.find(
+          (f) => f.id === action.planId,
         );
-        if (plan?.test_areas[0]) expanded[plan.test_areas[0].id] = true;
+        if (feature?.test_areas[0]) expanded[feature.test_areas[0].id] = true;
       }
       return { ...state, expanded };
     }
 
     case "TOGGLE_AREA": {
       if (!state.proposal) return state;
-      const plan = state.proposal.test_plans.find(
-        (p) => p.id === action.planId,
+      const feature = state.proposal.features.find(
+        (f) => f.id === action.planId,
       );
-      if (!plan) return state;
+      if (!feature) return state;
       const wasOpen = state.expanded[action.areaId];
       const expanded = { ...state.expanded };
-      for (const a of plan.test_areas) expanded[a.id] = false;
+      for (const a of feature.test_areas) expanded[a.id] = false;
       if (!wasOpen) expanded[action.areaId] = true;
       return { ...state, expanded };
     }
@@ -191,10 +196,10 @@ export function reviewReducer(
 
     case "APPROVE_ALL_IN_AREA": {
       if (!state.proposal) return state;
-      const plan = state.proposal.test_plans.find(
-        (p) => p.id === action.planId,
+      const feature = state.proposal.features.find(
+        (f) => f.id === action.planId,
       );
-      const area = plan?.test_areas.find((a) => a.id === action.areaId);
+      const area = feature?.test_areas.find((a) => a.id === action.areaId);
       if (!area) return state;
       const next = new Map(state.overrides);
       for (const s of area.scenarios) {
@@ -206,12 +211,12 @@ export function reviewReducer(
 
     case "APPROVE_ALL_IN_PLAN": {
       if (!state.proposal) return state;
-      const plan = state.proposal.test_plans.find(
-        (p) => p.id === action.planId,
+      const feature = state.proposal.features.find(
+        (f) => f.id === action.planId,
       );
-      if (!plan) return state;
+      if (!feature) return state;
       const next = new Map(state.overrides);
-      for (const area of plan.test_areas) {
+      for (const area of feature.test_areas) {
         for (const s of area.scenarios) {
           const existing = next.get(s.id) ?? {};
           next.set(s.id, { ...existing, review_status: "approved" });

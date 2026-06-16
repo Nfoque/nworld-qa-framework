@@ -232,8 +232,8 @@ export function Sidebar() {
               disabled={isDisabled}
               sx={{
                 borderRadius: 1.5,
-                mb: 0.25,
-                py: 0.75,
+                mb: 0,
+                py: 0.5,
                 pr: collapsed ? 1 : 1.25,
                 pl: collapsed ? 1 : 0.25,
                 justifyContent: collapsed ? "center" : "flex-start",

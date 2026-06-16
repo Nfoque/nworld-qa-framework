@@ -1,39 +1,40 @@
 export type ReviewStatus = "pending" | "approved" | "rejected" | "modified";
 
+export interface SourceRef {
+  chunk_id: string;
+  source: string;
+  type: string;
+}
+
 export interface ProposalScenario {
   id: string;
-  title: string;
-  gherkin_text: string;
+  name: string;
+  description: string;
+  gherkin: string;
   confidence: number;
   rationale: string;
-  source_model: string;
-  review_status: ReviewStatus;
-  sort_order: number;
-  context_refs: string[];
+  test_area_id: string;
+  source_refs: SourceRef[];
 }
 
 export interface ProposalTestArea {
   id: string;
+  compound_id: string;
   name: string;
   description: string;
   confidence: number;
-  rationale: string;
   background: string;
+  scenario_count: number;
   scenarios: ProposalScenario[];
 }
 
-export interface ProposalTestPlan {
+export interface ProposalFeature {
   id: string;
   name: string;
   description: string;
-  modality: string;
-  target_framework: string;
   confidence: number;
-  rationale: string;
-  context_sources: {
-    source_type: string;
-    config: Record<string, unknown>;
-  }[];
+  test_area_count: number;
+  scenario_count: number;
   test_areas: ProposalTestArea[];
 }
 
@@ -43,22 +44,38 @@ export interface CoverageGap {
   sources_missing: string[];
 }
 
-export interface ProposalStats {
-  total_test_plans: number;
-  total_test_areas: number;
-  total_scenarios: number;
-  avg_scenario_confidence: number;
+export interface DetectedGap {
+  area: string;
+  description: string;
+  severity: "low" | "medium" | "high";
+}
+
+export interface ProposalSummary {
+  features: number;
+  test_areas: number;
+  scenarios: number;
+  raw_chunks: number;
+  confidence: {
+    features_avg: number;
+    test_areas_avg: number;
+    scenarios_avg: number;
+    scenarios_median: number;
+  };
+  coverage_gaps: CoverageGap[];
 }
 
 export interface Proposal {
-  test_plans: ProposalTestPlan[];
+  features: ProposalFeature[];
   coverage_gaps: CoverageGap[];
-  stats: ProposalStats;
+  detected_gaps: DetectedGap[];
+  summary: ProposalSummary;
 }
 
 export interface ScenarioOverride {
-  title?: string;
-  gherkin_text?: string;
+  name?: string;
+  description?: string;
+  rationale?: string;
+  gherkin?: string;
   review_status?: ReviewStatus;
 }
 

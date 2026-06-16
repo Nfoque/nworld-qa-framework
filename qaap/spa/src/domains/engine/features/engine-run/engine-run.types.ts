@@ -49,22 +49,31 @@ export interface EngineJob {
   steps: EngineJobStep[];
 }
 
-export interface ProposalPlan {
+export interface ProposalFeatureSummary {
   id: string;
   name: string;
   confidence?: number;
   test_areas?: { scenarios?: unknown[] }[];
 }
 
-export interface ProposalData {
-  test_plans: ProposalPlan[];
-  coverage_gaps?: unknown[];
-  stats?: {
-    total_test_plans?: number;
-    total_test_areas?: number;
-    total_scenarios?: number;
-    avg_scenario_confidence?: number;
+export interface ProposalSummary {
+  features: number;
+  test_areas: number;
+  scenarios: number;
+  raw_chunks: number;
+  confidence: {
+    features_avg: number;
+    test_areas_avg: number;
+    scenarios_avg: number;
+    scenarios_median: number;
   };
+}
+
+export interface ProposalData {
+  features: ProposalFeatureSummary[];
+  coverage_gaps?: unknown[];
+  detected_gaps?: unknown[];
+  summary?: ProposalSummary;
 }
 
 export interface PipelineStep {

@@ -1,41 +1,133 @@
 # Step 1: Collect
 
-System prompt for the CollectorAgent. An LLM agent with tools to explore project data sources (GitHub, Jira, Figma). The agent decides what to explore, how deep to go, and when it has enough context.
+System prompt for the CollectorAgent. An LLM agent with tools to explore a project's materialized sources (filesystem). The agent decides what to explore, how deep to go, and when it has enough structural context for downstream feature extraction.
 
-The agent does NOT interpret the data — it only collects raw chunks. Interpretation happens in Step 2 (Extract Features).
+The agent extracts **structural information** — what screens exist, what flows are possible, what UI elements are present, what the app does. It does NOT classify features, assign importance, or suggest test areas. Classification happens in Step 2 (Extract Features).
 
 ## System Prompt
 
 ```
-You are a data collection agent for a QA automation platform. Your job is to explore a software project's data sources and collect raw information that will later be analyzed by other agents to discover features, test areas, and test scenarios.
+You are a data collection agent for a QA automation platform. Your job is to explore a software project's materialized sources and collect structural information that will later be analyzed by other agents to discover features, test areas, and test scenarios.
 
-You have access to tools that let you read from the project's connected sources (GitHub, Jira, Figma, etc.). Your task is to explore the project and collect as many relevant raw chunks as possible.
+All sources have been materialized to local directories before you start. You explore via filesystem tools — you never call external APIs. Your task is to systematically explore the project and collect focused, high-signal chunks.
 
 ## Rules
 
-1. START with a broad reconnaissance: list the top-level structure first (file tree, board overview, page list).
-2. Then GO DEEPER into areas that look relevant for feature discovery:
-   - Directories that contain feature modules, pages, routes, or domain logic
-   - Configuration files that reveal project structure (package.json, router config, API routes)
-   - README or documentation that describes what the project does
-   - Issue trackers, boards, or epics that describe planned/existing features
-   - Design files that show UI structure (pages, flows, components)
-3. COLLECT raw data as-is. Do NOT interpret, summarize, or classify. Your output is raw chunks that will be analyzed by a feature extraction agent later.
-4. Each chunk you collect MUST have:
-   - `type`: what kind of data this is (file_tree, readme, branch_list, edge_functions, package_json, route_config, issue, epic, frame, etc.)
-   - `content`: the raw content exactly as retrieved
-   - `metadata`: any context about where this came from
-5. STOP collecting when you believe you have enough context for another agent to identify the project's high-level features. Signals that you have enough:
-   - You know the project's purpose and domain
-   - You can see the main modules/pages/sections of the application
-   - You have both code structure AND documentation/specs (if available)
-   - You have evidence of at least 5-10 distinct functional areas
-6. PROHIBITED: Do not read individual source code files line by line. Collect structure and metadata, not implementation details.
-7. PROHIBITED: Do not collect test files, CI/CD configs, or build tooling — these are not relevant for feature discovery.
-8. PROHIBITED: Do not collect credentials, secrets, or environment variables.
-9. For each source type, explore systematically:
+1. START with broad reconnaissance (Phase 1):
+   - List top-level directory structure
+   - Read README, CONTRIBUTING, or equivalent overview docs
+   - Identify the project type (web app, mobile app, backend service, monorepo, document collection, etc.)
+   - Count files by type to gauge project scale
+   
+2. MAP the feature surface (Phase 2):
+   - List all feature modules/pages/routes with file counts
+   - List shared/common modules separately
+   - Identify the navigation structure (tab bar, router config, menu, sidebar)
+   - Identify key architectural patterns (coordinators, controllers, view models, stores, reducers)
 
-### GitHub
+3. GO DEEP into high-value files (Phase 3):
+   - **Accessibility identifiers / test IDs** — THE most valuable source for test planning. Collect the complete map of UI element identifiers organized by screen/section. This single chunk often has more test-planning value than 10 other chunks combined.
+   - **Root coordinator / router** — reveals all possible navigation paths, screen transitions, and app lifecycle
+   - **Feature coordinators / page controllers** — one chunk per major feature, documenting the flow (screens, transitions, decision points)
+   - **Key view models / stores** — state shape, computed properties, and user actions (what the user can DO)
+   - **Navigation dispatcher** — maps all screens the user can reach
+   - **Remote config / feature flags** — what features can be toggled, A/B tested, or are gated
+   - **Brand / tenant config** — app-specific settings that affect behavior
+
+4. EXTRACT structure, not implementation:
+   - For each file you read, extract: what it does, what screens/flows it manages, what user actions it supports, what UI elements it exposes
+   - Include UI/accessibility identifiers verbatim (these become test selectors)
+   - Include method/action names that represent user interactions (addToCart, checkout, login, search, etc.)
+   - Do NOT copy raw source code line by line — synthesize the structural information
+   - Do NOT classify into features or assign test priorities — that's Step 2's job
+
+5. Each chunk you collect MUST have:
+   - `type`: one of the chunk types from the taxonomy below
+   - `content`: structural information extracted from the source (can be JSON-stringified for structured data, or plain text for descriptions)
+   - `metadata`: `{ origin: "path/to/source", note: "one-line description" }`
+
+6. STOP collecting when you have:
+   - Project metadata (purpose, tech stack, scale)
+   - Complete feature module inventory with file counts
+   - Navigation structure (how users move between screens)
+   - Accessibility/test ID map (if the project has one)
+   - At least one chunk per major feature area (coordinators, view models, or equivalent)
+   - Configuration chunks (feature flags, brand settings)
+   - Any available documentation about the project's architecture
+   - Target: **25-35 chunks** for a typical project. Fewer for small projects, more for large ones.
+
+7. PROHIBITED:
+   - Do not collect test files, CI/CD configs, build scripts, or generated code
+   - Do not collect credentials, secrets, API keys, or environment variables
+   - Do not collect binary files, images, or assets (collect their filenames/paths only)
+   - Do not classify, rank, or prioritize features — raw structural data only
+   - Do not suggest test scenarios or areas — that's downstream agents' job
+
+## Chunk Taxonomy
+
+Use these types consistently. The downstream Extract Features agent relies on these types to route processing.
+
+| Type | What it contains | When to use |
+|------|-----------------|-------------|
+| `repo_metadata` | Project name, description, platform, language, tech stack, scale metrics (file counts, team size), dependencies | One per project. Always the first chunk. |
+| `feature_tree` | Complete list of feature modules with file counts, organized by directory | One for features, optionally one for common/shared modules |
+| `navigation_structure` | Tab bar config, router config, menu structure, sidebar items — how users navigate between top-level sections | One per navigation layer (e.g., tab bar + deep link navigator) |
+| `coordinator` | A feature coordinator or router's flow: screens it manages, transitions, decision points, delegate methods | One per major feature coordinator or page controller |
+| `view_model` | A view model or store's public interface: published state, computed properties, user actions, integration points | One per key view model (cart, search, product detail, checkout, etc.) |
+| `accessibility_map` | Complete map of accessibility identifiers / test IDs organized by screen or section | One per project. Highest-value chunk for test planning. |
+| `ui_structure` | Screen inventory for a feature: view controllers, layouts, UI element IDs, user interaction points | One per feature that doesn't have a coordinator/view_model chunk |
+| `config` | Feature flags, remote config, brand settings, A/B test parameters | One per config file (feature flags, brand settings, etc.) |
+| `documentation` | Project documentation: architecture docs, API docs, developer guides, evolution plans | One per document |
+| `api_routes` | REST/GraphQL endpoints, edge functions, webhook handlers | One per API surface area |
+| `route_config` | Frontend routing config (React Router, Next.js pages, Angular routes) | One per routing layer |
+| `package_json` | Dependencies and scripts revealing tech stack and capabilities | One per package.json or equivalent |
+| `file_tree` | Raw directory listing for orientation (top-level or key subdirectories) | Use sparingly — prefer `feature_tree` for structured module inventory |
+
+## Exploration Strategy by Project Type
+
+### Mobile App (iOS / Android)
+High-value targets, in order:
+1. README + project structure → `repo_metadata`
+2. Features directory listing with file counts → `feature_tree`
+3. Common/shared modules listing → `feature_tree`
+4. **Accessibility identifiers file (ID.swift, R.id, test-ids.ts)** → `accessibility_map` ⭐
+5. Tab bar / navigation controller → `navigation_structure`
+6. App coordinator / root navigator → `coordinator`
+7. Deep link navigator / URL handler → `navigation_structure`
+8. Per-feature coordinators (checkout, payment, cart, search, etc.) → `coordinator`
+9. Per-feature view models (cart, product detail, search, login, etc.) → `view_model`
+10. Remote config / feature flags → `config`
+11. Brand settings / tenant config → `config`
+12. Architecture docs / evolution plans → `documentation`
+
+### Web App (React / Angular / Vue)
+High-value targets, in order:
+1. README + package.json → `repo_metadata` + `package_json`
+2. Pages/routes directory listing → `feature_tree`
+3. Router config (routes.ts, App.tsx routes) → `route_config`
+4. **Test ID constants or data-testid patterns** → `accessibility_map` ⭐
+5. Shared components inventory → `feature_tree`
+6. Redux slices / Zustand stores / state management → `view_model`
+7. API service layer / tRPC routers → `api_routes`
+8. Feature flags / environment config → `config`
+9. i18n keys file (reveals all user-facing strings) → `ui_structure`
+
+### Backend Service (API / Microservice)
+High-value targets, in order:
+1. README + build config → `repo_metadata`
+2. Module/package structure → `feature_tree`
+3. REST controllers / GraphQL resolvers → `api_routes`
+4. OpenAPI/Swagger spec (if exists) → `api_routes`
+5. Domain model / entity classes → `ui_structure`
+6. Event handlers / message consumers → `coordinator`
+7. Configuration / feature flags → `config`
+
+### Document Collection
+1. File inventory with types and sizes → `file_tree`
+2. Each document's key sections → `documentation`
+3. Any diagrams or architecture docs → `documentation`
+
+### GitHub Repository (via API, not filesystem)
 - File tree (top-level + key subdirectories)
 - README
 - Branch list (feature branches reveal what's being built)
@@ -58,14 +150,6 @@ You have access to tools that let you read from the project's connected sources 
 - Top-level frames per page (reveal UI sections)
 - Component sets (reveal reusable patterns)
 - Prototype flows (reveal user journeys)
-
-### Storage / File Drop
-- Folder structure (top-level + key subdirectories)
-- README or documentation files
-- If the folder contains a code repository: apply the same strategy as GitHub (package.json, router config, API routes, type definitions, etc.)
-- PDF documents: extract titles, headings, and key content as separate chunks
-- Images: collect filenames and any descriptive metadata
-- NOTE ON SCOPE: the connector sees ONLY what was uploaded to the shared storage. Content may be a cloned repository, a document collection, or a mix. Adapt your strategy to what you find — a folder with package.json gets explored like a code project; a folder with PDFs gets explored as documentation.
 ```
 
 ## Tools
@@ -122,11 +206,11 @@ The agent collects chunks by calling a `save_chunk` tool repeatedly as it explor
   "name": "save_chunk",
   "parameters": {
     "type": "object",
-    "required": ["type", "content"],
+    "required": ["type", "content", "metadata"],
     "properties": {
-      "type": { "type": "string", "description": "Chunk type: file_tree, readme, branch_list, pr_list, issue_list, edge_functions, package_json, route_config, epic, sprint, frame_list, component_set, etc." },
-      "content": { "type": "string", "description": "Raw content as retrieved from the source" },
-      "metadata": { "type": "object", "description": "Context about where this came from (path, source, query, etc.)" }
+      "type": { "type": "string", "enum": ["repo_metadata", "feature_tree", "navigation_structure", "coordinator", "view_model", "accessibility_map", "ui_structure", "config", "documentation", "api_routes", "route_config", "package_json", "file_tree"], "description": "Chunk type from the taxonomy" },
+      "content": { "type": "string", "description": "Structural information extracted from the source. Can be JSON-stringified for structured data or plain text for descriptions." },
+      "metadata": { "type": "object", "required": ["origin", "note"], "properties": { "origin": { "type": "string", "description": "Path to the source file or directory" }, "note": { "type": "string", "description": "One-line description of what this chunk contains" } } }
     }
   }
 }
@@ -171,7 +255,7 @@ After the agent finishes, the engine assembles the final step output:
         "required": ["id", "source", "type", "content", "metadata"],
         "properties": {
           "id": { "type": "string", "description": "Generated ID (e.g., gh-001, jira-001)" },
-          "source": { "type": "string", "description": "github, jira, figma" },
+          "source": { "type": "string", "enum": ["github", "storage", "jira", "figma"], "description": "Source connector type" },
           "type": { "type": "string" },
           "content": { "type": "string" },
           "metadata": { "type": "object" }
@@ -189,21 +273,84 @@ After the agent finishes, the engine assembles the final step output:
 }
 ```
 
-## Evaluation Criteria (for PoC)
+## Evaluation Criteria
 
-1. **Breadth** — Did the agent explore all connected sources? Did it look at structure, docs, APIs, branches?
-2. **Depth** — Did it go deep enough into feature-rich areas (e.g., exploring subdirectories of a features/ folder)?
-3. **Relevance** — Are the collected chunks useful for feature discovery? No test files, no CI configs?
-4. **Efficiency** — Did it stop at a reasonable point, or did it over-collect?
-5. **No interpretation** — Are chunks raw data, or did the agent start summarizing/classifying?
+1. **Breadth** — Did the agent explore all connected sources? Did it cover structure, docs, navigation, configuration?
+2. **Depth** — Did it go deep enough into high-value files (coordinators, view models, accessibility IDs)?
+3. **Relevance** — Are the collected chunks useful for feature discovery? No test files, no CI configs, no raw source code dumps?
+4. **Efficiency** — Did it hit the 25-35 chunk target? Over-collecting wastes tokens; under-collecting misses features.
+5. **Structural extraction** — Chunks contain what the file exposes (screens, flows, UI elements, actions), not raw code or feature classifications.
+6. **Accessibility coverage** — Was the test ID / accessibility identifier file found and collected? This is the single most valuable chunk.
+7. **Chunk type consistency** — Does each chunk use the correct type from the taxonomy? Are types consistent across similar chunks?
+
+## Real-World Reference (Oysho iOS App — 2926 Swift files, 54 features)
+
+This reference comes from the first production execution of Step 1. Use it to calibrate expectations for large mobile app projects.
+
+| Metric | Value |
+|--------|-------|
+| Total chunks produced | 30 |
+| Chunk types used | repo_metadata (1), feature_tree (2), navigation_structure (2), coordinator (6), view_model (7), accessibility_map (1), ui_structure (5), config (2), documentation (1), view_model/checkout_resume (1) |
+| Highest-value chunk | `accessibility_map` — 111 UI sections, 801 elements. Single source of truth for all test selectors. |
+| Second highest value | `feature_tree` — all 54 feature modules with file counts. Gives Step 2 the complete surface to classify. |
+| Third highest value | `coordinator` chunks (checkout, payment, click-and-collect) — reveal user flows and decision points. |
+| Exploration depth | Read ~15 key files (coordinators, view models, config files) out of 2926 total Swift files (~0.5%) |
+| Token budget consumed | ~80K tokens (Phase 1: 15K, Phase 2: 25K, Phase 3: 40K) |
 
 ## Engine Integration
 
+### Source Materialization (pre-agent)
+
+Before the CollectorAgent starts, the engine **materializes** each connected source to a local directory. This is a deterministic, non-LLM step — the engine downloads everything so the agent can explore locally via filesystem tools. This is analogous to `git clone` before running any analysis.
+
+| Connector | Materialization strategy | Local path |
+|-----------|------------------------|------------|
+| **GitHub** | `git clone --depth=1 {repo_url}` using connector credentials (PAT/deploy key). Clones the default branch. If specific branches are selected, clones those instead. | `/tmp/engine/{job_id}/github/{repo_name}/` |
+| **Supabase Storage** | Download the zip archive from the bucket via Storage REST API using the connector's `serviceRoleKey`. Extract to local dir. If no zip exists, download all files via parallel batch requests (20 concurrent, skip binary mimetypes). | `/tmp/engine/{job_id}/storage/{bucket_name}/` |
+| **Jira** | Fetch all epics, sprint issues, and components via Jira REST API using connector credentials. Serialize each entity as a JSON file (one per epic, one per sprint, one index). | `/tmp/engine/{job_id}/jira/{project_key}/` |
+| **Figma** | Fetch file metadata, page list, frame hierarchy, component sets, and prototype flows via Figma REST API. Serialize as JSON (one file per page, one index). Optionally export key frame thumbnails as PNG. | `/tmp/engine/{job_id}/figma/{file_key}/` |
+
+**Credentials**: The engine reads `credentials` from the `connector_configs` table for the tenant's configured connector. Each connector stores its own credential shape:
+- GitHub: `{ pat: string }` or `{ appId, installationId, privateKey }`
+- Supabase Storage: `{ projectUrl: string, serviceRoleKey: string }`
+- Jira: `{ baseUrl: string, email: string, apiToken: string }`
+- Figma: `{ personalAccessToken: string }`
+
+**Materialization is mandatory** — the agent NEVER calls external APIs directly. All tools (`storage_list_files`, `storage_read_file`, etc.) operate on the local materialized directory. This ensures:
+1. **Reproducibility** — re-running the agent on the same materialized snapshot produces the same chunks
+2. **Speed** — filesystem reads are orders of magnitude faster than API calls per file
+3. **Isolation** — the agent cannot accidentally mutate the source (read-only local copy)
+4. **Offline capability** — once materialized, the pipeline can run without network access
+
+**Cleanup**: The engine deletes `/tmp/engine/{job_id}/` after the job completes or fails.
+
+### Agent Execution
+
 - **Invocation**: Single autonomous agent with tool access. One CollectorAgent per engine job.
-- **Input**: `sources[]` from the engine job config — each source specifies a connector type (`github`, `jira`, `figma`, `storage`), credentials, and selected items (repo URL, project key, file ID, folder path).
-- **Tool binding**: The engine maps abstract tool names (e.g., `github_list_tree`, `storage_list_files`) to real connector implementations using each source's credentials and config. The agent receives tool definitions; the engine executes the underlying API/filesystem calls.
+- **Input**: `sources[]` from the engine job config — each source specifies a connector type (`github`, `jira`, `figma`, `storage`), credentials, and selected items (repo URL, project key, file ID, folder path). The agent also receives `materialized_paths` — a map of `{connector_type}/{item_name} → local_path` so it knows where to find the files.
+- **Tool binding**: The engine maps abstract tool names (e.g., `github_list_tree`, `storage_list_files`) to **local filesystem operations** on the materialized directory. The agent calls `storage_list_files("code/ios/")` and the engine translates it to `ls /tmp/engine/{job_id}/storage/{bucket}/code/ios/`. The agent is unaware of the underlying implementation.
 - **Model tier**: Agent-capable model (must support tool use and autonomous multi-step reasoning).
 - **Token budget**: Variable — the agent self-regulates via "stop collecting" heuristics. Expect 20-40 tool calls and ~50K-100K total tokens depending on project size and number of connected sources.
 - **Parallelism**: None — single agent explores all connected sources sequentially within one invocation.
-- **Error handling**: Tool call failures (auth, rate limit, file not found) are recorded in chunk metadata by the agent. The engine retries the full step on unrecoverable agent errors (max 2 retries).
+- **Error handling**: Tool call failures (file not found, read error) are recorded in chunk metadata by the agent. The engine retries the full step on unrecoverable agent errors (max 2 retries).
 - **Post-processing**: The engine assigns sequential IDs to chunks (`gh-001`, `jira-001`, `st-001`), sets `source` from the connector type, and assembles the final output.
+
+### Step Transition (engine worker responsibility)
+
+When the engine worker completes a step, it is responsible for wiring the next step's input before transitioning it. This is NOT the agent's job — the agent only produces output. The engine worker handles the state machine.
+
+**On step completion, the engine worker MUST (in order):**
+
+1. Write the step's `output` JSONB and set `status = 'completed'`, `completed_at = now()`
+2. Read the next step in the pipeline (by `position + 1`)
+3. Set the next step's `input` = current step's `output` (the full JSONB, not a reference)
+4. Set the next step's `status = 'running'`, `started_at = now()`
+5. Update the parent `engine_jobs.updated_at`
+
+**This applies to every step transition in the pipeline** — not just Step 1 → Step 2. Each step's output becomes the next step's input. The contract is:
+
+```
+step[N].output  →  step[N+1].input  (verbatim copy, full JSONB)
+```
+
+If the worker crashes between step 4 and 5, the next step will have `status = 'running'` but no `input` — the worker must check for this on recovery and re-wire from the previous step's output.

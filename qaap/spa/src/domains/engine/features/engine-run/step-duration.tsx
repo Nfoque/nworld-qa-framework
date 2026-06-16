@@ -12,6 +12,8 @@ export function StepDuration({ step }: { step: EngineJobStep }) {
     isActive,
   );
 
+  if (!duration) return null;
+
   return (
     <Typography
       variant="caption"

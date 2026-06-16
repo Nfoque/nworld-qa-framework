@@ -108,11 +108,11 @@ export function EngineRun() {
   const proposalStep = steps.find(
     (s) => s.stepType === "generate_proposal" && s.status === "completed",
   );
-  const proposal = (
-    proposalStep?.output as { proposal?: ProposalData } | undefined
-  )?.proposal;
-  const topPlans = proposal
-    ? [...proposal.test_plans]
+  const proposal = proposalStep?.output?.features
+    ? (proposalStep.output as unknown as ProposalData)
+    : null;
+  const topFeatures = proposal
+    ? [...proposal.features]
         .sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0))
         .slice(0, 5)
     : [];
@@ -142,7 +142,7 @@ export function EngineRun() {
         <InfoCard
           icon={CalendarTodayOutlinedIcon}
           label={t("tables.duration")}
-          value={duration}
+          value={duration ?? undefined}
         />
         <InfoCard icon={PersonOutlineIcon} label={t("pipeline.createdBy")}>
           {job.createdByName ? (
@@ -407,7 +407,7 @@ export function EngineRun() {
               })}
             </Box>
 
-            {job.status === "paused" && (
+            {job.status === "paused" && proposal && (
               <Button
                 variant="contained"
                 size="large"
@@ -478,23 +478,22 @@ export function EngineRun() {
                 <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
                   <MetricBox
                     value={
-                      proposal.stats?.total_test_plans ??
-                      proposal.test_plans.length
+                      proposal.summary?.features ?? proposal.features.length
                     }
                     label={t("pipeline.testPlans")}
                   />
                   <MetricBox
-                    value={proposal.stats?.total_test_areas ?? 0}
+                    value={proposal.summary?.test_areas ?? 0}
                     label={t("pipeline.testAreas")}
                   />
                 </Stack>
                 <Stack direction="row" spacing={1}>
                   <MetricBox
-                    value={proposal.stats?.total_scenarios ?? 0}
+                    value={proposal.summary?.scenarios ?? 0}
                     label={t("pipeline.scenarios")}
                   />
                   <MetricBox
-                    value={`${Math.round((proposal.stats?.avg_scenario_confidence ?? 0) * 100)}%`}
+                    value={`${Math.round((proposal.summary?.confidence?.scenarios_avg ?? 0) * 100)}%`}
                     label={t("pipeline.avgConfidence")}
                   />
                 </Stack>
@@ -520,7 +519,7 @@ export function EngineRun() {
                     </Stack>
                   )}
 
-                {topPlans.length > 0 && (
+                {topFeatures.length > 0 && (
                   <>
                     <Typography
                       sx={{
@@ -533,17 +532,19 @@ export function EngineRun() {
                         mb: 1,
                       }}
                     >
-                      {t("pipeline.topPlans")}
+                      {t("pipeline.topFeatures")}
                     </Typography>
                     <Stack spacing={0.75}>
-                      {topPlans.map((plan) => {
-                        const scenarioCount = (plan.test_areas ?? []).reduce(
+                      {topFeatures.map((feature) => {
+                        const scenarioCount = (
+                          feature.test_areas ?? []
+                        ).reduce(
                           (sum, a) => sum + (a.scenarios?.length ?? 0),
                           0,
                         );
                         return (
                           <Stack
-                            key={plan.id}
+                            key={feature.id}
                             direction="row"
                             spacing={1}
                             sx={{
@@ -556,7 +557,7 @@ export function EngineRun() {
                               noWrap
                               sx={{ fontSize: 12, flex: 1, minWidth: 0 }}
                             >
-                              {plan.name}
+                              {feature.name}
                             </Typography>
                             {scenarioCount > 0 && (
                               <Chip
@@ -578,7 +579,7 @@ export function EngineRun() {
                                 flexShrink: 0,
                               }}
                             >
-                              {Math.round((plan.confidence ?? 0) * 100)}%
+                              {Math.round((feature.confidence ?? 0) * 100)}%
                             </Typography>
                           </Stack>
                         );

@@ -3,37 +3,30 @@ import { error, ok, parseBody, preflight } from "../_shared/response.ts";
 
 interface ProposalScenario {
   id: string;
-  title: string;
-  gherkin_text: string;
+  name: string;
+  description?: string;
+  gherkin: string;
   confidence: number;
   rationale: string;
-  source_model: string;
-  review_status: "pending" | "approved" | "rejected" | "modified";
-  sort_order: number;
+  review_status?: "pending" | "approved" | "rejected" | "modified";
+  source_refs?: { chunk_id: string; source: string; type: string }[];
 }
 
 interface ProposalTestArea {
-  name?: string;
+  id: string;
+  name: string;
   scenarios: ProposalScenario[];
 }
 
-interface ProposalContextSource {
-  source_type: string;
-  config: Record<string, unknown>;
-}
-
-interface ProposalTestPlan {
+interface ProposalFeature {
   id: string;
   name: string;
   description: string;
-  modality: string;
-  target_framework: string;
-  context_sources: ProposalContextSource[];
   test_areas: ProposalTestArea[];
 }
 
 interface ProposalPayload {
-  test_plans: ProposalTestPlan[];
+  features: ProposalFeature[];
 }
 
 Deno.serve(async (req) => {
@@ -54,7 +47,7 @@ Deno.serve(async (req) => {
     proposal?: ProposalPayload;
   };
 
-  if (!jobId || !proposal?.test_plans) {
+  if (!jobId || !proposal?.features) {
     return error(req, "MISSING_FIELD: jobId and proposal required", 400);
   }
 
@@ -75,20 +68,45 @@ Deno.serve(async (req) => {
     );
   }
 
+  // Read project type from step 5 output to determine modality + framework
+  const { data: proposalStep } = await auth.serviceClient
+    .from("engine_job_steps")
+    .select("output")
+    .eq("job_id", jobId)
+    .eq("step_type", "generate_proposal")
+    .single();
+
+  const project = (proposalStep?.output as Record<string, unknown>)
+    ?.project as Record<string, string> | undefined;
+  const projectType = project?.type ?? "";
+
+  const MODALITY_MAP: Record<string, { modality: string; framework: string }> =
+    {
+      mobile_ios: { modality: "ios", framework: "xcuitest" },
+      mobile_android: { modality: "android", framework: "espresso" },
+      web_spa: { modality: "web", framework: "playwright" },
+      web_ssr: { modality: "web", framework: "playwright" },
+      backend_api: { modality: "api", framework: "karate" },
+    };
+
+  const resolved = MODALITY_MAP[projectType] ?? {
+    modality: "web",
+    framework: "playwright",
+  };
+
   const testPlanIds: string[] = [];
   let totalScenarios = 0;
 
-  for (const plan of proposal.test_plans) {
-    // Insert test_plan
+  for (const feature of proposal.features) {
     const { data: planRow, error: planErr } = await auth.serviceClient
       .from("test_plans")
       .insert({
         tenant_id: auth.tenantId,
-        name: plan.name,
-        description: plan.description || "",
-        modality: plan.modality || "web",
+        name: feature.name,
+        description: feature.description || "",
+        modality: resolved.modality,
         status: "approved",
-        target_framework: plan.target_framework || "playwright",
+        target_framework: resolved.framework,
         engine_job_id: jobId,
         created_by: auth.userId,
       })
@@ -103,19 +121,21 @@ Deno.serve(async (req) => {
 
     // Collect non-rejected scenarios across all areas
     const scenarioRows: Record<string, unknown>[] = [];
-    for (const area of plan.test_areas) {
+    let sortOrder = 0;
+    for (const area of feature.test_areas) {
       for (const scenario of area.scenarios) {
-        if (scenario.review_status === "rejected") continue;
+        const status = scenario.review_status ?? "pending";
+        if (status === "rejected") continue;
         scenarioRows.push({
           tenant_id: auth.tenantId,
           test_plan_id: planRow.id,
-          title: scenario.title,
-          gherkin_text: scenario.gherkin_text,
+          title: scenario.name,
+          gherkin_text: scenario.gherkin,
+          description: scenario.description || null,
           confidence: scenario.confidence,
           rationale: scenario.rationale || "",
-          source_model: scenario.source_model,
-          review_status: scenario.review_status,
-          sort_order: scenario.sort_order ?? 0,
+          review_status: status,
+          sort_order: sortOrder++,
           category: area.name || null,
         });
       }
@@ -130,25 +150,6 @@ Deno.serve(async (req) => {
         return error(req, `SCENARIOS_INSERT_FAILED: ${scenErr.message}`, 500);
       }
       totalScenarios += scenarioRows.length;
-    }
-
-    // Insert context_sources
-    const sourceRows = (plan.context_sources ?? []).map((cs) => ({
-      tenant_id: auth.tenantId,
-      test_plan_id: planRow.id,
-      source_type: cs.source_type,
-      config: cs.config ?? {},
-      sync_status: "synced",
-    }));
-
-    if (sourceRows.length > 0) {
-      const { error: srcErr } = await auth.serviceClient
-        .from("context_sources")
-        .insert(sourceRows);
-
-      if (srcErr) {
-        return error(req, `SOURCES_INSERT_FAILED: ${srcErr.message}`, 500);
-      }
     }
   }
 

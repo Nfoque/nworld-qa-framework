@@ -49,7 +49,7 @@ function countStatuses(
   };
   for (const s of scenarios) {
     const status =
-      (overrides.get(s.id)?.review_status as ReviewStatus) ?? s.review_status;
+      (overrides.get(s.id)?.review_status as ReviewStatus) ?? "pending";
     counts[status]++;
   }
   return counts;
@@ -113,13 +113,12 @@ export function PlanTreePanel({
 }) {
   const { t } = useTranslation();
   const { proposal, selection, overrides, expanded } = state;
-
   if (!proposal) return null;
 
   return (
     <Box>
       <List dense disablePadding>
-        {proposal.test_plans
+        {proposal.features
           .filter((p) => p.test_areas.some((a) => a.scenarios.length > 0))
           .map((plan) => {
             const planExpanded = expanded[plan.id] ?? false;
@@ -367,15 +366,6 @@ export function PlanTreePanel({
                                   return (
                                     <ListItemButton
                                       key={scenario.id}
-                                      ref={
-                                        selection.scenarioId === scenario.id
-                                          ? (el) =>
-                                              el?.scrollIntoView({
-                                                block: "nearest",
-                                                behavior: "smooth",
-                                              })
-                                          : undefined
-                                      }
                                       selected={
                                         selection.scenarioId === scenario.id
                                       }
@@ -421,7 +411,7 @@ export function PlanTreePanel({
                                         <ConfidenceIndicator
                                           value={scenario.confidence}
                                         />{" "}
-                                        {scenario.title}
+                                        {scenario.name}
                                       </Typography>
                                       <ChevronRightIcon
                                         sx={{

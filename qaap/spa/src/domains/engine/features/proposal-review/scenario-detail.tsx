@@ -38,6 +38,8 @@ export function ScenarioDetail({
   const { proposal, selection, overrides } = state;
   const [editing, setEditing] = useState(false);
   const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editRationale, setEditRationale] = useState("");
   const [editGherkin, setEditGherkin] = useState("");
 
   const area = proposal ? getSelectedArea(proposal, selection) : null;
@@ -54,8 +56,10 @@ export function ScenarioDetail({
 
   const startEditing = useCallback(() => {
     if (!scenario) return;
-    setEditTitle(scenario.title);
-    setEditGherkin(scenario.gherkin_text);
+    setEditTitle(scenario.name);
+    setEditDescription(scenario.description);
+    setEditRationale(scenario.rationale);
+    setEditGherkin(scenario.gherkin);
     setEditing(true);
   }, [scenario]);
 
@@ -64,10 +68,15 @@ export function ScenarioDetail({
     dispatch({
       type: "EDIT_SCENARIO",
       scenarioId: original.id,
-      changes: { title: editTitle, gherkin_text: editGherkin },
+      changes: {
+        name: editTitle,
+        description: editDescription,
+        rationale: editRationale,
+        gherkin: editGherkin,
+      },
     });
     setEditing(false);
-  }, [dispatch, original, editTitle, editGherkin]);
+  }, [dispatch, original, editTitle, editDescription, editRationale, editGherkin]);
 
   if (!scenario || !original) {
     return (
@@ -101,7 +110,7 @@ export function ScenarioDetail({
           />
         ) : (
           <Typography variant="h6" sx={{ fontWeight: 600 }}>
-            {scenario.title}
+            {scenario.name}
           </Typography>
         )}
 
@@ -111,12 +120,6 @@ export function ScenarioDetail({
           spacing={1.5}
           sx={{ mt: "8px !important", alignItems: "center", flexWrap: "wrap" }}
         >
-          <Chip
-            label={scenario.source_model}
-            size="small"
-            variant="outlined"
-            sx={{ fontSize: 12 }}
-          />
           <ConfidenceIndicator value={scenario.confidence} size="medium" />
           <Chip
             label={t(chipDef.label)}
@@ -124,12 +127,62 @@ export function ScenarioDetail({
             color={chipDef.color}
             sx={{ fontSize: 12 }}
           />
-          {scenario.context_refs.length > 0 && (
+          {scenario.source_refs.length > 0 && (
             <Typography variant="caption" sx={{ color: "text.secondary" }}>
-              refs: {scenario.context_refs.join(", ")}
+              refs: {scenario.source_refs.map((r) => r.chunk_id).join(", ")}
             </Typography>
           )}
         </Stack>
+
+        {/* Description */}
+        {(scenario.description || editing) && (
+          <Box>
+            <Typography
+              variant="subtitle2"
+              sx={{ color: "text.secondary", mb: 0.5, fontWeight: "bold" }}
+            >
+              {t("review.description")}
+            </Typography>
+            {editing ? (
+              <TextField
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                multiline
+                minRows={3}
+                maxRows={12}
+                fullWidth
+                slotProps={{
+                  input: {
+                    sx: {
+                      fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                      fontSize: 13,
+                    },
+                  },
+                }}
+              />
+            ) : (
+              <Box
+                component="pre"
+                sx={{
+                  fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                  fontSize: 13,
+                  lineHeight: 1.6,
+                  p: 2,
+                  borderRadius: 1,
+                  bgcolor: "grey.50",
+                  border: "1px solid",
+                  borderColor: "divider",
+                  overflow: "auto",
+                  whiteSpace: "pre-wrap",
+                  wordBreak: "break-word",
+                  m: 0,
+                }}
+              >
+                {scenario.description}
+              </Box>
+            )}
+          </Box>
+        )}
 
         {/* Rationale */}
         <Box>
@@ -139,9 +192,28 @@ export function ScenarioDetail({
           >
             {t("review.rationale")}
           </Typography>
-          <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
-            {scenario.rationale}
-          </Typography>
+          {editing ? (
+            <TextField
+              value={editRationale}
+              onChange={(e) => setEditRationale(e.target.value)}
+              multiline
+              minRows={2}
+              maxRows={8}
+              fullWidth
+              slotProps={{
+                input: {
+                  sx: {
+                    fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+                    fontSize: 13,
+                  },
+                },
+              }}
+            />
+          ) : (
+            <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+              {scenario.rationale}
+            </Typography>
+          )}
         </Box>
 
         {/* Background (shared setup from test area) */}
@@ -183,7 +255,7 @@ export function ScenarioDetail({
               }}
             />
           ) : (
-            <GherkinBlock text={scenario.gherkin_text} />
+            <GherkinBlock text={scenario.gherkin} />
           )}
         </Box>
 

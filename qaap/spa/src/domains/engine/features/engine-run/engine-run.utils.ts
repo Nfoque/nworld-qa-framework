@@ -127,16 +127,11 @@ export function getStepSummary(
           : null;
       }
       case "generate_proposal": {
-        const proposal = output.proposal as Record<string, unknown> | undefined;
-        const stats = proposal?.stats as Record<string, unknown> | undefined;
+        const summary = output.summary as Record<string, unknown> | undefined;
         const plans =
-          typeof stats?.total_test_plans === "number"
-            ? stats.total_test_plans
-            : 0;
+          typeof summary?.features === "number" ? summary.features : 0;
         const scenarios =
-          typeof stats?.total_scenarios === "number"
-            ? stats.total_scenarios
-            : 0;
+          typeof summary?.scenarios === "number" ? summary.scenarios : 0;
         return plans
           ? { key: "pipeline.summaryProposal", params: { plans, scenarios } }
           : null;

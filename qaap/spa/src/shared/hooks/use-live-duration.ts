@@ -6,16 +6,19 @@ export function useLiveDuration(
   startTime: string,
   endTime?: string | null,
   isActive?: boolean,
-): string {
+): string | null {
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
     if (!isActive) return;
+    setNow(Date.now());
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, [isActive]);
 
   const start = new Date(startTime).getTime();
   const end = endTime ? new Date(endTime).getTime() : now;
-  return formatMs(end - start);
+  const elapsedMs = end - start;
+  if (elapsedMs <= 0) return null;
+  return formatMs(elapsedMs);
 }

@@ -89,6 +89,7 @@ export function ProposalReview() {
   const { setCollapsed } = useSidebar();
   const [state, dispatch] = useReducer(reviewReducer, INITIAL_STATE);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [initDone, setInitDone] = useState(false);
 
   useEffect(() => {
     setCollapsed(true);
@@ -119,6 +120,7 @@ export function ProposalReview() {
         dispatch({ type: "RESTORE_OVERRIDES", overrides: saved });
       }
     }
+    setInitDone(true);
   }, [job]);
 
   useEffect(() => {
@@ -151,7 +153,7 @@ export function ProposalReview() {
     setDialogOpen(false);
   }, [state, job, acceptMutation, showSnackbar, t, navigate]);
 
-  if (isLoading || (job && !state.proposal)) {
+  if (isLoading || (job && !initDone)) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", py: 12 }}>
         <CircularProgress />

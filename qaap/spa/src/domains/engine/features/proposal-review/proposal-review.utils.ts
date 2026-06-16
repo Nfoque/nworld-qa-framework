@@ -1,8 +1,8 @@
 import type {
   Proposal,
+  ProposalFeature,
   ProposalScenario,
   ProposalTestArea,
-  ProposalTestPlan,
   ReviewState,
   ReviewStatus,
   ScenarioOverride,
@@ -14,18 +14,28 @@ export function extractProposal(steps: EngineJobStep[]): Proposal | null {
   const proposalStep = steps.find(
     (s) => s.stepType === "generate_proposal" && s.status === "completed",
   );
-  const raw = (proposalStep?.output as { proposal?: Proposal } | undefined)
-    ?.proposal;
-  if (!raw) return null;
+  if (!proposalStep?.output) return null;
+
+  const output = proposalStep.output as Record<string, unknown>;
+  const features = output.features as ProposalFeature[] | undefined;
+  if (!features?.length) return null;
 
   return {
-    test_plans: raw.test_plans ?? [],
-    coverage_gaps: raw.coverage_gaps ?? [],
-    stats: raw.stats ?? {
-      total_test_plans: 0,
-      total_test_areas: 0,
-      total_scenarios: 0,
-      avg_scenario_confidence: 0,
+    features,
+    coverage_gaps: (output.coverage_gaps as Proposal["coverage_gaps"]) ?? [],
+    detected_gaps: (output.detected_gaps as Proposal["detected_gaps"]) ?? [],
+    summary: (output.summary as Proposal["summary"]) ?? {
+      features: 0,
+      test_areas: 0,
+      scenarios: 0,
+      raw_chunks: 0,
+      confidence: {
+        features_avg: 0,
+        test_areas_avg: 0,
+        scenarios_avg: 0,
+        scenarios_median: 0,
+      },
+      coverage_gaps: [],
     },
   };
 }
@@ -57,7 +67,7 @@ export function getEffectiveStatus(
   scenario: ProposalScenario,
   overrides: Map<string, ScenarioOverride>,
 ): ReviewStatus {
-  return overrides.get(scenario.id)?.review_status ?? scenario.review_status;
+  return overrides.get(scenario.id)?.review_status ?? "pending";
 }
 
 export function computeReviewStats(state: ReviewState) {
@@ -70,8 +80,8 @@ export function computeReviewStats(state: ReviewState) {
   let pending = 0;
   let modified = 0;
 
-  for (const plan of state.proposal.test_plans) {
-    for (const area of plan.test_areas) {
+  for (const feature of state.proposal.features) {
+    for (const area of feature.test_areas) {
       for (const scenario of area.scenarios) {
         const status = getEffectiveStatus(scenario, state.overrides);
         if (status === "approved") approved++;
@@ -97,9 +107,9 @@ export function buildAcceptPayload(
 ): Proposal {
   return {
     ...proposal,
-    test_plans: proposal.test_plans.map((plan) => ({
-      ...plan,
-      test_areas: plan.test_areas.map((area) => ({
+    features: proposal.features.map((feature) => ({
+      ...feature,
+      test_areas: feature.test_areas.map((area) => ({
         ...area,
         scenarios: area.scenarios.map((s) => ({
           ...s,
@@ -120,9 +130,9 @@ export function getSelectedScenario(
 ): ProposalScenario | null {
   if (!selection.planId || !selection.areaId || !selection.scenarioId)
     return null;
-  const plan = proposal.test_plans.find((p) => p.id === selection.planId);
-  if (!plan) return null;
-  const area = plan.test_areas.find((a) => a.id === selection.areaId);
+  const feature = proposal.features.find((p) => p.id === selection.planId);
+  if (!feature) return null;
+  const area = feature.test_areas.find((a) => a.id === selection.areaId);
   if (!area) return null;
   return area.scenarios.find((s) => s.id === selection.scenarioId) ?? null;
 }
@@ -158,8 +168,8 @@ export function clearOverrides(jobId: string): void {
   localStorage.removeItem(`${STORAGE_PREFIX}${jobId}`);
 }
 
-export function countScenariosInPlan(plan: ProposalTestPlan): number {
-  return plan.test_areas.reduce((sum, a) => sum + a.scenarios.length, 0);
+export function countScenariosInFeature(feature: ProposalFeature): number {
+  return feature.test_areas.reduce((sum, a) => sum + a.scenarios.length, 0);
 }
 
 export function getSelectedArea(
@@ -167,7 +177,7 @@ export function getSelectedArea(
   selection: { planId: string | null; areaId: string | null },
 ): ProposalTestArea | null {
   if (!selection.planId || !selection.areaId) return null;
-  const plan = proposal.test_plans.find((p) => p.id === selection.planId);
-  if (!plan) return null;
-  return plan.test_areas.find((a) => a.id === selection.areaId) ?? null;
+  const feature = proposal.features.find((p) => p.id === selection.planId);
+  if (!feature) return null;
+  return feature.test_areas.find((a) => a.id === selection.areaId) ?? null;
 }

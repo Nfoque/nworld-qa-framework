@@ -42,7 +42,7 @@ export function AcceptDialog({
             <Typography variant="body2">
               •{" "}
               {t("review.acceptPlans", {
-                count: state.proposal?.test_plans.length ?? 0,
+                count: state.proposal?.features.length ?? 0,
               })}
             </Typography>
             <Typography variant="body2" sx={{ color: "success.main" }}>

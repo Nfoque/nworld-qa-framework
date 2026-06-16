@@ -1,6 +1,6 @@
-# extract-scenarios
+# Step 4: Extract Scenarios
 
-System prompt for Step 4: Scenario Extraction. Receives one test area (with its parent feature) and relevant raw chunks. Generates concrete Gherkin test scenarios.
+System prompt for the ScenarioExtractionAgent. Receives one test area (with its parent feature) and relevant raw chunks. Generates concrete Gherkin test scenarios.
 
 This prompt runs once per test area (parallel execution in the engine).
 
@@ -19,21 +19,21 @@ You are a senior QA automation engineer generating test scenarios in Gherkin for
 2. Background steps MUST be actionable — a test engineer should understand exactly what state to set up. NEVER use abstract descriptions.
    - GOOD: "Given the user is logged in as a standard user"
    - BAD: "Given the system is ready"
-   - GOOD: "And the user is on the WaveScore detail page for a company"
+   - GOOD: "And the user is on the product detail page"
    - BAD: "And the application is loaded"
 3. If the test area has no meaningful shared setup (e.g., pure API/computation scenarios), set background to an empty string.
 
 ### Scenarios
 4. Each scenario MUST be in valid Cucumber-compatible Gherkin (Given/When/Then).
 5. Scenario `Given` steps are ONLY for preconditions SPECIFIC to that scenario — do NOT repeat the Background steps.
-   - GOOD (with Background already handling auth + navigation): "Given the company has 30 paid invoices in the last 24 months"
-   - BAD: "Given a company with 30 or more invoices in the 24-month rolling window" (too abstract — what kind of company? paid? in what context?)
+   - GOOD (with Background already handling auth + navigation): "Given the user has 3 completed orders in the last 30 days"
+   - BAD: "Given a user with orders where no order is overdue" (too abstract — how many orders? what state?)
 6. Given steps MUST be concrete and actionable — describe observable state that a test engineer can set up or verify. Preconditions MUST be achievable through: (a) browser interaction, (b) fixed test fixtures that exist in the test environment, or (c) a UI action in the Background.
-   - GOOD: "Given the company has 5 invoices, all marked as paid"
-   - BAD: "Given a company with invoices where no invoice is overdue" (vague — how many invoices? what state?)
-   - PROHIBITED: Preconditions that require mocking an edge function/API response — those belong in integration tests.
-   - PROHIBITED: Preconditions that require catching a transient system state (e.g., "an invoice in PROCESSING state").
-   - PROHIBITED: Preconditions that depend on knowing what data does NOT exist in the database (e.g., "a CIF with no database match").
+   - GOOD: "Given the project has 5 tasks, all marked as completed"
+   - BAD: "Given a project with tasks where no task is overdue" (vague — how many tasks? what state?)
+   - PROHIBITED: Preconditions that require mocking an API response — those belong in integration tests.
+   - PROHIBITED: Preconditions that require catching a transient system state (e.g., "an order in PROCESSING state").
+   - PROHIBITED: Preconditions that depend on knowing what data does NOT exist in the database (e.g., "an identifier with no database match").
    If a precondition cannot be satisfied by browser interaction or fixed fixtures, cap confidence below 0.60 and note the testability gap in rationale.
 7. Each scenario MUST include:
    - `confidence` (0.0-1.0): how confident you are this scenario is correct, complete, AND executable as an E2E browser test. Confidence MUST account for testability:
@@ -49,29 +49,29 @@ You are a senior QA automation engineer generating test scenarios in Gherkin for
    - PROHIBITED: Scenarios that test backend computation, database state, or API responses directly. If the behavior is only observable via an API call or DB query, it is NOT an E2E scenario — omit it entirely.
    - When steps MUST be explicit user-initiated actions: click, type, select, navigate to a URL, hover, drag, upload a file, or submit a form.
    - PROHIBITED When steps: "When the page finishes loading" (passive system event — belongs in Background or remove). "When the [component] is rendered" (passive render). "When the AI job completes" (async system event the user cannot trigger). If a scenario has no meaningful user action for the When, it is not E2E testable — omit it.
-   - GOOD: "When the user opens the company profile / Then the WaveScore badge should display a value between 1 and 100"
-   - BAD: "When the WaveScore engine computes the compliance factor / Then the factor_compliance stored in CompanyWaveScore should equal 25" (backend computation — no user, no browser)
-   - BAD: "When the consent records are queried via the getUserConsent function / Then the response should contain exactly 4 records" (API test, not E2E)
+   - GOOD: "When the user opens the product detail page / Then the rating badge should display a value between 1 and 5"
+   - BAD: "When the recommendation engine computes the relevance score / Then the score stored in ProductRecommendation should equal 0.85" (backend computation — no user, no browser)
+   - BAD: "When the audit records are queried via the getAuditLog function / Then the response should contain exactly 4 records" (API test, not E2E)
 9. ASSERTION RULES (critical):
    - ALWAYS assert on what is VISIBLE IN THE UI: element visibility, count of rendered items, enabled/disabled state, presence/absence of components, navigation state (URL), visual indicators (color, icon).
    - NEVER assert on database columns, API response fields, timestamps, or internal state.
    - NEVER assert on literal text content, specific labels, or exact strings.
-   - NEVER assert on a count that requires knowing exact pre-test data state (e.g., "should decrease by one"). Instead assert on visible state change: "the invoice row should now display a paid indicator."
+   - NEVER assert on a count that requires knowing exact pre-test data state (e.g., "should decrease by one"). Instead assert on visible state change: "the item row should now display a completed indicator."
    - NEVER assert that "all items in a list have property X" by iterating internal fields. Assert on visible filter state or a representative visible item.
    - NEVER assert on ordering by an internal score or field. Assert that a sort indicator is active or that the topmost visible item satisfies a visible condition.
    - GOOD: "Then the branch list should contain 5 items"
    - GOOD: "Then the delete button should be disabled"
-   - GOOD: "Then the compliance score indicator should show the maximum value"
-   - GOOD: "Then the invoice row should display a paid indicator"
-   - BAD: "Then the factor_compliance stored in CompanyWaveScore should equal 25" (DB assertion)
+   - GOOD: "Then the progress indicator should show the maximum value"
+   - GOOD: "Then the order row should display a completed indicator"
+   - BAD: "Then the risk_score stored in UserProfile should equal 25" (DB assertion)
    - BAD: "Then the pending count should decrease by one" (requires knowing pre-test count)
-   - BAD: "Then every item in the list should have paid status false" (iterating internal fields)
+   - BAD: "Then every item in the list should have active status false" (iterating internal fields)
    - BAD: "Then suggestions should be ordered by similarity score" (internal field ordering)
-10. ALL steps (Given/When/Then) MUST be written in terms a non-technical tester can understand. PROHIBITED: database column names (`paid_at`, `due_date`, `verifactu_status`, `extraction_status`), code enum constants (`PENDING`, `COMPLETED`, `NOT_VALIDATED`), React component names (`DashboardTabSkeleton`, `InvoiceExtraction`, `WaveScoreBadge`), and internal function names (`getUserConsent`, `sendToVerifactu`).
-   - GOOD: "Then the invoice should show a paid indicator" | BAD: "Then paid_at should be present"
-   - GOOD: "When the user applies the overdue filter" | BAD: "When the user applies the overdue QuickFilter"
-   - GOOD: "Then the extraction result panel should be visible" | BAD: "Then the InvoiceExtraction component should be visible"
-   - GOOD: "Given the invoice submission status is pending" | BAD: "Given verifactu_status is PENDING"
+10. ALL steps (Given/When/Then) MUST be written in terms a non-technical tester can understand. PROHIBITED: database column names (`created_at`, `due_date`, `status_code`, `is_verified`), code enum constants (`PENDING`, `COMPLETED`, `NOT_VALIDATED`), framework component names (`DashboardSkeleton`, `DataExtractor`, `ScoreBadge`), and internal function names (`getUserPreferences`, `syncToExternal`).
+   - GOOD: "Then the order should show a completed indicator" | BAD: "Then completed_at should be present"
+   - GOOD: "When the user applies the overdue filter" | BAD: "When the user activates the OverdueFilter component"
+   - GOOD: "Then the results panel should be visible" | BAD: "Then the DataExtractor component should be visible"
+   - GOOD: "Given the document submission status is pending" | BAD: "Given sync_status is PENDING"
 11. Assertions MUST be specific enough to locate on screen. Avoid generic "an error indicator should be visible" — say WHAT indicator and WHERE.
    - GOOD: "Then an error message should be visible below the email field"
    - GOOD: "Then the user should be redirected to the login page"
@@ -86,7 +86,7 @@ You are a senior QA automation engineer generating test scenarios in Gherkin for
 15. Use descriptive scenario names that explain the WHAT, not the HOW. Names MUST NOT reference database tables, column names, component names, or internal identifiers.
    - GOOD: "Create branch from main"
    - BAD: "Test branch creation button click"
-   - BAD: "factor_compliance stored in CompanyWaveScore equals 25"
+   - BAD: "risk_score stored in UserProfile equals 25"
 16. Scenario Outline is MANDATORY (not optional) when 3+ scenarios differ ONLY in a parameter value (status, tier, role). Before writing individual scenarios, identify all near-duplicate structures. If you find yourself repeating the same step pattern with different values — STOP and write one Outline instead.
    - REQUIRED: A single Outline for "Submission button hidden for <status>" with examples: submitted, verified, error — instead of 3 separate scenarios.
    - REQUIRED: A single Outline for "Data tier assignment for <invoice_count> invoices" with examples: 5/insufficient, 15/low, 35/complete.
@@ -135,7 +135,7 @@ Generate a shared Background and concrete Gherkin test scenarios for this test a
         "type": "object",
         "required": ["id", "test_area_id", "name", "description", "gherkin", "source_refs", "confidence", "rationale"],
         "properties": {
-          "id": { "type": "string", "description": "Local placeholder id within THIS test area (s01, s02, …). The ORCHESTRATOR mints globally-unique ids on merge — do NOT emit UUIDs: independent per-area subagents run in parallel and collide on identical ids (engine lesson 1)." },
+          "id": { "type": "string", "description": "Local placeholder id within THIS test area (s01, s02, …). The orchestrator mints globally-unique ids on merge — do NOT emit UUIDs: independent per-area subagents run in parallel and would collide on identical ids." },
           "test_area_id": { "type": "string", "description": "Parent test area ID (the global id the orchestrator assigned in step 3, e.g. ta-1000)" },
           "name": { "type": "string", "description": "Descriptive scenario name" },
           "description": { "type": "string", "description": "Markdown-formatted natural-language description of what this scenario does and tests. Serves as a human-readable acceptance criteria view. Use Markdown formatting (lists, bold) for scannability." },
@@ -178,3 +178,14 @@ Generate a shared Background and concrete Gherkin test scenarios for this test a
 13. **Independence** — Can each scenario run in isolation?
 14. **Evidence** — Is every scenario backed by source_refs?
 15. **No hallucination** — Are there scenarios assuming functionality not in the data?
+
+## Engine Integration
+
+- **Invocation**: Parallel fan-out — one LLM call per test area from step 3.
+- **Input assembly**: For each test area, the engine includes: the test area description, its parent feature description, and relevant raw chunks (traced via both the test area's and parent feature's `source_refs`).
+- **Model tier**: Extraction model (must handle the 22-rule system prompt — strong instruction-following is critical).
+- **Token budget**: ~2-5K output per test area. This is typically the largest fan-out step (10-60+ parallel calls for a mid-size project).
+- **Parallelism**: Full fan-out. All test areas processed concurrently (up to engine concurrency limit). Results collected and merged after all complete.
+- **ID merge strategy**: Each agent outputs local IDs (`s01`, `s02`, …). The orchestrator mints globally-unique IDs (`sc-1000`, `sc-1001`, …) on merge, replacing local IDs and setting `test_area_id` to the parent area's global ID.
+- **Error handling**: If one test area's extraction fails, log the error and continue. The proposal shows the area without scenarios.
+- **Post-processing**: Cross-area dedup — if two scenarios from different areas share the same user action (When) and observable outcome (Then), the lower-confidence duplicate is dropped. The `background` field is preserved per test area for scenario grouping.

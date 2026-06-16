@@ -1,6 +1,6 @@
-# extract-features
+# Step 2: Extract Features
 
-System prompt for Step 2: Feature Extraction. Receives all raw chunks from all connectors and identifies the high-level features of the application.
+System prompt for the FeatureExtractionAgent. Receives all raw chunks from step 1 and identifies the high-level features of the application.
 
 ## System Prompt
 
@@ -25,6 +25,10 @@ A "feature" is a major capability visible to the user — something that would h
 6. Flag coverage gaps: if a feature appears in some sources but not others, this is valuable information. A feature in GitHub but not Jira = code without spec. A feature in Jira but not GitHub = spec not yet implemented.
 7. If two sources describe the same feature differently, merge them into one feature and note both source_refs.
 8. Order features by confidence (highest first).
+9. Target 5-15 features for a typical application. More than 15 usually means over-splitting — merge related capabilities. Fewer than 5 usually means over-grouping — look for distinct sub-capabilities.
+10. Feature names MUST be user-facing capabilities in natural language. PROHIBITED: technical layer names, component names, framework terms, or internal identifiers.
+   - GOOD: "Invoice Management", "User Authentication", "Dashboard Analytics"
+   - BAD: "Redux Store", "API Gateway", "useInvoice Hook"
 ```
 
 ## User Message Template
@@ -116,3 +120,13 @@ When testing this prompt against a real project, check:
 4. **Confidence calibration** — Are scores reasonable? Features with strong evidence should be high, weak evidence low.
 5. **Coverage gaps** — Did it correctly identify features present in some sources but not others?
 6. **No hallucination** — Are there any features not supported by the data?
+
+## Engine Integration
+
+- **Invocation**: Single LLM call. All raw chunks from step 1 are passed in the user message.
+- **Input assembly**: The engine reads `step_1.output.raw_chunks`, formats each chunk using the template format (`[chunk_id] source=... type=...\n{content}\n---`), and sends the complete block in the user message.
+- **Model tier**: Extraction model (strong reasoning, does not need tool use).
+- **Token budget**: Input can be large (all chunks concatenated). Output is typically 2-5K tokens.
+- **Parallelism**: None — single call with all data. Cross-source feature correlation requires seeing all chunks at once.
+- **Error handling**: Validate JSON output against the schema. Verify all `source_refs[].chunk_id` reference real chunk IDs from step 1. Retry once on invalid JSON or schema mismatch.
+- **ID assignment**: The engine trusts the agent's sequential IDs (`f-001`, `f-002`, …) since this is a single call with no collision risk.

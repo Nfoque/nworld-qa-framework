@@ -2,7 +2,7 @@
 
 System prompt for the CollectorAgent. An LLM agent with tools to explore project data sources (GitHub, Jira, Figma). The agent decides what to explore, how deep to go, and when it has enough context.
 
-The agent does NOT interpret the data — it only collects raw chunks. Interpretation happens in Step 2 (extract-features).
+The agent does NOT interpret the data — it only collects raw chunks. Interpretation happens in Step 2 (Extract Features).
 
 ## System Prompt
 
@@ -58,6 +58,14 @@ You have access to tools that let you read from the project's connected sources 
 - Top-level frames per page (reveal UI sections)
 - Component sets (reveal reusable patterns)
 - Prototype flows (reveal user journeys)
+
+### Storage / File Drop
+- Folder structure (top-level + key subdirectories)
+- README or documentation files
+- If the folder contains a code repository: apply the same strategy as GitHub (package.json, router config, API routes, type definitions, etc.)
+- PDF documents: extract titles, headings, and key content as separate chunks
+- Images: collect filenames and any descriptive metadata
+- NOTE ON SCOPE: the connector sees ONLY what was uploaded to the shared storage. Content may be a cloned repository, a document collection, or a mix. Adapt your strategy to what you find — a folder with package.json gets explored like a code project; a folder with PDFs gets explored as documentation.
 ```
 
 ## Tools
@@ -94,6 +102,16 @@ The agent has access to these tools (per source type):
 | `figma_list_frames` | List top-level frames in a page | array of {name, bounds, children_count} |
 | `figma_list_components` | List component sets | array of {name, variants} |
 | `figma_get_prototype_flows` | List prototype flows | array of {name, start_node, connections} |
+
+### Storage / File Drop Tools
+
+| Tool | Description | Returns |
+|---|---|---|
+| `storage_list_files` | List files/dirs at a path (with depth limit) | array of {name, type, path, size} |
+| `storage_read_file` | Read a text file's content | file content as string |
+| `storage_read_pdf` | Extract text from a PDF file | extracted text as string |
+| `storage_describe_image` | Describe an image file (via vision model) | description as string |
+| `storage_get_metadata` | Get folder-level metadata | {total_files, total_size, file_types, last_modified} |
 
 ## Output Schema
 
@@ -178,3 +196,14 @@ After the agent finishes, the engine assembles the final step output:
 3. **Relevance** — Are the collected chunks useful for feature discovery? No test files, no CI configs?
 4. **Efficiency** — Did it stop at a reasonable point, or did it over-collect?
 5. **No interpretation** — Are chunks raw data, or did the agent start summarizing/classifying?
+
+## Engine Integration
+
+- **Invocation**: Single autonomous agent with tool access. One CollectorAgent per engine job.
+- **Input**: `sources[]` from the engine job config — each source specifies a connector type (`github`, `jira`, `figma`, `storage`), credentials, and selected items (repo URL, project key, file ID, folder path).
+- **Tool binding**: The engine maps abstract tool names (e.g., `github_list_tree`, `storage_list_files`) to real connector implementations using each source's credentials and config. The agent receives tool definitions; the engine executes the underlying API/filesystem calls.
+- **Model tier**: Agent-capable model (must support tool use and autonomous multi-step reasoning).
+- **Token budget**: Variable — the agent self-regulates via "stop collecting" heuristics. Expect 20-40 tool calls and ~50K-100K total tokens depending on project size and number of connected sources.
+- **Parallelism**: None — single agent explores all connected sources sequentially within one invocation.
+- **Error handling**: Tool call failures (auth, rate limit, file not found) are recorded in chunk metadata by the agent. The engine retries the full step on unrecoverable agent errors (max 2 retries).
+- **Post-processing**: The engine assigns sequential IDs to chunks (`gh-001`, `jira-001`, `st-001`), sets `source` from the connector type, and assembles the final output.

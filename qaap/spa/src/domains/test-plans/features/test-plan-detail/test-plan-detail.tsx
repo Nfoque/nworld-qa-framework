@@ -23,10 +23,10 @@ import type { LayoutVariant, Tab } from "./test-plan-detail.types";
 import { testPlanDetailRoute } from "@/router";
 import { DetailPageHeader } from "@/shared/components/detail-page-header";
 import { ModalityBadge } from "@/shared/components/modality-badge";
-import { getProjectColor } from "@/shared/utils/project-colors";
 import { useSnackbar } from "@/shared/components/snackbar-provider";
 import { StatusBadge } from "@/shared/components/status-badge";
 import { useSidebar } from "@/shared/layout/sidebar-context";
+import { getProjectColor } from "@/shared/utils/project-colors";
 
 export function TestPlanDetail() {
   const { t } = useTranslation();
@@ -95,20 +95,17 @@ export function TestPlanDetail() {
         gherkinText: gherkinDraft.replace(/^@\S+.*\n/, ""),
       }),
     };
-    updateScenario.mutate(
-      input,
-      {
-        onSuccess: () => {
-          setGherkinDraft(null);
-          setDescriptionDraft(null);
-          setDescriptionEditing(false);
-          showSnackbar(t("testPlanDetail.saved"));
-        },
-        onError: () => {
-          showSnackbar(t("testPlanDetail.saveError"), "error");
-        },
+    updateScenario.mutate(input, {
+      onSuccess: () => {
+        setGherkinDraft(null);
+        setDescriptionDraft(null);
+        setDescriptionEditing(false);
+        showSnackbar(t("testPlanDetail.saved"));
       },
-    );
+      onError: () => {
+        showSnackbar(t("testPlanDetail.saveError"), "error");
+      },
+    });
   }
 
   if (isLoading) {

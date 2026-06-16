@@ -30,7 +30,9 @@ Deno.serve(async (req) => {
     .update(update)
     .eq("id", scenarioId)
     .eq("tenant_id", auth.tenantId)
-    .select("id, title, description, gherkin_text, confidence, rationale, source_model, review_status, sort_order, category, version, created_at")
+    .select(
+      "id, title, description, gherkin_text, confidence, rationale, source_model, review_status, sort_order, category, version, created_at",
+    )
     .single();
 
   if (dbErr) return error(req, dbErr.message, 500);

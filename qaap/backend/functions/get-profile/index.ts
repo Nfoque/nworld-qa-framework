@@ -7,8 +7,9 @@ import { error, ok, preflight } from "../_shared/response.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return preflight(req);
-  if (req.method !== "GET" && req.method !== "POST")
+  if (req.method !== "GET" && req.method !== "POST") {
     return error(req, "METHOD_NOT_ALLOWED", 405);
+  }
 
   const client = createSupabaseClient(req);
   const user = await getAuthUser(client, req);
@@ -24,8 +25,7 @@ Deno.serve(async (req) => {
   if (profileErr || !profile) return error(req, "PROFILE_NOT_FOUND", 404);
 
   if (!profile.avatar_url) {
-    const avatarFromMeta =
-      user.user_metadata?.avatar_url ??
+    const avatarFromMeta = user.user_metadata?.avatar_url ??
       user.user_metadata?.picture ??
       null;
     if (avatarFromMeta) {

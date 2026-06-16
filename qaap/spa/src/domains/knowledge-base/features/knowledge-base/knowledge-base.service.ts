@@ -27,3 +27,10 @@ export function getSelectedRepos(config: Record<string, unknown>): string[] {
     ? repos.filter((r): r is string => typeof r === "string")
     : [];
 }
+
+export function getSelectedBuckets(config: Record<string, unknown>): string[] {
+  const buckets = config.selectedBuckets;
+  return Array.isArray(buckets)
+    ? buckets.filter((b): b is string => typeof b === "string")
+    : [];
+}

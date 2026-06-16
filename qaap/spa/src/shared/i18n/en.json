@@ -74,6 +74,7 @@
     "configure": "Configure",
     "retry": "Retry",
     "connectedRepos": "{{name}} connected — {{count}} repos accessible",
+    "connectedBuckets": "{{name}} connected — {{count}} buckets accessible",
     "testFailed": "Connection test failed.",
     "testError": "Failed to test connection."
   },
@@ -106,6 +107,22 @@
     "update": "Update",
     "saving": "Saving..."
   },
+  "supabaseStorageDialog": {
+    "credentialsSaved": "Credentials saved.",
+    "replaceCredentials": "Replace credentials",
+    "projectUrlLabel": "Project URL",
+    "projectUrlHelper": "Your Supabase project URL (e.g., https://xyzproject.supabase.co)",
+    "serviceRoleKeyLabel": "Service Role Key",
+    "serviceRoleKeyHelper": "Found in Settings → API → Service Role Key. Required for storage access.",
+    "loadingBuckets": "Loading buckets...",
+    "connectionError": "Failed to validate credentials. Check your project URL and key.",
+    "invalidCredentials": "Invalid credentials — check your project URL and service role key.",
+    "bucketsAccessible": "{{count}} buckets accessible",
+    "searchBuckets": "Search buckets...",
+    "noBucketsMatch": "No buckets match your search.",
+    "bucketsSelected": "{{count}} bucket selected",
+    "bucketsSelected_plural": "{{count}} buckets selected"
+  },
   "knowledgeBase": {
     "title": "Knowledge Base",
     "subtitle": "Select the sources you want to analyze and generate tests from.",
@@ -120,6 +137,11 @@
     "configureConnectors": "Configure Connectors",
     "repo": "{{count}} repo",
     "repo_plural": "{{count}} repos",
+    "bucket": "{{count}} bucket",
+    "bucket_plural": "{{count}} buckets",
+    "storageBuckets": "Storage Buckets",
+    "bucketSubtitle": "Code repository, documents, and files uploaded to storage.",
+    "storage": "Storage",
     "sourcesSelected": "{{count}} source selected",
     "sourcesSelected_plural": "{{count}} sources selected",
     "more": "+{{count}} more",

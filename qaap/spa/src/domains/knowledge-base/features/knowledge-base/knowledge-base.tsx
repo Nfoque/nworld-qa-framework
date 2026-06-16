@@ -1,7 +1,7 @@
 import CableOutlinedIcon from "@mui/icons-material/CableOutlined";
 import GitHubIcon from "@mui/icons-material/GitHub";
-import MenuBookOutlinedIcon from "@mui/icons-material/MenuBookOutlined";
 import SourceOutlinedIcon from "@mui/icons-material/SourceOutlined";
+import StorageOutlinedIcon from "@mui/icons-material/StorageOutlined";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
@@ -10,14 +10,20 @@ import { useTranslation } from "react-i18next";
 import { ConnectorSection } from "./connector-section";
 import { EmptyState } from "./empty-state";
 import {
+  getSelectedBuckets,
   getSelectedRepos,
   useKnowledgeBaseDetails,
 } from "./knowledge-base.service";
 import type { GitHubRepoResource } from "./knowledge-base.types";
 import { SelectionBar } from "./selection-bar";
+import { StorageConnectorSection } from "./storage-connector-section";
 
 import { useCreateJob } from "@/domains/engine/features/engine-run/engine-run.service";
 import { useConnectors } from "@/domains/knowledge-base/features/connector-list/connector-list.service";
+import type {
+  SupabaseBucket,
+  SupabaseStorageTestResult,
+} from "@/domains/knowledge-base/features/connector-list/connector-list.types";
 import { StatCard } from "@/shared/components/stat-card";
 
 export function KnowledgeBase() {
@@ -29,6 +35,7 @@ export function KnowledgeBase() {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
 
   const activeConnectors = connectors.filter((c) => c.status === "connected");
+
   const githubConnector = activeConnectors.find(
     (c) => c.connectorId === "github",
   );
@@ -36,25 +43,50 @@ export function KnowledgeBase() {
     ? getSelectedRepos(githubConnector.config)
     : [];
 
+  const storageConnector = activeConnectors.find(
+    (c) => c.connectorId === "supabase-storage",
+  );
+  const selectedBuckets = storageConnector
+    ? getSelectedBuckets(storageConnector.config)
+    : [];
+
   const { data: githubDetails, isLoading: isLoadingDetails } =
     useKnowledgeBaseDetails("github", !!githubConnector);
+
+  const { data: storageDetails } = useKnowledgeBaseDetails(
+    "supabase-storage",
+    !!storageConnector,
+  );
 
   const enrichedRepos = useMemo(() => {
     const map = new Map<string, GitHubRepoResource>();
     if (!githubDetails?.result?.repos) return map;
-    for (const repo of githubDetails.result.repos) {
+    const repos = githubDetails.result.repos as unknown as GitHubRepoResource[];
+    for (const repo of repos) {
       map.set(repo.fullName, repo);
     }
     return map;
   }, [githubDetails]);
 
-  const toggleItem = useCallback((fullName: string) => {
+  const bucketDetails = useMemo(() => {
+    const map = new Map<string, SupabaseBucket>();
+    const result = storageDetails?.result as
+      | SupabaseStorageTestResult
+      | undefined;
+    if (!result?.buckets) return map;
+    for (const bucket of result.buckets) {
+      map.set(bucket.id, bucket);
+    }
+    return map;
+  }, [storageDetails]);
+
+  const toggleItem = useCallback((id: string) => {
     setSelectedItems((prev) => {
       const next = new Set(prev);
-      if (next.has(fullName)) {
-        next.delete(fullName);
+      if (next.has(id)) {
+        next.delete(id);
       } else {
-        next.add(fullName);
+        next.add(id);
       }
       return next;
     });
@@ -62,7 +94,7 @@ export function KnowledgeBase() {
 
   const clearSelection = useCallback(() => setSelectedItems(new Set()), []);
 
-  const totalResources = selectedRepos.length;
+  const totalResources = selectedRepos.length + selectedBuckets.length;
 
   if (isLoadingConnectors) {
     return (
@@ -113,10 +145,9 @@ export function KnowledgeBase() {
           color="#24292f"
         />
         <StatCard
-          label={t("knowledgeBase.knowledgeItems")}
-          value={0}
-          subtitle={t("knowledgeBase.syncToPopulate")}
-          icon={MenuBookOutlinedIcon}
+          label={t("knowledgeBase.storageBuckets")}
+          value={selectedBuckets.length}
+          icon={StorageOutlinedIcon}
           color="#82858D"
         />
       </Box>
@@ -137,6 +168,16 @@ export function KnowledgeBase() {
               onToggleItem={toggleItem}
             />
           )}
+          {storageConnector && selectedBuckets.length > 0 && (
+            <StorageConnectorSection
+              connectorName={storageConnector.name}
+              status="connected"
+              selectedBuckets={selectedBuckets}
+              bucketDetails={bucketDetails}
+              selectedItems={selectedItems}
+              onToggleItem={toggleItem}
+            />
+          )}
         </Box>
       )}
 
@@ -145,9 +186,22 @@ export function KnowledgeBase() {
         onClear={clearSelection}
         isCreating={createJob.isPending}
         onContinue={() => {
-          const sources = [
-            { connector: "github", items: Array.from(selectedItems) },
-          ];
+          const sources = [];
+          const ghSelected = Array.from(selectedItems).filter((id) =>
+            selectedRepos.includes(id),
+          );
+          const storageSelected = Array.from(selectedItems).filter((id) =>
+            selectedBuckets.includes(id),
+          );
+          if (ghSelected.length > 0) {
+            sources.push({ connector: "github", items: ghSelected });
+          }
+          if (storageSelected.length > 0) {
+            sources.push({
+              connector: "supabase-storage",
+              items: storageSelected,
+            });
+          }
           createJob.mutate(sources, {
             onSuccess: (job) => {
               navigate({ to: "/pipelines/$jobId", params: { jobId: job.id } });

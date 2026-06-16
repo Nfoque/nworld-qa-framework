@@ -43,6 +43,13 @@ const CONNECTOR_CATALOG: ConnectorCatalogEntry[] = [
     description:
       "Extract UI designs and flows to generate visual regression and E2E tests.",
   },
+  {
+    connectorId: "supabase-storage",
+    category: "document-source",
+    name: "Supabase Storage",
+    description:
+      "Connect to Supabase Storage buckets to analyze uploaded code repositories, documents, and files.",
+  },
 ];
 
 function mapStatus(dto: ConnectorDto): UiConnectorStatus {

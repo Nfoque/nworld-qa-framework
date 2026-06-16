@@ -1,6 +1,7 @@
 import type { Session } from "@supabase/supabase-js";
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -28,10 +29,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function syncGoogleAvatar(providerToken: string) {
     try {
-      const res = await fetch(
-        "https://www.googleapis.com/oauth2/v3/userinfo",
-        { headers: { Authorization: `Bearer ${providerToken}` } },
-      );
+      const res = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+        headers: { Authorization: `Bearer ${providerToken}` },
+      });
       if (!res.ok) return;
       const info = await res.json();
       if (info.picture) {
@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  async function loadProfile(providerToken?: string | null) {
+  const loadProfile = useCallback(async (providerToken?: string | null) => {
     try {
       const data = await invokeFunction<UserProfile>("get-profile");
       if (!data.avatarUrl && providerToken) {
@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       setProfile(null);
     }
-  }
+  }, []);
 
   useEffect(() => {
     const {
@@ -74,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [loadProfile]);
 
   const signInWithGoogle = async () => {
     const { error } = await supabase.auth.signInWithOAuth({

@@ -2,6 +2,7 @@ import BugReportOutlinedIcon from "@mui/icons-material/BugReportOutlined";
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import SourceOutlinedIcon from "@mui/icons-material/SourceOutlined";
+import StorageOutlinedIcon from "@mui/icons-material/StorageOutlined";
 
 import type { JobStatus } from "./features/engine-run/engine-run.types";
 
@@ -24,6 +25,7 @@ export const CONNECTOR_ICONS: Record<string, React.ElementType> = {
   github: GitHubIcon,
   jira: BugReportOutlinedIcon,
   confluence: DescriptionOutlinedIcon,
+  "supabase-storage": StorageOutlinedIcon,
 };
 
 export const DEFAULT_CONNECTOR_ICON = SourceOutlinedIcon;

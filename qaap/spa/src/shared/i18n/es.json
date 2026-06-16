@@ -74,6 +74,7 @@
     "configure": "Configurar",
     "retry": "Reintentar",
     "connectedRepos": "{{name}} conectado — {{count}} repos accesibles",
+    "connectedBuckets": "{{name}} conectado — {{count}} buckets accesibles",
     "testFailed": "La prueba de conexión ha fallado.",
     "testError": "Error al probar la conexión."
   },
@@ -106,6 +107,22 @@
     "update": "Actualizar",
     "saving": "Guardando..."
   },
+  "supabaseStorageDialog": {
+    "credentialsSaved": "Credenciales guardadas.",
+    "replaceCredentials": "Reemplazar credenciales",
+    "projectUrlLabel": "URL del Proyecto",
+    "projectUrlHelper": "URL de tu proyecto Supabase (ej., https://xyzproject.supabase.co)",
+    "serviceRoleKeyLabel": "Service Role Key",
+    "serviceRoleKeyHelper": "En Settings → API → Service Role Key. Necesaria para acceder al storage.",
+    "loadingBuckets": "Cargando buckets...",
+    "connectionError": "Error al validar credenciales. Revisa la URL y la clave.",
+    "invalidCredentials": "Credenciales inválidas — revisa la URL del proyecto y la service role key.",
+    "bucketsAccessible": "{{count}} buckets accesibles",
+    "searchBuckets": "Buscar buckets...",
+    "noBucketsMatch": "Ningún bucket coincide con tu búsqueda.",
+    "bucketsSelected": "{{count}} bucket seleccionado",
+    "bucketsSelected_plural": "{{count}} buckets seleccionados"
+  },
   "knowledgeBase": {
     "title": "Knowledge Base",
     "subtitle": "Selecciona las fuentes que quieres analizar y generar tests.",
@@ -120,6 +137,11 @@
     "configureConnectors": "Configurar Conectores",
     "repo": "{{count}} repo",
     "repo_plural": "{{count}} repos",
+    "bucket": "{{count}} bucket",
+    "bucket_plural": "{{count}} buckets",
+    "storageBuckets": "Storage Buckets",
+    "bucketSubtitle": "Repositorio de código, documentos y archivos subidos al storage.",
+    "storage": "Storage",
     "sourcesSelected": "{{count}} fuente seleccionada",
     "sourcesSelected_plural": "{{count}} fuentes seleccionadas",
     "more": "+{{count}} más",

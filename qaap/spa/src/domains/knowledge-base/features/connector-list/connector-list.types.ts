@@ -56,16 +56,31 @@ export interface GitHubRepo {
   updatedAt: string;
 }
 
+export interface GitHubTestResult {
+  tokenValid: boolean;
+  user?: string;
+  avatarUrl?: string;
+  repos: GitHubRepo[];
+}
+
+export interface SupabaseBucket {
+  id: string;
+  name: string;
+  public: boolean;
+  createdAt: string;
+}
+
+export interface SupabaseStorageTestResult {
+  valid: boolean;
+  projectUrl?: string;
+  buckets: SupabaseBucket[];
+}
+
 export interface TestConnectorResult {
   connectorId: string;
   status: string;
   statusMessage: string | null;
-  result: {
-    tokenValid: boolean;
-    user?: string;
-    avatarUrl?: string;
-    repos: GitHubRepo[];
-  };
+  result: Record<string, unknown>;
 }
 
 export type UiConnectorStatus = "connected" | "not_configured" | "error";

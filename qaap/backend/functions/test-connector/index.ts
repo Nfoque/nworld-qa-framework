@@ -1,6 +1,7 @@
 import { authenticateAndResolveTenant } from "../_shared/auth.ts";
 import { error, ok, parseBody, preflight } from "../_shared/response.ts";
 import { validateGitHubToken } from "../_shared/connectors/github.ts";
+import { validateSupabaseStorage } from "../_shared/connectors/supabase-storage.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return preflight(req);
@@ -23,27 +24,55 @@ Deno.serve(async (req) => {
     .eq("tenant_id", auth.tenantId)
     .single();
 
-  const token = rawCredentials?.token ?? connector?.credentials?.token;
-  if (!token) return error(req, "NO_CREDENTIALS", 400);
+  let result: Record<string, unknown>;
+  let newStatus: string;
+  let statusMessage: string | null = null;
 
-  if (connectorId !== "github") {
+  if (connectorId === "github") {
+    const token = rawCredentials?.token ?? connector?.credentials?.token;
+    if (!token) return error(req, "NO_CREDENTIALS", 400);
+
+    const ghResult = await validateGitHubToken(token);
+    result = ghResult as unknown as Record<string, unknown>;
+
+    if (!ghResult.tokenValid) {
+      newStatus = "error";
+      statusMessage = "Invalid token — check your Personal Access Token.";
+    } else {
+      newStatus = "active";
+    }
+  } else if (connectorId === "supabase-storage") {
+    const projectUrl = rawCredentials?.projectUrl ??
+      connector?.credentials?.projectUrl;
+    const serviceRoleKey = rawCredentials?.serviceRoleKey ??
+      connector?.credentials?.serviceRoleKey;
+    if (!projectUrl || !serviceRoleKey) {
+      return error(
+        req,
+        "NO_CREDENTIALS: projectUrl and serviceRoleKey required",
+        400,
+      );
+    }
+
+    const sbResult = await validateSupabaseStorage(
+      projectUrl as string,
+      serviceRoleKey as string,
+    );
+    result = sbResult as unknown as Record<string, unknown>;
+
+    if (!sbResult.valid) {
+      newStatus = "error";
+      statusMessage =
+        "Invalid credentials — check your project URL and service role key.";
+    } else {
+      newStatus = "active";
+    }
+  } else {
     return error(
       req,
       `Test not implemented for connector: ${connectorId}`,
       400,
     );
-  }
-
-  const result = await validateGitHubToken(token);
-
-  let newStatus: string;
-  let statusMessage: string | null = null;
-
-  if (!result.tokenValid) {
-    newStatus = "error";
-    statusMessage = "Invalid token — check your Personal Access Token.";
-  } else {
-    newStatus = "active";
   }
 
   if (connector) {
@@ -59,10 +88,5 @@ Deno.serve(async (req) => {
     if (updateErr) return error(req, updateErr.message, 500);
   }
 
-  return ok(req, {
-    connectorId,
-    status: newStatus,
-    statusMessage,
-    result,
-  });
+  return ok(req, { connectorId, status: newStatus, statusMessage, result });
 });

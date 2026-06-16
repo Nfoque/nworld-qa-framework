@@ -1,10 +1,10 @@
 import ApiOutlinedIcon from "@mui/icons-material/ApiOutlined";
 import BugReportOutlinedIcon from "@mui/icons-material/BugReportOutlined";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import WebOutlinedIcon from "@mui/icons-material/WebOutlined";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import {
   Alert,
   Box,
@@ -39,7 +39,9 @@ export function TestPlanList() {
   const [modalityFilter, setModalityFilter] = useState<string>("all");
   const [frameworkFilter, setFrameworkFilter] = useState<string>("all");
   const [projectFilter, setProjectFilter] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<"name" | "project" | "scenarios">("name");
+  const [sortBy, setSortBy] = useState<"name" | "project" | "scenarios">(
+    "name",
+  );
   const [page, setPage] = useState(0);
   const PAGE_SIZE = 10;
   const { data: plans = [], isLoading, error } = useTestPlans();
@@ -64,7 +66,11 @@ export function TestPlanList() {
   const projects = useMemo(
     () => [
       "all",
-      ...new Set(plans.map((p) => p.engine_job_name).filter(Boolean)),
+      ...new Set(
+        plans
+          .map((p) => p.engine_job_name)
+          .filter((name): name is string => !!name),
+      ),
     ],
     [plans],
   );
@@ -76,10 +82,7 @@ export function TestPlanList() {
           return false;
         if (frameworkFilter !== "all" && p.target_framework !== frameworkFilter)
           return false;
-        if (
-          projectFilter !== "all" &&
-          p.engine_job_name !== projectFilter
-        )
+        if (projectFilter !== "all" && p.engine_job_name !== projectFilter)
           return false;
         if (search && !p.name.toLowerCase().includes(search.toLowerCase()))
           return false;
@@ -88,15 +91,24 @@ export function TestPlanList() {
       .sort((a, b) => {
         if (sortBy === "scenarios") return b.scenario_count - a.scenario_count;
         if (sortBy === "project")
-          return (a.engine_job_name ?? "").localeCompare(b.engine_job_name ?? "") || a.name.localeCompare(b.name);
+          return (
+            (a.engine_job_name ?? "").localeCompare(b.engine_job_name ?? "") ||
+            a.name.localeCompare(b.name)
+          );
         return a.name.localeCompare(b.name);
       });
   }, [plans, modalityFilter, frameworkFilter, projectFilter, search, sortBy]);
 
-  const safePagedPage = Math.min(page, Math.max(0, Math.ceil(filtered.length / PAGE_SIZE) - 1));
+  const safePagedPage = Math.min(
+    page,
+    Math.max(0, Math.ceil(filtered.length / PAGE_SIZE) - 1),
+  );
   if (safePagedPage !== page) setPage(safePagedPage);
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const paginated = filtered.slice(safePagedPage * PAGE_SIZE, (safePagedPage + 1) * PAGE_SIZE);
+  const paginated = filtered.slice(
+    safePagedPage * PAGE_SIZE,
+    (safePagedPage + 1) * PAGE_SIZE,
+  );
 
   return (
     <Box sx={{ p: 3 }}>
@@ -146,10 +158,26 @@ export function TestPlanList() {
       </Box>
 
       {/* Filters + Search */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, flexWrap: "wrap", rowGap: 1, mb: 2 }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 0.75,
+          flexWrap: "wrap",
+          rowGap: 1,
+          mb: 2,
+        }}
+      >
         {projects.length > 2 && (
           <>
-            <Typography sx={{ fontSize: 11, fontWeight: 600, color: "text.secondary", textTransform: "uppercase" }}>
+            <Typography
+              sx={{
+                fontSize: 11,
+                fontWeight: 600,
+                color: "text.secondary",
+                textTransform: "uppercase",
+              }}
+            >
               {t("testPlans.project")}
             </Typography>
             {projects.map((p) => (
@@ -159,13 +187,24 @@ export function TestPlanList() {
                 size="small"
                 variant={projectFilter === p ? "filled" : "outlined"}
                 color={projectFilter === p ? "primary" : "default"}
-                onClick={() => setProjectFilter(p!)}
-                sx={{ fontSize: 12, fontWeight: projectFilter === p ? 600 : 400 }}
+                onClick={() => setProjectFilter(p)}
+                sx={{
+                  fontSize: 12,
+                  fontWeight: projectFilter === p ? 600 : 400,
+                }}
               />
             ))}
           </>
         )}
-        <Typography sx={{ fontSize: 11, fontWeight: 600, color: "text.secondary", textTransform: "uppercase", ml: projects.length > 2 ? 1.5 : 0 }}>
+        <Typography
+          sx={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: "text.secondary",
+            textTransform: "uppercase",
+            ml: projects.length > 2 ? 1.5 : 0,
+          }}
+        >
           {t("tables.type")}
         </Typography>
         {modalities.map((m) => (
@@ -179,7 +218,15 @@ export function TestPlanList() {
             sx={{ fontSize: 12, fontWeight: modalityFilter === m ? 600 : 400 }}
           />
         ))}
-        <Typography sx={{ fontSize: 11, fontWeight: 600, color: "text.secondary", textTransform: "uppercase", ml: 1.5 }}>
+        <Typography
+          sx={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: "text.secondary",
+            textTransform: "uppercase",
+            ml: 1.5,
+          }}
+        >
           Framework
         </Typography>
         {frameworks.map((f) => (
@@ -193,7 +240,15 @@ export function TestPlanList() {
             sx={{ fontSize: 12, fontWeight: frameworkFilter === f ? 600 : 400 }}
           />
         ))}
-        <Typography sx={{ fontSize: 11, fontWeight: 600, color: "text.secondary", textTransform: "uppercase", ml: 1.5 }}>
+        <Typography
+          sx={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: "text.secondary",
+            textTransform: "uppercase",
+            ml: 1.5,
+          }}
+        >
           {t("testPlans.sortBy")}
         </Typography>
         <Chip
@@ -234,7 +289,11 @@ export function TestPlanList() {
               ),
             },
           }}
-          sx={{ width: 200, ml: "auto", "& .MuiOutlinedInput-root": { fontSize: 13 } }}
+          sx={{
+            width: 200,
+            ml: "auto",
+            "& .MuiOutlinedInput-root": { fontSize: 13 },
+          }}
         />
       </Box>
 
@@ -324,7 +383,9 @@ export function TestPlanList() {
             <ChevronLeftIcon sx={{ fontSize: 18 }} />
           </IconButton>
           <Typography sx={{ fontSize: 12, color: "text.secondary" }}>
-            {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, filtered.length)} / {filtered.length}
+            {page * PAGE_SIZE + 1}–
+            {Math.min((page + 1) * PAGE_SIZE, filtered.length)} /{" "}
+            {filtered.length}
           </Typography>
           <IconButton
             size="small"

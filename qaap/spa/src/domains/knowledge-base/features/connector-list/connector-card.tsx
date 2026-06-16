@@ -65,14 +65,22 @@ export function ConnectorCard({ connector }: ConnectorCardProps) {
       {
         onSuccess: (data) => {
           if (data.status === "active") {
-            const repoCount = data.result.repos?.length ?? 0;
-            showSnackbar(
-              t("connectors.connectedRepos", {
+            const result = data.result as Record<string, unknown>;
+            let message: string;
+            if (connector.connectorId === "supabase-storage") {
+              const buckets = (result.buckets as unknown[]) ?? [];
+              message = t("connectors.connectedBuckets", {
                 name: connector.name,
-                count: repoCount,
-              }),
-              "success",
-            );
+                count: buckets.length,
+              });
+            } else {
+              const repos = (result.repos as unknown[]) ?? [];
+              message = t("connectors.connectedRepos", {
+                name: connector.name,
+                count: repos.length,
+              });
+            }
+            showSnackbar(message, "success");
           } else {
             showSnackbar(
               data.statusMessage ?? t("connectors.testFailed"),

@@ -1,5 +1,5 @@
 import { authenticateAndResolveTenant } from "../_shared/auth.ts";
-import { error, ok, preflight } from "../_shared/response.ts";
+import { error, ok, parseBody, preflight } from "../_shared/response.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return preflight(req);
@@ -8,13 +8,9 @@ Deno.serve(async (req) => {
   const auth = await authenticateAndResolveTenant(req);
   if (auth instanceof Response) return auth;
 
-  let planId: string | undefined;
-  try {
-    const body = await req.json();
-    planId = body.planId;
-  } catch {
-    return error(req, "INVALID_BODY", 400);
-  }
+  const body = await parseBody(req);
+  if (body instanceof Response) return body;
+  const { planId } = body;
   if (!planId) return error(req, "MISSING_FIELD: planId required", 400);
 
   const { data: plan, error: planErr } = await auth.serviceClient

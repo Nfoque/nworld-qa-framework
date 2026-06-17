@@ -11,7 +11,6 @@ export function useLiveDuration(
 
   useEffect(() => {
     if (!isActive) return;
-    setNow(Date.now());
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, [isActive]);

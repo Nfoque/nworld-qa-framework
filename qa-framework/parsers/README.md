@@ -9,7 +9,7 @@ for the generation prompt.
 | Parser | Input | Output (context) | Status |
 |---|---|---|---|
 | **[Source Code](source-code/)** | Path to component or feature | testIds, interactions, routes, API calls | Partial — base in `create-e2e-spec` skill |
-| **[OpenAPI](openapi/)** | Backend YAML/JSON spec | endpoints, schemas, error responses | Partial — base in ADR 10 |
+| **[OpenAPI](openapi/)** | Backend YAML/JSON spec | endpoints, schemas, error responses | Partial — base in [ADR-003](../architecture/adr-003-openapi-driven.md) |
 | **[Jira/Story](jira/)** | Jira ticket key | assertions, preconditions, userRole, feature | Spec draft — normalisation step strategy defined |
 | **[Test Conventions](test-conventions/)** | Existing `e2e/` directory | strict convention contract (prohibitive rules) | Partial — base in `verify` skill |
 

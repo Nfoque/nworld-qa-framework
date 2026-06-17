@@ -536,9 +536,7 @@ export function EngineRun() {
                     </Typography>
                     <Stack spacing={0.75}>
                       {topFeatures.map((feature) => {
-                        const scenarioCount = (
-                          feature.test_areas ?? []
-                        ).reduce(
+                        const scenarioCount = (feature.test_areas ?? []).reduce(
                           (sum, a) => sum + (a.scenarios?.length ?? 0),
                           0,
                         );

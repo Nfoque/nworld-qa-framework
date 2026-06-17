@@ -32,14 +32,19 @@ function isPrivateIpLiteral(host: string): boolean {
   // classifier is out of scope for a Deno Edge runtime.
   const lower = host.toLowerCase();
   if (lower === "::1" || lower === "::") return true;
-  if (lower.startsWith("fe80:") || lower.startsWith("fc") || lower.startsWith("fd")) return true;
+  if (
+    lower.startsWith("fe80:") || lower.startsWith("fc") ||
+    lower.startsWith("fd")
+  ) return true;
   if (lower.includes(":")) return true;
 
   const n = ipv4ToInt(host);
   if (n === null) return false;
   // `&` in JS produces signed 32-bit results — coerce back to unsigned before
   // comparing against the >2³¹ range bases (169.254/16, 192.168/16, 172.16/12).
-  return PRIVATE_IPV4_RANGES.some(([base, mask]) => ((n & mask) >>> 0) === base);
+  return PRIVATE_IPV4_RANGES.some(([base, mask]) =>
+    ((n & mask) >>> 0) === base
+  );
 }
 
 export interface UrlSafetyOptions {

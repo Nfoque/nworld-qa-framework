@@ -32,7 +32,7 @@ class XRayReporter implements Reporter {
 }
 ```
 
-**Status:** Full design in `xray-reporter.md`. Implementation pending.
+**Status:** Design above. Implementation pending.
 
 ## Verify Pipeline
 

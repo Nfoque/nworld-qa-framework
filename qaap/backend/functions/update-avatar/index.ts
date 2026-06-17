@@ -21,6 +21,10 @@ Deno.serve(async (req) => {
     return error(req, "MISSING_FIELD: avatarUrl required", 400);
   }
 
+  if (!avatarUrl.startsWith("https://")) {
+    return error(req, "INVALID_AVATAR_URL: must use https:// protocol", 400);
+  }
+
   const serviceClient = createServiceClient();
   const { error: updateErr } = await serviceClient
     .from("user_profiles")

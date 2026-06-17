@@ -90,6 +90,7 @@ export interface ReviewState {
   selection: ReviewSelection;
   overrides: Map<string, ScenarioOverride>;
   expanded: Record<string, boolean>;
+  initialized: boolean;
 }
 
 export interface AcceptProposalResponse {

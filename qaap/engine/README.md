@@ -2,7 +2,7 @@
 
 Standalone Node.js process that processes `engine_jobs` through a series of typed steps. Dockerized, horizontally scalable. Each step has a strict input/output contract (JSONB in DB, TypeScript interfaces for validation). **No domain entities** (TestPlan, TestScenario, etc.) are created until the final proposal is accepted by the user.
 
-> 📘 **Build spec:** [`PIPELINE-EXECUTION-REFERENCE.md`](PIPELINE-EXECUTION-REFERENCE.md) — the end-to-end reference for processing one job (data model, `tick()`/`buildInput()`, per-step contracts & prompts, domain-model mapping, lessons learned, and the Node/Docker build checklist). Derived from a full manual simulation against `ivncmp/clau-lessons`.
+> 📘 **Build spec:** [`PIPELINE-EXECUTION-REFERENCE.md`](poc/PIPELINE-EXECUTION-REFERENCE.md) — the end-to-end reference for processing one job (data model, `tick()`/`buildInput()`, per-step contracts & prompts, domain-model mapping, lessons learned, and the Node/Docker build checklist). Derived from a full manual simulation against `ivncmp/clau-lessons`.
 >
 > 🗺️ **What's next:** [`ROADMAP.md`](ROADMAP.md) — upcoming milestones toward the real engine.
 

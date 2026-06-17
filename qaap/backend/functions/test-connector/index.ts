@@ -1,4 +1,4 @@
-import { authenticateAndResolveTenant } from "../_shared/auth.ts";
+import { authenticateAndResolveTenant, requireRole } from "../_shared/auth.ts";
 import { error, ok, parseBody, preflight } from "../_shared/response.ts";
 import { validateGitHubToken } from "../_shared/connectors/github.ts";
 import { validateSupabaseStorage } from "../_shared/connectors/supabase-storage.ts";
@@ -9,6 +9,9 @@ Deno.serve(async (req) => {
 
   const auth = await authenticateAndResolveTenant(req);
   if (auth instanceof Response) return auth;
+
+  const denied = requireRole(req, auth, "superadmin", "admin", "editor");
+  if (denied) return denied;
 
   const body = await parseBody(req);
   if (body instanceof Response) return body;

@@ -59,4 +59,3 @@ export async function validateSupabaseStorage(
     return { valid: false, buckets: [] };
   }
 }
-

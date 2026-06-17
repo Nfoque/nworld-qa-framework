@@ -76,7 +76,14 @@ export function ScenarioDetail({
       },
     });
     setEditing(false);
-  }, [dispatch, original, editTitle, editDescription, editRationale, editGherkin]);
+  }, [
+    dispatch,
+    original,
+    editTitle,
+    editDescription,
+    editRationale,
+    editGherkin,
+  ]);
 
   if (!scenario || !original) {
     return (

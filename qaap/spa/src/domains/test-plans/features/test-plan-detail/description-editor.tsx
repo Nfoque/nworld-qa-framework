@@ -68,7 +68,9 @@ export function DescriptionEditor({
         },
       }}
     >
-      <Markdown>{(content || t("testPlanDetail.noDescription")).replace(/\n/g, "\n\n")}</Markdown>
+      <Markdown>
+        {(content || t("testPlanDetail.noDescription")).replace(/\n/g, "\n\n")}
+      </Markdown>
     </Box>
   );
 }

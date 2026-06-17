@@ -37,6 +37,7 @@ qa-framework/                ← The framework product (design docs, not executa
 qaap/                        ← SaaS product (has its own CLAUDE.md)
   spa/                          React 19 SPA (Vite + MUI v9)
   backend/                      Supabase Edge Functions + PostgreSQL migrations
+  engine/                       LLM pipeline worker (Node.js/Docker) — design + PoC
   documentation/                Product specs, 17 ADRs, scaffolding skills
   prototypes/                   HTML/Netlify prototypes
 
@@ -54,6 +55,7 @@ references/                  ← Links to external repos studied (no code cloned
 4. Move the raw file to `news/inbox/raw/processed/`
 5. If insights are new, add to `research/insights.md` and/or `research/patterns.md`
 6. If insights impact the framework or QAAP, update the relevant docs
+7. **Update `README.md` (root):** article count, articles table, and insight/pattern counts if they changed
 
 ### Processing a client meeting
 
@@ -62,6 +64,7 @@ references/                  ← Links to external repos studied (no code cloned
 3. Generate structured meeting analysis at `clients/<client>/<project>/meetings/YYYY-MM-DD-topic.md`
 4. Update `project-state.md` (rolling snapshot)
 5. If a testing need appears in 2+ clients, promote (sanitized) to `research/client-signals.md`
+6. **Update `README.md` (root):** client signal count and signals list if a new one was added
 
 ## Research → Product Traceability
 
@@ -84,6 +87,30 @@ These are load-bearing — not aspirational guidelines but hard constraints vali
 - **Confidence + rationale** — Every LLM output carries `{result, confidence, rationale}`. Routing: >=85% auto, 60-84% human review, <60% manual.
 - **Local-first** — The framework must run with local models (Ollama). OpenAI-compatible API as portability layer, never lock to a provider SDK.
 - **Strict convention contracts** — Prohibitive rules ("PROHIBITED", "ONLY") produce ~95% LLM compliance vs ~70% for descriptive guidelines ("prefer", "try to").
+
+## README Maintenance (mandatory)
+
+The root `README.md` contains concrete counts and references (article count, insight count, pattern count, client signal count, ADR count, Edge Function count, migration count, component count, skill list, demo list, etc.). **These MUST be updated whenever the underlying data changes.** This is not optional.
+
+When you complete any of these actions, update the corresponding numbers/tables in `README.md` (root) and any other README that references the same data:
+
+| Action | What to update in README |
+|--------|-------------------------|
+| Process a new article (`/process-news`) | Article count, articles table, insight/pattern counts if new ones added |
+| Add a new insight to `research/insights.md` | Insight count |
+| Promote a pattern to `research/patterns.md` | Pattern count, patterns table |
+| Add a client signal | Client signal count |
+| Create a new Edge Function | Edge Function count, backend functions table |
+| Add a new migration | Migration count |
+| Create a new ADR (framework or QAAP) | ADR count in the corresponding section |
+| Add/remove a SPA domain or feature | Domain table, component count |
+| Add/remove a skill | Skills table |
+| Add a new product spec document | Product spec count, documentation map |
+| Add a new prototype demo | Demo count, demos table |
+
+**The same rule applies to `qaap/README.md`, `qaap/spa/README.md`, `qaap/backend/README.md`, and `qaap/CLAUDE.md`** — if they reference a count or list that changed, update them too.
+
+Use `/sync-docs` periodically to audit all READMEs against the actual directory contents.
 
 ## Writing Conventions
 

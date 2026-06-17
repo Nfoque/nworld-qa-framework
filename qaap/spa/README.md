@@ -11,16 +11,22 @@ React 19, Vite 8, TypeScript 6, MUI v9, TanStack Query v5, TanStack Router, Supa
 ```
 src/
 ├── domains/                    # Feature modules (VSA)
-│   ├── connectors/             # Connector management (list, configure, test)
-│   └── dashboard/              # Home dashboard (stats, plans, executions, activity)
+│   ├── dashboard/              # Home dashboard (stats, plans, executions, activity)
+│   ├── engine/                 # Pipeline runs, engine job detail, proposal review
+│   ├── knowledge-base/         # Connector management, bucket/repo management
+│   ├── settings/               # LLM provider configuration
+│   └── test-plans/             # Test plan list, detail, scenario editing
 │
 ├── shared/                     # Cross-cutting concerns
 │   ├── auth/                   # AuthProvider, route guards, login page
 │   ├── components/             # Reusable UI (stat-card, badges, snackbar, loading)
 │   ├── config/                 # Supabase client
+│   ├── hooks/                  # Shared hooks (use-live-duration)
+│   ├── i18n/                   # i18next setup + translations
 │   ├── layout/                 # AppLayout, Sidebar
 │   ├── tenant/                 # TenantProvider (multi-tenant context)
-│   └── theme/                  # MUI theme
+│   ├── theme/                  # MUI theme
+│   └── utils/                  # Format helpers, project colors
 │
 ├── main.tsx                    # Entry point (providers + render)
 └── router.tsx                  # TanStack Router route tree

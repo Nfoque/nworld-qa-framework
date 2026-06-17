@@ -7,6 +7,7 @@ import type {
 
 export type ReviewAction =
   | { type: "INIT"; proposal: Proposal }
+  | { type: "MARK_INITIALIZED" }
   | { type: "RESTORE_OVERRIDES"; overrides: Map<string, ScenarioOverride> }
   | { type: "TOGGLE_PLAN"; planId: string }
   | { type: "TOGGLE_AREA"; planId: string; areaId: string }
@@ -42,6 +43,7 @@ export const INITIAL_STATE: ReviewState = {
   selection: { planId: null, areaId: null, scenarioId: null },
   overrides: new Map(),
   expanded: {},
+  initialized: false,
 };
 
 function collapseAllFeatures(proposal: Proposal): Record<string, boolean> {
@@ -74,8 +76,12 @@ export function reviewReducer(
         },
         overrides: new Map(),
         expanded,
+        initialized: true,
       };
     }
+
+    case "MARK_INITIALIZED":
+      return { ...state, initialized: true };
 
     case "RESTORE_OVERRIDES": {
       if (state.proposal) {

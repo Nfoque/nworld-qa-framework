@@ -1,8 +1,12 @@
 <p align="center">
-  <img src=".github/qaap-logo.png" alt="QAAP" height="80" />&nbsp;&nbsp;&nbsp;&nbsp;<strong>|</strong>&nbsp;&nbsp;&nbsp;&nbsp;<img src=".github/nfq-logo.png" alt="NFQ" height="80" />
+  <picture>
+    <img src=".github/qaap-logo.png" alt="QAAP" height="60" />
+  </picture>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <picture>
+    <img src=".github/nfq-logo.png" alt="NFQ" height="40" />
+  </picture>
 </p>
-
-<h1 align="center">QAAP &mdash; QA Automation Platform</h1>
 
 <p align="center">
   <strong>AI-powered E2E test generation for enterprise QA teams</strong><br/>

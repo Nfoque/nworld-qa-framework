@@ -1,3 +1,5 @@
+import { validateUpstreamUrl } from "../url-safety.ts";
+
 export interface SupabaseBucket {
   id: string;
   name: string;
@@ -9,13 +11,26 @@ export interface SupabaseStorageValidationResult {
   valid: boolean;
   projectUrl?: string;
   buckets: SupabaseBucket[];
+  error?: string;
 }
+
+// Allowed hostname suffixes for self-hosted + managed Supabase. Keep the list
+// short and explicit — anything that doesn't match is rejected before we ship
+// the service-role key out in an Authorization header.
+const SUPABASE_HOST_SUFFIXES = [".supabase.co", ".supabase.in"];
 
 export async function validateSupabaseStorage(
   projectUrl: string,
   serviceRoleKey: string,
 ): Promise<SupabaseStorageValidationResult> {
-  const baseUrl = projectUrl.replace(/\/+$/, "");
+  const safe = validateUpstreamUrl(projectUrl, {
+    allowedHostSuffixes: SUPABASE_HOST_SUFFIXES,
+  });
+  if (!safe.ok) {
+    return { valid: false, buckets: [], error: safe.reason };
+  }
+
+  const baseUrl = safe.url.toString().replace(/\/+$/, "");
   const headers = {
     Authorization: `Bearer ${serviceRoleKey}`,
     apikey: serviceRoleKey,

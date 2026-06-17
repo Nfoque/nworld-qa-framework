@@ -2,10 +2,9 @@ import {
   createRouter,
   createRoute,
   createRootRoute,
+  redirect,
   Outlet,
 } from "@tanstack/react-router";
-
-import { Home } from "@/domains/dashboard/features/home/home";
 import { EngineRun } from "@/domains/engine/features/engine-run/engine-run";
 import { PipelineList } from "@/domains/engine/features/pipeline-list/pipeline-list";
 import { ProposalReview } from "@/domains/engine/features/proposal-review/proposal-review";
@@ -33,10 +32,12 @@ const authenticatedRoute = createRoute({
   component: AuthenticatedGuard,
 });
 
-const dashboardRoute = createRoute({
+const indexRoute = createRoute({
   getParentRoute: () => authenticatedRoute,
   path: "/",
-  component: Home,
+  beforeLoad: () => {
+    throw redirect({ to: "/test-plans" });
+  },
 });
 
 const connectorsRoute = createRoute({
@@ -90,7 +91,7 @@ const settingsRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   loginRoute,
   authenticatedRoute.addChildren([
-    dashboardRoute,
+    indexRoute,
     connectorsRoute,
     knowledgeBaseRoute,
     pipelinesRoute,

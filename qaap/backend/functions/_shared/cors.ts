@@ -21,5 +21,7 @@ export function getCorsHeaders(req: Request): Record<string, string> {
       "authorization, x-client-info, apikey, content-type, x-tenant-id",
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
     "Vary": "Origin",
+    "X-Frame-Options": "DENY",
+    "Content-Security-Policy": "frame-ancestors 'none'",
   };
 }

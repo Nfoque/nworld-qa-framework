@@ -1,6 +1,7 @@
 import { authenticateAndResolveTenant, requireRole } from "../_shared/auth.ts";
 import { error, ok, parseBody, preflight } from "../_shared/response.ts";
 import { validateGitHubToken } from "../_shared/connectors/github.ts";
+import { validateJiraCredentials } from "../_shared/connectors/jira.ts";
 import { validateSupabaseStorage } from "../_shared/connectors/supabase-storage.ts";
 
 Deno.serve(async (req) => {
@@ -67,6 +68,32 @@ Deno.serve(async (req) => {
       newStatus = "error";
       statusMessage =
         "Invalid credentials — check your project URL and service role key.";
+    } else {
+      newStatus = "active";
+    }
+  } else if (connectorId === "jira") {
+    const baseUrl = rawCredentials?.baseUrl ?? connector?.credentials?.baseUrl;
+    const email = rawCredentials?.email ?? connector?.credentials?.email;
+    const apiToken = rawCredentials?.apiToken ?? connector?.credentials?.apiToken;
+    if (!baseUrl || !email || !apiToken) {
+      return error(
+        req,
+        "NO_CREDENTIALS: baseUrl, email and apiToken required",
+        400,
+      );
+    }
+
+    const jiraResult = await validateJiraCredentials(
+      baseUrl as string,
+      email as string,
+      apiToken as string,
+    );
+    result = jiraResult as unknown as Record<string, unknown>;
+
+    if (!jiraResult.valid) {
+      newStatus = "error";
+      statusMessage = jiraResult.error ??
+        "Invalid credentials — check your Jira Cloud URL, email and API token.";
     } else {
       newStatus = "active";
     }

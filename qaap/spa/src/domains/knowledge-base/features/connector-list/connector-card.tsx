@@ -73,6 +73,12 @@ export function ConnectorCard({ connector }: ConnectorCardProps) {
                 name: connector.name,
                 count: buckets.length,
               });
+            } else if (connector.connectorId === "jira") {
+              const projects = (result.projects as unknown[]) ?? [];
+              message = t("connectors.connectedProjects", {
+                name: connector.name,
+                count: projects.length,
+              });
             } else {
               const repos = (result.repos as unknown[]) ?? [];
               message = t("connectors.connectedRepos", {

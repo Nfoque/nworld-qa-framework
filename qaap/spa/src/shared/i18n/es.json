@@ -75,6 +75,7 @@
     "retry": "Reintentar",
     "connectedRepos": "{{name}} conectado — {{count}} repos accesibles",
     "connectedBuckets": "{{name}} conectado — {{count}} buckets accesibles",
+    "connectedProjects": "{{name}} conectado — {{count}} proyectos accesibles",
     "testFailed": "La prueba de conexión ha fallado.",
     "testError": "Error al probar la conexión."
   },
@@ -106,6 +107,24 @@
     "connect": "Conectar",
     "update": "Actualizar",
     "saving": "Guardando..."
+  },
+  "jiraDialog": {
+    "credentialsSaved": "Credenciales guardadas.",
+    "replaceCredentials": "Reemplazar credenciales",
+    "baseUrlLabel": "URL de Jira Cloud",
+    "baseUrlHelper": "URL de tu sitio Atlassian (ej., https://tuequipo.atlassian.net)",
+    "emailLabel": "Email",
+    "emailHelper": "El email asociado a tu cuenta de Atlassian.",
+    "apiTokenLabel": "API Token",
+    "apiTokenHelper": "Generar en id.atlassian.com → Seguridad → Tokens de API.",
+    "loadingProjects": "Cargando proyectos...",
+    "connectionError": "Error al validar credenciales. Revisa la URL, email y API token.",
+    "invalidCredentials": "Credenciales inválidas — revisa la URL de Jira Cloud, email y API token.",
+    "projectsAccessible": "{{count}} proyectos accesibles",
+    "searchProjects": "Buscar proyectos...",
+    "noProjectsMatch": "Ningún proyecto coincide con tu búsqueda.",
+    "projectsSelected": "{{count}} proyecto seleccionado",
+    "projectsSelected_plural": "{{count}} proyectos seleccionados"
   },
   "supabaseStorageDialog": {
     "credentialsSaved": "Credenciales guardadas.",
@@ -139,6 +158,9 @@
     "repo_plural": "{{count}} repos",
     "bucket": "{{count}} bucket",
     "bucket_plural": "{{count}} buckets",
+    "jiraProjects": "Proyectos Jira",
+    "project": "{{count}} proyecto",
+    "project_plural": "{{count}} proyectos",
     "storageBuckets": "Storage Buckets",
     "bucketSubtitle": "Repositorio de código, documentos y archivos subidos al storage.",
     "storage": "Storage",

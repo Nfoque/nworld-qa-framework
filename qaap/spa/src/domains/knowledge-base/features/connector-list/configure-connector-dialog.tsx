@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 
 import type { Connector } from "./connector-list.types";
 import { GitHubConnectorDialog } from "./github-connector-dialog";
+import { JiraConnectorDialog } from "./jira-connector-dialog";
 import { SupabaseStorageDialog } from "./supabase-storage-dialog";
 
 interface ConfigureConnectorDialogProps {
@@ -23,6 +24,7 @@ const CONNECTOR_DIALOGS: Record<
   React.ComponentType<{ connector: Connector; onClose: () => void }>
 > = {
   github: GitHubConnectorDialog,
+  jira: JiraConnectorDialog,
   "supabase-storage": SupabaseStorageDialog,
 };
 

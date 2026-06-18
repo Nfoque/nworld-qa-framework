@@ -1,3 +1,5 @@
+import { faJira } from "@fortawesome/free-brands-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CableOutlinedIcon from "@mui/icons-material/CableOutlined";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import SourceOutlinedIcon from "@mui/icons-material/SourceOutlined";
@@ -9,8 +11,10 @@ import { useTranslation } from "react-i18next";
 
 import { ConnectorSection } from "./connector-section";
 import { EmptyState } from "./empty-state";
+import { JiraConnectorSection } from "./jira-connector-section";
 import {
   getSelectedBuckets,
+  getSelectedProjects,
   getSelectedRepos,
   useKnowledgeBaseDetails,
 } from "./knowledge-base.service";
@@ -21,6 +25,8 @@ import { StorageConnectorSection } from "./storage-connector-section";
 import { useCreateJob } from "@/domains/engine/features/engine-run/engine-run.service";
 import { useConnectors } from "@/domains/knowledge-base/features/connector-list/connector-list.service";
 import type {
+  JiraProject,
+  JiraTestResult,
   SupabaseBucket,
   SupabaseStorageTestResult,
 } from "@/domains/knowledge-base/features/connector-list/connector-list.types";
@@ -43,6 +49,13 @@ export function KnowledgeBase() {
     ? getSelectedRepos(githubConnector.config)
     : [];
 
+  const jiraConnector = activeConnectors.find(
+    (c) => c.connectorId === "jira",
+  );
+  const selectedProjectKeys = jiraConnector
+    ? getSelectedProjects(jiraConnector.config)
+    : [];
+
   const storageConnector = activeConnectors.find(
     (c) => c.connectorId === "supabase-storage",
   );
@@ -52,6 +65,11 @@ export function KnowledgeBase() {
 
   const { data: githubDetails, isLoading: isLoadingDetails } =
     useKnowledgeBaseDetails("github", !!githubConnector);
+
+  const { data: jiraDetails } = useKnowledgeBaseDetails(
+    "jira",
+    !!jiraConnector,
+  );
 
   const { data: storageDetails } = useKnowledgeBaseDetails(
     "supabase-storage",
@@ -67,6 +85,16 @@ export function KnowledgeBase() {
     }
     return map;
   }, [githubDetails]);
+
+  const projectDetails = useMemo(() => {
+    const map = new Map<string, JiraProject>();
+    const result = jiraDetails?.result as JiraTestResult | undefined;
+    if (!result?.projects) return map;
+    for (const project of result.projects) {
+      map.set(project.key, project);
+    }
+    return map;
+  }, [jiraDetails]);
 
   const bucketDetails = useMemo(() => {
     const map = new Map<string, SupabaseBucket>();
@@ -94,7 +122,8 @@ export function KnowledgeBase() {
 
   const clearSelection = useCallback(() => setSelectedItems(new Set()), []);
 
-  const totalResources = selectedRepos.length + selectedBuckets.length;
+  const totalResources =
+    selectedRepos.length + selectedProjectKeys.length + selectedBuckets.length;
 
   if (isLoadingConnectors) {
     return (
@@ -145,10 +174,15 @@ export function KnowledgeBase() {
           color="#24292f"
         />
         <StatCard
-          label={t("knowledgeBase.storageBuckets")}
-          value={selectedBuckets.length}
-          icon={StorageOutlinedIcon}
-          color="#82858D"
+          label={t("knowledgeBase.jiraProjects")}
+          value={selectedProjectKeys.length}
+          icon={() => (
+            <FontAwesomeIcon
+              icon={faJira}
+              style={{ fontSize: 18, color: "#0052CC" }}
+            />
+          )}
+          color="#0052CC"
         />
       </Box>
 
@@ -164,6 +198,16 @@ export function KnowledgeBase() {
               selectedRepos={selectedRepos}
               enrichedRepos={enrichedRepos}
               isLoadingDetails={isLoadingDetails}
+              selectedItems={selectedItems}
+              onToggleItem={toggleItem}
+            />
+          )}
+          {jiraConnector && selectedProjectKeys.length > 0 && (
+            <JiraConnectorSection
+              connectorName={jiraConnector.name}
+              status="connected"
+              selectedProjects={selectedProjectKeys}
+              projectDetails={projectDetails}
               selectedItems={selectedItems}
               onToggleItem={toggleItem}
             />
@@ -190,11 +234,17 @@ export function KnowledgeBase() {
           const ghSelected = Array.from(selectedItems).filter((id) =>
             selectedRepos.includes(id),
           );
+          const jiraSelected = Array.from(selectedItems).filter((id) =>
+            selectedProjectKeys.includes(id),
+          );
           const storageSelected = Array.from(selectedItems).filter((id) =>
             selectedBuckets.includes(id),
           );
           if (ghSelected.length > 0) {
             sources.push({ connector: "github", items: ghSelected });
+          }
+          if (jiraSelected.length > 0) {
+            sources.push({ connector: "jira", items: jiraSelected });
           }
           if (storageSelected.length > 0) {
             sources.push({

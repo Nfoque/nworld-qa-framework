@@ -75,6 +75,7 @@
     "retry": "Retry",
     "connectedRepos": "{{name}} connected — {{count}} repos accessible",
     "connectedBuckets": "{{name}} connected — {{count}} buckets accessible",
+    "connectedProjects": "{{name}} connected — {{count}} projects accessible",
     "testFailed": "Connection test failed.",
     "testError": "Failed to test connection."
   },
@@ -106,6 +107,24 @@
     "connect": "Connect",
     "update": "Update",
     "saving": "Saving..."
+  },
+  "jiraDialog": {
+    "credentialsSaved": "Credentials saved.",
+    "replaceCredentials": "Replace credentials",
+    "baseUrlLabel": "Jira Cloud URL",
+    "baseUrlHelper": "Your Atlassian site URL (e.g., https://yourteam.atlassian.net)",
+    "emailLabel": "Email",
+    "emailHelper": "The email address associated with your Atlassian account.",
+    "apiTokenLabel": "API Token",
+    "apiTokenHelper": "Generate at id.atlassian.com → Security → API tokens.",
+    "loadingProjects": "Loading projects...",
+    "connectionError": "Failed to validate credentials. Check your URL, email and API token.",
+    "invalidCredentials": "Invalid credentials — check your Jira Cloud URL, email and API token.",
+    "projectsAccessible": "{{count}} projects accessible",
+    "searchProjects": "Search projects...",
+    "noProjectsMatch": "No projects match your search.",
+    "projectsSelected": "{{count}} project selected",
+    "projectsSelected_plural": "{{count}} projects selected"
   },
   "supabaseStorageDialog": {
     "credentialsSaved": "Credentials saved.",
@@ -139,6 +158,9 @@
     "repo_plural": "{{count}} repos",
     "bucket": "{{count}} bucket",
     "bucket_plural": "{{count}} buckets",
+    "jiraProjects": "Jira Projects",
+    "project": "{{count}} project",
+    "project_plural": "{{count}} projects",
     "storageBuckets": "Storage Buckets",
     "bucketSubtitle": "Code repository, documents, and files uploaded to storage.",
     "storage": "Storage",

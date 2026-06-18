@@ -34,3 +34,12 @@ export function getSelectedBuckets(config: Record<string, unknown>): string[] {
     ? buckets.filter((b): b is string => typeof b === "string")
     : [];
 }
+
+export function getSelectedProjects(
+  config: Record<string, unknown>,
+): string[] {
+  const projects = config.selectedProjects;
+  return Array.isArray(projects)
+    ? projects.filter((p): p is string => typeof p === "string")
+    : [];
+}

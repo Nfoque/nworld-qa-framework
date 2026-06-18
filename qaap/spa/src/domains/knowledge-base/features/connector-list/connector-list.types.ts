@@ -76,6 +76,21 @@ export interface SupabaseStorageTestResult {
   buckets: SupabaseBucket[];
 }
 
+export interface JiraProject {
+  key: string;
+  name: string;
+  avatarUrl: string | null;
+  projectTypeKey: string;
+}
+
+export interface JiraTestResult {
+  valid: boolean;
+  displayName?: string;
+  email?: string;
+  projects: JiraProject[];
+  error?: string;
+}
+
 export interface TestConnectorResult {
   connectorId: string;
   status: string;

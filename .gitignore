@@ -12,3 +12,5 @@ clients/*
 
 # Local Netlify folder
 .netlify
+
+sandbox

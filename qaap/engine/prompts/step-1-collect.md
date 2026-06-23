@@ -41,6 +41,31 @@ All sources have been materialized to local directories before you start. You ex
    - Do NOT copy raw source code line by line — synthesize the structural information
    - Do NOT classify into features or assign test priorities — that's Step 2's job
 
+4b. CLUSTER DETECTION — MANDATORY for large files (50+ items):
+   - Analyze the file's internal structure for thematic groups:
+     * Explicit section headers/marks (e.g., "// MARK: Phone Management", "// SECTION: Checkout")
+     * Naming convention patterns (e.g., ID.Phone*, ID.Email*, ID.Billing*)
+     * Domain-based grouping (e.g., struct ID { Phone, Email, Billing })
+     * Category/enum values (e.g., enum Feature { auth, checkout, returns })
+   - For EACH detected cluster/group within a large file, emit a SEPARATE chunk:
+     * Do NOT emit one mega-chunk containing all 350 items
+     * Each cluster chunk gets an explicit scope identifier
+   - Output structure:
+     ```json
+     {
+       "type": "accessibility_map",
+       "metadata": {
+         "origin": "src/constants/ID.swift#Phone",  // section path (if headers exist)
+         "scope": "Phone Management",               // cluster name (required)
+         "item_count": 12,                         // count of items in THIS cluster
+         "parent_file": "src/constants/ID.swift",  // full file for context
+         "note": "Phone field, delete button, OTP entry screen"
+       },
+       "content": "ID.Phone { prefixField, telephoneField, deleteButton, verifyButton, ... }"
+     }
+     ```
+   - RATIONALE: A codebase author organized these clusters deliberately. Engine MUST detect them to avoid over-merging unrelated features (Phone + Email + Billing into single "Account" feature).
+
 5. Each chunk you collect MUST have:
    - `type`: one of the chunk types from the taxonomy below
    - `content`: structural information extracted from the source (can be JSON-stringified for structured data, or plain text for descriptions)
@@ -139,11 +164,15 @@ High-value targets, in order:
 - NOTE ON SCOPE: the connector is a dumb accessor over the REMOTE only — it exposes exactly what is pushed to the repo (tree, file contents, branches, PRs, issues, commits), nothing more. Do NOT assume or read any local working copy, uncommitted changes, or paths outside the configured repo. Tree/file reads reflect the default branch unless you explicitly inspect another branch; PRs/issues/commits are API-only (not in the git tree). Aim for ~20-30 focused chunks — one tree/file/list per chunk.
 
 ### Jira
-- Boards and projects overview
-- Epics (high-level feature groupings)
-- Recent sprints (what's being worked on)
-- Component list (if used)
-- Labels/tags (reveal feature categorization)
+High-value targets, in order:
+1. Project list → identify the target project(s) and their type (Scrum, Kanban, team-managed)
+2. All epics in the project → `repo_metadata`-level understanding of feature groupings
+3. Sprint board(s) → what's actively being worked on, sprint goals
+4. Issues per epic (batch via JQL: `project = X AND "Epic Link" = Y`) → one chunk per epic grouping with issue summaries, types, statuses, labels
+5. Component list (if used) → cross-cutting categorization the team uses
+6. Labels/tags list → reveal automation status, platform, priority tiers
+7. Key individual issues for detail (acceptance criteria, attachments, linked issues) → enrich chunks from step 4
+8. Exclude probe/test/template issues created for platform validation (e.g., "test issue", "PROBE", skeleton issues with no real content) — they pollute feature detection.
 
 ### Figma
 - Page list (each page often = one feature area)
@@ -283,9 +312,9 @@ After the agent finishes, the engine assembles the final step output:
 6. **Accessibility coverage** — Was the test ID / accessibility identifier file found and collected? This is the single most valuable chunk.
 7. **Chunk type consistency** — Does each chunk use the correct type from the taxonomy? Are types consistent across similar chunks?
 
-## Real-World Reference (Oysho iOS App — 2926 Swift files, 54 features)
+## Production Calibration Data (Large Mobile E-commerce App — ~3000 source files, 54 features)
 
-This reference comes from the first production execution of Step 1. Use it to calibrate expectations for large mobile app projects.
+Calibration data from the first production execution of Step 1 on a large iOS e-commerce app. Use to calibrate expectations for similar-scale projects.
 
 | Metric | Value |
 |--------|-------|
@@ -297,6 +326,22 @@ This reference comes from the first production execution of Step 1. Use it to ca
 | Exploration depth | Read ~15 key files (coordinators, view models, config files) out of 2926 total Swift files (~0.5%) |
 | Token budget consumed | ~80K tokens (Phase 1: 15K, Phase 2: 25K, Phase 3: 40K) |
 
+## Multi-Source Reference (large mobile app — 2 sources, 39 chunks)
+
+When the same project is explored via multiple connectors, the orchestrator merges chunks from all source agents. This reference comes from a production run with Source Code + Jira.
+
+| Metric | Storage (code) | Jira | Combined |
+|--------|---------------|------|----------|
+| Chunks produced | 29 | 10 | 39 |
+| Exploration depth | ~15 files read out of ~3000 | ~70 issues across 7 epics | — |
+| Token budget per agent | ~60K | ~60K | ~120K total |
+| Wall-clock time | ~6 min | ~1.5 min | ~6 min (parallel) |
+
+Key observations:
+- Jira chunks are smaller but carry different signal (planned work, labels, acceptance criteria) vs code chunks (actual implementation, UI elements, navigation flows).
+- The combined chunk set enables cross-source correlation in Step 2, which is impossible with a single source.
+- Jira projects with <20 issues produce ~3-5 chunks. Projects with 50-100 issues produce ~8-12 chunks. Projects with 200+ issues should be sampled (recent epics + active sprints only) to stay within the 25-35 chunk target per source.
+
 ## Engine Integration
 
 ### Source Materialization (pre-agent)
@@ -306,7 +351,7 @@ Before the CollectorAgent starts, the engine **materializes** each connected sou
 | Connector | Materialization strategy | Local path |
 |-----------|------------------------|------------|
 | **GitHub** | `git clone --depth=1 {repo_url}` using connector credentials (PAT/deploy key). Clones the default branch. If specific branches are selected, clones those instead. | `/tmp/engine/{job_id}/github/{repo_name}/` |
-| **Supabase Storage** | Download the zip archive from the bucket via Storage REST API using the connector's `serviceRoleKey`. Extract to local dir. If no zip exists, download all files via parallel batch requests (20 concurrent, skip binary mimetypes). | `/tmp/engine/{job_id}/storage/{bucket_name}/` |
+| **Supabase Storage** | Download the zip archive from the bucket via Storage REST API using the connector's `serviceRoleKey`. Extract to local dir. If no zip exists, download all files via parallel batch requests (20 concurrent, skip binary mimetypes). **See Supabase Storage caveats below.** | `/tmp/engine/{job_id}/storage/{bucket_name}/` |
 | **Jira** | Fetch all epics, sprint issues, and components via Jira REST API using connector credentials. Serialize each entity as a JSON file (one per epic, one per sprint, one index). | `/tmp/engine/{job_id}/jira/{project_key}/` |
 | **Figma** | Fetch file metadata, page list, frame hierarchy, component sets, and prototype flows via Figma REST API. Serialize as JSON (one file per page, one index). Optionally export key frame thumbnails as PNG. | `/tmp/engine/{job_id}/figma/{file_key}/` |
 
@@ -324,16 +369,43 @@ Before the CollectorAgent starts, the engine **materializes** each connected sou
 
 **Cleanup**: The engine deletes `/tmp/engine/{job_id}/` after the job completes or fails.
 
+### Supabase Storage Caveats (from production run 2026-06-23)
+
+Downloading large zip archives (>10 MB) from Supabase Storage via the REST API (`/storage/v1/object/{bucket}/{path}`) can **silently truncate** the response. Observed: a 36 MB zip consistently cut at ~9.4 MB with HTTP 200 but `curl` exit code 18 (`transfer closed with N bytes remaining`). This happens on both anon and service-role keys.
+
+**Root cause:** Supabase's CDN/proxy (likely Cloudflare or Kong) drops long-lived connections before the full payload transfers. This is not a client-side timeout — the server closes the connection.
+
+**Workarounds the engine MUST implement (in priority order):**
+
+1. **Signed URL + redirect** — generate a time-limited signed URL via `POST /storage/v1/object/sign/{bucket}/{path}` (body: `{"expiresIn": 3600}`), then download from the signed URL. Signed URLs bypass some CDN restrictions.
+2. **Range-request chunking** — download in 5 MB chunks using `Range: bytes=0-5242879`, `Range: bytes=5242880-10485759`, etc., then concatenate. Requires the storage endpoint to support `Accept-Ranges` (Supabase does).
+3. **Individual file download** — skip the zip entirely, list all objects in the bucket via `GET /storage/v1/object/list/{bucket}`, then download each file individually (parallel batch, 20 concurrent). Slower but guaranteed to work for any file size since individual source files are typically <1 MB.
+4. **Pre-extracted upload** — require users to upload sources as a directory tree (not a single zip) to the bucket. This eliminates the large-file problem entirely but changes the upload UX.
+
+**The engine SHOULD detect truncation** by comparing `Content-Length` header with bytes received and retry with the next fallback strategy automatically. Never silently proceed with a partial zip — extraction will fail or produce an incomplete source tree, causing the collector agent to miss features.
+
 ### Agent Execution
 
-- **Invocation**: Single autonomous agent with tool access. One CollectorAgent per engine job.
-- **Input**: `sources[]` from the engine job config — each source specifies a connector type (`github`, `jira`, `figma`, `storage`), credentials, and selected items (repo URL, project key, file ID, folder path). The agent also receives `materialized_paths` — a map of `{connector_type}/{item_name} → local_path` so it knows where to find the files.
-- **Tool binding**: The engine maps abstract tool names (e.g., `github_list_tree`, `storage_list_files`) to **local filesystem operations** on the materialized directory. The agent calls `storage_list_files("code/ios/")` and the engine translates it to `ls /tmp/engine/{job_id}/storage/{bucket}/code/ios/`. The agent is unaware of the underlying implementation.
+- **Invocation**: One CollectorAgent **per source**. The engine spawns agents in parallel — one for each selected source in the job config. Each agent only sees tools for its source type and only explores its own materialized directory.
+- **Input per agent**: The source config (connector type, selected items) plus `materialized_path` — the local directory to explore.
+- **Tool binding**: The engine maps abstract tool names (e.g., `storage_list_files`, `jira_list_epics`) to operations on the materialized data. For filesystem sources (storage, github), tools operate on the local directory. For API sources (jira, figma), tools operate on the materialized JSON files OR call the API directly if the engine opts for live-fetch mode.
 - **Model tier**: Agent-capable model (must support tool use and autonomous multi-step reasoning).
-- **Token budget**: Variable — the agent self-regulates via "stop collecting" heuristics. Expect 20-40 tool calls and ~50K-100K total tokens depending on project size and number of connected sources.
-- **Parallelism**: None — single agent explores all connected sources sequentially within one invocation.
-- **Error handling**: Tool call failures (file not found, read error) are recorded in chunk metadata by the agent. The engine retries the full step on unrecoverable agent errors (max 2 retries).
-- **Post-processing**: The engine assigns sequential IDs to chunks (`gh-001`, `jira-001`, `st-001`), sets `source` from the connector type, and assembles the final output.
+- **Token budget per agent**: Variable — each agent self-regulates via "stop collecting" heuristics. Expect 15-30 tool calls and ~30K-60K tokens per source agent.
+- **Parallelism**: Agents run in parallel across sources. Within each agent, exploration is sequential.
+- **Error handling**: Tool call failures are recorded in chunk metadata. The engine retries individual source agents on unrecoverable errors (max 2 retries). One source failing does NOT block other sources.
+- **Post-processing (orchestrator)**: After all source agents complete, the engine:
+  1. Collects chunks from all agents
+  2. Assigns sequential IDs with source prefix (`st-001`, `st-002` for storage; `jira-001`, `jira-002` for jira; `gh-001` for github)
+  3. Sets `source` field from the connector type
+  4. Merges into a single `raw_chunks` array
+  5. Assembles the combined summary
+
+**Why parallel agents instead of one sequential agent (lesson from production run 2026-06-23):**
+- A single agent exploring N sources sequentially burns its token budget disproportionately on the first source, under-exploring later ones
+- Source-specific tool bindings are cleaner when each agent only has tools for its source type
+- A Jira agent needs different exploration heuristics (epics → issues → components) than a Storage agent (directory tree → coordinators → view models)
+- Failure isolation: a Jira API timeout doesn't lose 20 already-collected storage chunks
+- Wall-clock time: 2 sources in parallel ≈ max(source_A, source_B) instead of sum(source_A, source_B)
 
 ### Step Transition (engine worker responsibility)
 
@@ -352,5 +424,13 @@ When the engine worker completes a step, it is responsible for wiring the next s
 ```
 step[N].output  →  step[N+1].input  (verbatim copy, full JSONB)
 ```
+
+**Status update MUST happen BEFORE agent work (lesson from production):**
+The engine worker MUST update the step's `status = 'running'` and `started_at = now()` BEFORE spawning any agent. Agents can take minutes — the SPA should show 'running' immediately, not remain on 'pending' until the first agent finishes. This applies to every step in the pipeline, not just Step 1.
+
+**CRITICAL — store FULL data, not summaries (lesson from production run 2026-06-23):**
+The `output` column MUST contain the **complete data structure** per the Output Schema — for Step 1 that means the entire `raw_chunks` array with all chunk content, plus the `summary`. NEVER store just a summary or metadata object like `{"total_chunks": 39, "by_source": {...}}` — that breaks every downstream step because they need the actual chunk content to analyze. The SPA also reads step output to render progress, and an empty output shows nothing useful.
+
+**Writing large JSONB (>50 KB):** The Supabase MCP `execute_sql` tool may not accept queries this large. Use a direct PostgreSQL connection instead — build a `.sql` file with dollar-quoted JSON (`$json$...$json$` avoids all escaping issues) and run via `psql` against the Supabase session pooler (`aws-0-eu-west-1.pooler.supabase.com:5432`). PostgreSQL JSONB columns can handle megabytes; the bottleneck is the MCP tool, not the database.
 
 If the worker crashes between step 4 and 5, the next step will have `status = 'running'` but no `input` — the worker must check for this on recovery and re-wire from the previous step's output.

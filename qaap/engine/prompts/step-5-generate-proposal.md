@@ -125,7 +125,25 @@ queued → running → paused (proposal ready for review) → completed (user ac
                  ↘ failed (any step errored)
 ```
 
-## Real-World Reference (Oysho iOS)
+## Project Type → Modality Mapping
+
+The `project.type` field in the proposal determines how downstream consumers (accept-proposal Edge Function, test plan views, future code generation) interpret the scenarios. The engine detects project type from Step 1 metadata (repo language, framework markers, file extensions).
+
+| project.type | Gherkin verb set | Navigation model | Confidence modifiers |
+|-------------|-----------------|-----------------|---------------------|
+| `mobile_ios` | tap, swipe, scroll, long-press | screen/tab-based | OS dialogs cap 0.75-0.80, camera/GPS cap 0.78-0.83 |
+| `mobile_android` | tap, swipe, scroll, long-press | screen/activity-based | OS dialogs cap 0.75-0.80, camera/GPS cap 0.78-0.83 |
+| `web_spa` | click, type, hover, drag, select | URL/route-based | Tab/window mgmt cap 0.80 |
+| `web_ssr` | click, type, hover, select | URL-based (full page loads) | Server-rendered state caps at 0.85 |
+| `desktop` | click, type, keyboard shortcuts | window-based | OS dialogs cap 0.75-0.80, multi-window cap 0.78 |
+| `backend_api` | N/A (not E2E testable) | N/A | All scenarios capped at 0.50 |
+
+The `accept-proposal` Edge Function uses `project.type` to:
+1. Validate Gherkin verb consistency (flag mobile scenarios using "click" instead of "tap")
+2. Set default test framework suggestions in the materialized test plan metadata
+3. Apply platform-specific confidence floor adjustments
+
+## Production Calibration Data (Large Mobile E-commerce App)
 
 | Metric | Value |
 |--------|-------|
@@ -137,7 +155,7 @@ queued → running → paused (proposal ready for review) → completed (user ac
 | Coverage gaps (from step 2) | 3 |
 | Execution time | ~30 seconds (pure aggregation) |
 
-### Detected gaps from the Oysho run:
+### Detected gaps (from production calibration):
 
 | Gap | Severity | Description |
 |-----|----------|-------------|
@@ -152,3 +170,28 @@ queued → running → paused (proposal ready for review) → completed (user ac
 | Promotions | medium | Feature tree shows 42 files but no chunks were collected |
 
 These gaps are valuable for the user — they highlight what the pipeline DIDN'T cover and why, helping the QA lead decide whether to request a deeper exploration or accept the current coverage.
+
+### Multi-source run calibration:
+
+| Metric | Single source | Multi-source (code + Jira) |
+|--------|--------------|---------------------------|
+| Features | 13 | 16 |
+| Test areas | 37 | 84 |
+| Scenarios | 366 | ~880 (estimated at 10.5 avg/area) |
+| Detected gaps | 9 | 12+ |
+| Coverage gaps | 3 | 5 |
+| Proposal size | ~423 KB | ~1.1 MB (estimated) |
+
+Multi-source proposals are significantly larger. The SPA's proposal review page must handle tree rendering efficiently at this scale.
+
+### Gap taxonomy:
+
+Detected gaps fall into predictable categories. The engine should classify each gap:
+
+| Category | Description | Example |
+|----------|-------------|---------|
+| `unexplored_code` | Code exists but no chunks were collected in Step 1 | File tree shows 40+ files for a feature but no coordinator/VM chunk |
+| `spec_only` | Feature appears in Jira/Figma but has no code evidence | Epic with stories but no matching source code |
+| `code_only` | Feature exists in code but has no spec/ticket | Implemented functionality with no Jira tracking |
+| `partial_coverage` | Feature has test areas but some aspects lack scenarios | Deep linking mentioned in code but no dedicated test area |
+| `infra_gap` | Infrastructure/config that affects test behavior | Feature flags, environment configs, third-party integrations |

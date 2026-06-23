@@ -29,6 +29,8 @@ A "feature" is a major capability visible to the user — something that would h
 10. Feature names MUST be user-facing capabilities in natural language. PROHIBITED: technical layer names, component names, framework terms, or internal identifiers.
    - GOOD: "Invoice Management", "User Authentication", "Dashboard Analytics"
    - BAD: "Redux Store", "API Gateway", "useInvoice Hook"
+11. MULTI-SOURCE CONFIDENCE BOOST: When a feature has supporting evidence from 2+ independent source types (e.g., code + Jira, or code + Figma), add +0.05 to the base confidence. Cross-source validation is stronger signal than single-source depth. Note which sources contributed in the `coverage` field.
+12. COVERAGE GAPS are a first-class output, not an afterthought. For multi-source runs, every feature SHOULD have a `coverage` entry showing which source types contributed. A feature appearing in only one source is itself a gap worth flagging.
 ```
 
 ## User Message Template
@@ -123,7 +125,7 @@ When testing this prompt against a real project, check:
 
 ## Feature Merging Guidelines
 
-Deciding what is ONE feature vs TWO is the hardest judgment call in this step. These guidelines come from the first production run:
+Deciding what is ONE feature vs TWO is the hardest judgment call in this step. These guidelines come from production calibration:
 
 ### Merge INTO the parent feature when:
 - The sub-capability is always accessed FROM the parent's flow (e.g., Shipping is always entered from Checkout → merge into Checkout)
@@ -136,13 +138,43 @@ Deciding what is ONE feature vs TWO is the hardest judgment call in this step. T
 - The capability can be tested independently in isolation (e.g., Gift Cards can be tested without touching Checkout)
 - The capability has significant file count (30+ files) indicating substantial complexity
 
-### Borderline cases from the Oysho iOS run:
+### Borderline cases (from production calibration):
 - **Shipping** → merged INTO Checkout (no standalone entry, always within checkout flow)
 - **Order Confirmation** → merged INTO Checkout (post-purchase, same flow)
-- **Store Locator (PlaceLocator)** → merged INTO Click & Collect (primarily serves C&C store selection)
-- **Returns** → kept SEPARATE from Order Management (own coordinator, 6-step flow, 38 files)
-- **Gift Cards** → kept SEPARATE from Payment (own coordinator, 5 screens, buy flow + payment method)
-- **Remote Config** → kept as SEPARATE low-confidence feature (not user-facing but critical for QA — flag states change test behavior)
+- **Store Locator** → merged INTO Click & Collect (primarily serves store selection for pickup)
+- **Returns** → kept SEPARATE from Order Management (own coordinator, multi-step flow, 30+ files)
+- **Gift Cards** → kept SEPARATE from Payment (own coordinator, multiple screens, buy flow + payment method)
+- **Remote Config / Feature Flags** → kept as SEPARATE low-confidence feature (not user-facing but critical for QA — flag states change test behavior)
+
+### Cluster-based feature boundaries (new — from Step 1 clustering):
+
+When Step 1 detects and emits CLUSTERED chunks from large files (see Rule 4b in Step 1), 
+use these clusters as evidence for SPLITTING a large feature into sub-features:
+
+RULE: If a feature has:
+  1. Evidence from clustered chunks (e.g., "Phone Management" chunk separate from "Email Management" chunk)
+  2. Distinct entry points in the UI (user taps different cards/sections to enter each cluster)
+  3. Different state management (separate view models, coordinators, or data flows)
+  4. Different validation rules (one cluster requires OTP, another requires password verification)
+
+THEN: Emit separate sub-features instead of one merged feature.
+
+EXAMPLE (from production calibration):
+  Before: "User Profile and Account Settings" (1 feature, 42 scenarios, low specificity)
+  After:  Split into sub-features:
+    - f-008a: Personal Data & Password Management (14 scenarios)
+    - f-008b: Phone Number Management (10 scenarios)
+    - f-008c: Billing Address Management (8 scenarios)
+    - f-008d: Email Management (10 scenarios)
+  
+  Each sub-feature:
+    - Has distinct entry point (which card user taps)
+    - Has different rules (phone requires OTP, email requires password verification)
+    - Can be tested independently
+
+RATIONALE: Clustering in Step 1 is not accidental — the codebase author organized these features 
+deliberately. Engine MUST respect that structure to avoid over-merging unrelated features, which 
+causes Test Areas and Scenarios to become generic ("Account Settings" instead of specific).
 
 ## Chunk Type Routing
 
@@ -160,9 +192,9 @@ Different chunk types serve different purposes during feature extraction. Use th
 | `documentation` | ⭐ Low | Context about the team and project, rarely defines feature boundaries. |
 | `repo_metadata` | ⭐ Low | Project-level context, not feature-level. |
 
-## Real-World Reference (Oysho iOS App — 30 chunks → 13 features)
+## Production Calibration Data (Single Source — 30 chunks → 13 features)
 
-First production execution results. Use to calibrate expectations for large mobile e-commerce apps.
+Calibration data from a production run on a large mobile e-commerce app (single source: code repository). Use to calibrate expectations for similar-scale projects.
 
 | Metric | Value |
 |--------|-------|
@@ -174,7 +206,7 @@ First production execution results. Use to calibrate expectations for large mobi
 | Coverage gaps | 3 (single-source, no backend API, missing promo chunks) |
 | Token budget | Input ~40K tokens (30 chunks), Output ~5K tokens |
 
-### Feature list produced:
+### Feature list produced (large mobile e-commerce app, single code source):
 
 | ID | Feature | Confidence | Key evidence |
 |----|---------|-----------|-------------|
@@ -194,11 +226,45 @@ First production execution results. Use to calibrate expectations for large mobi
 
 ### Decision log:
 - **Shipping merged into Checkout** — no standalone entry, always within checkout flow
-- **ConfirmationPage merged into Checkout** — post-purchase, same flow
-- **PlaceLocator merged into Click & Collect** — primarily serves C&C store selection
-- **Contact merged into Newsletter & Communications** — small feature (6 files), fits communications
+- **Confirmation screen merged into Checkout** — post-purchase, same flow
+- **Store Locator merged into Click & Collect** — primarily serves pickup store selection
+- **Contact merged into Newsletter & Communications** — small feature (<10 files), fits communications
 - **Remote Config included at 0.80** — infrastructure, but flag states are a first-class QA concern (a test that passes with flag ON may fail with flag OFF)
-- **Promotions NOT included** — no coordinator/view_model chunk collected in Step 1, only appears in feature_tree. Flagged as coverage gap instead of inventing a feature.
+- **Promotions NOT included** — no coordinator/view_model chunk collected in Step 1, only appeared in file tree. Flagged as coverage gap instead of inventing a feature.
+
+## Production Calibration Data (Multi-Source — 39 chunks → 16 features)
+
+Calibration data from a production run on the same app with two sources (code repository + Jira). Use to calibrate expectations for multi-source runs.
+
+| Metric | Value |
+|--------|-------|
+| Input chunks | 39 (29 code + 10 Jira) |
+| Features extracted | 16 |
+| Confidence range | 0.72 – 0.95 |
+| Average confidence | 0.89 |
+| Source refs per feature | 2–8 (avg 4.8) |
+| Coverage gaps | 5 (more gaps detected due to cross-source comparison) |
+
+### Key observations vs single-source:
+
+| Dimension | Single source (30 chunks) | Multi-source (39 chunks) | Delta |
+|-----------|--------------------------|--------------------------|-------|
+| Features | 13 | 16 | +23% |
+| Avg confidence | 0.92 | 0.89 | −3% (wider confidence range is expected) |
+| Avg source_refs | 4.2 | 4.8 | +14% |
+| Coverage gaps | 3 | 5 | +67% |
+
+### Multi-source specific lessons:
+
+1. **Cross-source correlation boosts confidence.** A feature backed by BOTH code and Jira evidence is more likely real and well-specified than one backed by a single source. When correlating sources, add +0.05 to base confidence for features confirmed by 2+ independent source types.
+
+2. **Jira reveals planned-but-unbuilt features.** Features that appear in Jira (epics, stories) but have no code evidence are valuable coverage gaps — they represent functionality that was specced but may not yet be implemented, or was implemented under a different name. Always flag these.
+
+3. **Code reveals undocumented features.** Features visible in code but absent from Jira may be tech debt, internal tooling, or simply untracked work. These typically get lower confidence (0.72–0.80) but should still be included.
+
+4. **More sources = more features, wider confidence range.** Single-source runs produce a tighter cluster (0.80–0.98). Multi-source runs have a wider spread (0.72–0.95) because Jira-only evidence is weaker than code evidence but still worth capturing.
+
+5. **Coverage gaps are a HIGH-VALUE output.** In multi-source runs, gaps become richer: "feature X is in Jira but not in code" and "feature Y is in code but not in Jira" tell different stories. The QA lead uses these gaps to decide whether to request deeper exploration or flag spec/implementation misalignment.
 
 ## Engine Integration
 

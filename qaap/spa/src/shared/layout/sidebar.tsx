@@ -36,6 +36,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import { keyframes } from "@mui/system";
 import { Link, useMatchRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -54,6 +55,11 @@ export const SIDEBAR_WIDTH = 240;
 export const SIDEBAR_COLLAPSED_WIDTH = 68;
 
 const TRANSITION = "width 0.2s ease-in-out";
+
+const pulse = keyframes`
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+`;
 
 export function Sidebar() {
   const { t, i18n } = useTranslation();
@@ -131,6 +137,7 @@ export function Sidebar() {
       icon: AccountTreeOutlinedIcon,
       to: "/pipelines" as const,
       badge: pipelinesInProgress,
+      pulse: pipelinesInProgress > 0,
     },
   ];
 
@@ -225,6 +232,7 @@ export function Sidebar() {
           const isActive = item.to ? !!matchRoute({ to: item.to }) : false;
           const isDisabled = item.to === null;
           const showDivider = index === mainNavItems.length;
+          const shouldPulse = "pulse" in item && !!item.pulse;
 
           const button = (
             <ListItemButton
@@ -269,7 +277,10 @@ export function Sidebar() {
                   {!!item.badge && (
                     <Box
                       sx={{
-                        bgcolor: "primary.main",
+                        bgcolor:
+                          shouldPulse
+                            ? "#8B5CF6"
+                            : "primary.main",
                         color: "#fff",
                         fontSize: 10,
                         fontWeight: 700,
@@ -279,6 +290,9 @@ export function Sidebar() {
                         lineHeight: 1.5,
                         minWidth: 18,
                         textAlign: "center",
+                        ...(shouldPulse && {
+                          animation: `${pulse} 1.5s ease-in-out infinite`,
+                        }),
                       }}
                     >
                       {item.badge}
@@ -295,7 +309,14 @@ export function Sidebar() {
                     width: 8,
                     height: 8,
                     borderRadius: "50%",
-                    bgcolor: "primary.main",
+                    bgcolor:
+                      shouldPulse
+                        ? "error.main"
+                        : "primary.main",
+                    ...("pulse" in item &&
+                      item.pulse && {
+                      animation: `${pulse} 1.5s ease-in-out infinite`,
+                    }),
                   }}
                 />
               )}

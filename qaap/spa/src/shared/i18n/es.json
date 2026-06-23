@@ -263,6 +263,7 @@
     "coverageGaps": "{{count}} hueco de cobertura detectado",
     "coverageGaps_plural": "{{count}} huecos de cobertura detectados",
     "topPlans": "Top Planes por Confianza",
+    "topFeatures": "Top Features por Confianza",
     "summaryProcessingChunks": "Procesando {{count}} chunks…",
     "summaryProcessingFeatures": "Procesando {{count}} features…",
     "summaryProcessingAreas": "Procesando {{count}} áreas de test…",

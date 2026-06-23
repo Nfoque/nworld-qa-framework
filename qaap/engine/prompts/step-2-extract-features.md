@@ -22,7 +22,7 @@ A "feature" is a major capability visible to the user — something that would h
    - RIGHT: "Authentication" (a user-facing capability)
 4. PROHIBITED: Do not group by technical layer (frontend/backend/database). Group by user-facing capability.
 5. PROHIBITED: Do not include infrastructure features (CI/CD, deployment) unless the application IS a DevOps tool.
-6. Flag coverage gaps: if a feature appears in some sources but not others, this is valuable information. A feature in GitHub but not Jira = code without spec. A feature in Jira but not GitHub = spec not yet implemented.
+6. Flag coverage gaps: if a feature appears in some sources but not others, this is valuable information. A feature in GitHub but not Jira = code without spec. A feature in Jira but not GitHub = spec not yet implemented. IMPORTANT: Before flagging a gap, apply Semantic Name Reconciliation (see Feature Merging Guidelines) — a "gap" where Jira says "Digital Wallet" and code has `InWalletCoordinator` is NOT a gap, it is the same feature under different names. Only flag a real gap when no naming reconciliation can explain the absence.
 7. If two sources describe the same feature differently, merge them into one feature and note both source_refs.
 8. Order features by confidence (highest first).
 9. Target 5-15 features for a typical application. More than 15 usually means over-splitting — merge related capabilities. Fewer than 5 usually means over-grouping — look for distinct sub-capabilities.
@@ -126,6 +126,28 @@ When testing this prompt against a real project, check:
 ## Feature Merging Guidelines
 
 Deciding what is ONE feature vs TWO is the hardest judgment call in this step. These guidelines come from production calibration:
+
+### SEMANTIC NAME RECONCILIATION (MANDATORY for multi-source runs):
+Different sources routinely use different names for the same feature. NEVER create two separate features because Jira and code use different terminology for the same domain concept.
+
+Common reconciliation patterns:
+- Jira: "Digital Wallet" / Code: `PaymentWalletController`, `InWalletViewController` → ONE feature: "Digital Wallet / In-Wallet"
+- Jira: "My Account" / Code: `UserProfileCoordinator`, `AccountSettingsViewController` → ONE feature: "User Profile & Account"
+- Jira: "Product Search" / Code: `SearchIndexViewModel`, `AlgoliaSearchCoordinator` → ONE feature: "Product Search"
+- Jira: "Store Finder" / Code: `PlaceLocatorCoordinator`, `StoreSearchViewController` → ONE feature: "Store Locator"
+
+How to detect cross-source identity:
+1. Semantic similarity: "Gift Card" ≈ "GiftCardCoordinator" ≈ "gift_card epic"
+2. Shared accessibility IDs: if a Jira epic's acceptance criteria mention the same UI actions visible in code IDs, they're the same feature
+3. Business domain overlap: two items that manage the same user goal (e.g., both handle payment methods) are one feature, regardless of naming
+
+When merging cross-source names, use the most user-facing name (prefer Jira/Figma names over code identifiers) and note both in the `rationale`.
+
+### BUSINESS DOMAIN SEPARATION (CRITICAL):
+- Do NOT merge features just because they share a UI screen, component, or coding prefix. You MUST split them if they serve completely different business domains.
+- Example 1: "Delivery Address" (logistics) and "Billing Address" (tax/payment) MUST be separate features, even if both use an `AddressForm` UI component.
+- Example 2: "Contact Channels" (WhatsApp, Phone buttons) and "Help Center / FAQ" (WebKit, Searchable articles) MUST be separate features.
+- If Jira chunks describe distinct business rules for sub-sections, elevate those sub-sections to full independent Features.
 
 ### Merge INTO the parent feature when:
 - The sub-capability is always accessed FROM the parent's flow (e.g., Shipping is always entered from Checkout → merge into Checkout)

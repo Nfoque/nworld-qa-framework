@@ -66,6 +66,30 @@ All sources have been materialized to local directories before you start. You ex
      ```
    - RATIONALE: A codebase author organized these clusters deliberately. Engine MUST detect them to avoid over-merging unrelated features (Phone + Email + Billing into single "Account" feature).
 
+4c. DEEP JIRA EXTRACTION (MANDATORY):
+   - When extracting chunks from Jira issues, do NOT just copy the summary and status. You MUST extract the hidden state machine.
+   - Explicitly format your chunk to include:
+     * Gating Conditions: What must be true for this feature to be visible? (e.g., "OAuth users", "Company account").
+     * Data Boundaries: Exact numerical or format limits (e.g., "Min 20€", "Max 500€").
+     * Market Exceptions: Specific country rules (e.g., "DE requires double opt-in").
+   - If a Jira ticket mentions a feature, this overrides any lack of UI identifiers in the code. A Jira epic with active issues IS evidence of a real feature even if the CollectorAgent hasn't found a coordinator or accessibility IDs for it yet.
+
+4d. NESTED SYSTEM DETECTION:
+   - Features like "Store Locator", "Help Center FAQ", or "Barcode Scanner" often hide inside parent features ("Store Mode", "Help", "Wallet").
+   - If a directory or coordinator contains terms like `Search`, `Map`, `Scanner`, `WebKit`, or `Filter`, you MUST extract this as a standalone chunk describing a "Nested System", even if the accessibility ID list is small.
+
+4e. FIGMA VISUAL STATES EXTRACTION (MANDATORY when Figma source is connected):
+   - Figma components reveal the FULL state space of the UI that the code alone does not show.
+   - For EVERY component set or frame, look for Visual State variants and extract them explicitly:
+     * Empty states: "No results", "Cart is empty", "No orders yet" — these require their own test scenarios.
+     * Error states: "Invalid input", "Network error", "Upload failed" — each error variant is a distinct test path.
+     * Loading states: Skeleton screens, spinners, progress indicators — confirm they appear and disappear.
+     * Disabled states: Buttons or inputs that are inactive under specific conditions.
+   - For each component with 3+ variants, emit a SEPARATE chunk of type `ui_structure` documenting:
+     * Component name and the variants detected
+     * What condition triggers each variant (if visible in the design or component name)
+   - RATIONALE: Engineers often implement only the happy-path state. Figma variants expose the full intended behavior surface. These states generate test scenarios that pure code analysis misses entirely.
+
 5. Each chunk you collect MUST have:
    - `type`: one of the chunk types from the taxonomy below
    - `content`: structural information extracted from the source (can be JSON-stringified for structured data, or plain text for descriptions)
@@ -166,9 +190,9 @@ High-value targets, in order:
 ### Jira
 High-value targets, in order:
 1. Project list → identify the target project(s) and their type (Scrum, Kanban, team-managed)
-2. All epics in the project → `repo_metadata`-level understanding of feature groupings
-3. Sprint board(s) → what's actively being worked on, sprint goals
-4. Issues per epic (batch via JQL: `project = X AND "Epic Link" = Y`) → one chunk per epic grouping with issue summaries, types, statuses, labels
+2. **ALL epics in the project** → `repo_metadata`-level understanding of feature groupings. CRITICAL: fetch ALL epics regardless of age, status, or sprint. Old/inactive epics can represent real production features that are simply mature and no longer being actively developed. NEVER limit epic discovery to recent sprints — that causes false "coverage gaps" for stable features.
+3. Sprint board(s) → what's actively being worked on, sprint goals (use for ISSUE-level sampling, not epic discovery)
+4. Issues per epic (batch via JQL: `project = X AND "Epic Link" = Y`) → one chunk per epic grouping with issue summaries, types, statuses, labels. For projects with 200+ issues, SAMPLE at the issue level (recent issues + open bugs per epic) — but always include the epic itself regardless of age.
 5. Component list (if used) → cross-cutting categorization the team uses
 6. Labels/tags list → reveal automation status, platform, priority tiers
 7. Key individual issues for detail (acceptance criteria, attachments, linked issues) → enrich chunks from step 4
@@ -179,6 +203,7 @@ High-value targets, in order:
 - Top-level frames per page (reveal UI sections)
 - Component sets (reveal reusable patterns)
 - Prototype flows (reveal user journeys)
+- **Visual state variants per component** (Empty, Error, Loading, Disabled) — apply Rule 4e: emit a separate `ui_structure` chunk per component with 3+ variants
 ```
 
 ## Tools

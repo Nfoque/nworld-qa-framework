@@ -39,7 +39,7 @@ A "test area" is a concrete, self-contained aspect of a feature that needs its o
      ```
    - PROHIBITED: Treating validation rules as "implementation details". They are test requirements.
 
-3. DETECT USER STATE VARIANTS FROM PRECONDITIONS (new rule):
+3a. DETECT USER STATE VARIANTS FROM PRECONDITIONS (new rule):
    - When raw chunks include test case preconditions, parse them to identify STATE DIMENSIONS:
      * Account type: individual/company/admin
      * Completeness: new/incomplete/complete
@@ -69,10 +69,31 @@ A "test area" is a concrete, self-contained aspect of a feature that needs its o
      ]
      ```
    - RATIONALE: Each state has different UI (buttons enabled/disabled, info panels shown/hidden) and different rules. Ignoring variants creates ~20% coverage gaps.
-3. Test areas MUST be:
+3b. Test areas MUST be:
    - Specific enough to generate 3-10 concrete E2E test scenarios each
    - Independent from each other (minimal overlap)
    - Focused on user-facing behavior, not implementation details
+3c. NEGATIVE & BLOCKED STATE MATRIX (CRITICAL):
+   - When raw chunks include preconditions, you MUST explicitly ask: "What happens if the user lacks the prerequisite data?"
+   - Scan the `business_rules` for missing dependencies and generate variants for them.
+   - MANDATORY VARIANTS TO CHECK FOR:
+     * Authentication absence: What if the user registered via OAuth (Passwordless)?
+     * Data absence: What if the user has no saved phone? No saved addresses?
+     * Entity type: Is the user an Individual or a Company?
+   - For every negative/blocked state detected, you MUST generate a specific `distinctive_flow` explaining how the UI handles the block (e.g., "Fields disabled, info panel redirects to Add Password").
+
+3d. HARDWARE & ENVIRONMENT STATE MATRIX (MANDATORY for mobile apps):
+   - Mobile features frequently depend on hardware capabilities or environment state that can be denied, unavailable, or degraded. These generate DISTINCT test paths that pure UI analysis misses.
+   - For ANY test area in a mobile project, scan for these hardware/environment dependencies:
+     * **GPS / Location Services**: If the feature uses maps, store locators, delivery address detection, or any geolocation — you MUST add variants: (a) Location granted, (b) Location denied by user, (c) Location services disabled system-wide.
+     * **Camera**: If the feature uses barcode scanning, receipt scanning, QR codes, or photo upload — add variants: (a) Camera permission granted, (b) Camera permission denied, (c) Camera unavailable (simulator only).
+     * **Network / Offline**: For any feature that makes network calls (payments, order submission, search) — add variants: (a) Online with success response, (b) Offline / airplane mode, (c) Network timeout mid-flow.
+     * **Push Notifications**: If the feature sends or handles notifications — add variants: (a) Permission granted, (b) Permission denied.
+     * **Biometrics / Face ID**: If the feature uses Face ID, Touch ID, or biometric authentication — add variants: (a) Biometrics available and enrolled, (b) Biometrics not enrolled, (c) Biometrics hardware unavailable.
+     * **Apple Wallet / Google Pay**: For payment features — add variants: (a) Wallet configured, (b) Wallet not set up.
+   - For EACH hardware/environment dependency detected, add a `precondition_variant` with a `distinctive_flow` describing what the UI does in the denied/unavailable/degraded state. Confidence for these variants should be capped at 0.75-0.80 (automation frameworks can trigger them but cannot always control OS-level permission dialogs reliably).
+   - RATIONALE: These states are responsible for ~20% of real production bugs in mobile apps. The "Camera denied" flow looks identical at the coordinator level but shows a completely different UI (permission request dialog → settings redirect vs. scanner opening). Missing these variants creates false test coverage.
+
 4. SPLIT RULE: If a potential area covers multiple independent sub-behaviors that would each yield 3+ scenarios, split it into separate areas. This rule applies ONLY to areas that pass the E2E scope gate (rule 5). PROHIBITED: Splitting a non-E2E area into multiple non-E2E areas.
 5. E2E SCOPE — HARD FILTER: Before outputting any test area, apply this gate: "Can a QA engineer verify this behavior by opening a browser, performing user actions, and observing the screen — WITHOUT querying a database, calling an API, or reading server logs?" If the answer is NO, PROHIBITED: do not include the area regardless of evidence strength. Examples that MUST be omitted: score computation algorithms, database constraint validation, background job processing, API response contracts. These belong in unit/integration tests, not E2E test areas.
    If a feature's core behavior is purely backend (e.g., a pricing engine), look for the USER-FACING SURFACE instead: "Price breakdown display on product page" is E2E testable; "Discount calculation algorithm correctness" is not.

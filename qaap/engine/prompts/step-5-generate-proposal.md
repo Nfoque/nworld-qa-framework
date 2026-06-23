@@ -28,6 +28,8 @@ The engine worker MUST:
    - Per-feature scenario counts
 5. **Include coverage gaps** from step 2 (sources present vs missing)
 6. **Detect additional gaps**: Compare step 1 raw_chunks against step 2 features — any chunks not referenced by any feature indicate unexplored functionality
+6b. **Auto-detect business_rule_gap**: For each test area in step 3, read `business_rules[]`. For each rule string, check whether any scenario in step 4 has `covers_business_rule` equal to that rule. If a rule has ZERO matching scenarios → emit a `detected_gap` with category `business_rule_gap`. Example: rule "Amount must be between 20 and 500" in ta-1012 but no scenario has `covers_business_rule: "Amount must be between 20 and 500"` → gap.
+6c. **Auto-detect state_variant_gap**: For each test area in step 3, read `precondition_variants[]`. For each variant, check whether any scenario in step 4 has a `gherkin` field that references the variant's `distinctive_flow` concept (keyword match on the state description). If a precondition variant has NO corresponding scenario → emit a `detected_gap` with category `state_variant_gap`. Example: variant "User is passwordless (OAuth signup)" with `distinctive_flow: "Cannot add phone until password created"` but no scenario addresses this → gap.
 7. **Write `output` JSONB** with the full proposal
 
 ## Output Schema
@@ -190,8 +192,9 @@ Detected gaps fall into predictable categories. The engine should classify each 
 
 | Category | Description | Example |
 |----------|-------------|---------|
-| `unexplored_code` | Code exists but no chunks were collected in Step 1 | File tree shows 40+ files for a feature but no coordinator/VM chunk |
+| `unexplored_code` | Code exists but no chunks were collected in Step 1 | File tree shows 40+ files for a feature but no coordinator chunk |
 | `spec_only` | Feature appears in Jira/Figma but has no code evidence | Epic with stories but no matching source code |
 | `code_only` | Feature exists in code but has no spec/ticket | Implemented functionality with no Jira tracking |
-| `partial_coverage` | Feature has test areas but some aspects lack scenarios | Deep linking mentioned in code but no dedicated test area |
-| `infra_gap` | Infrastructure/config that affects test behavior | Feature flags, environment configs, third-party integrations |
+| `business_rule_gap` | A business rule was identified in Step 3 but no scenarios mapped to it | "DE double opt-in required" found, but no scenarios cover it in Step 4 |
+| `state_variant_gap` | A user state exists but lacks negative testing | "Passwordless user" identified, but no blocked-flow scenarios generated |
+| `infra_gap` | Infrastructure/config that affects test behavior | Feature flags, environment configs |

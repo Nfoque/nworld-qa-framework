@@ -1,9 +1,7 @@
-import { faJira } from "@fortawesome/free-brands-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import AssignmentIcon from "@mui/icons-material/Assignment";
 import CableOutlinedIcon from "@mui/icons-material/CableOutlined";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import SourceOutlinedIcon from "@mui/icons-material/SourceOutlined";
-import StorageOutlinedIcon from "@mui/icons-material/StorageOutlined";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import { useNavigate } from "@tanstack/react-router";
 import { useCallback, useMemo, useState } from "react";
@@ -49,9 +47,7 @@ export function KnowledgeBase() {
     ? getSelectedRepos(githubConnector.config)
     : [];
 
-  const jiraConnector = activeConnectors.find(
-    (c) => c.connectorId === "jira",
-  );
+  const jiraConnector = activeConnectors.find((c) => c.connectorId === "jira");
   const selectedProjectKeys = jiraConnector
     ? getSelectedProjects(jiraConnector.config)
     : [];
@@ -176,12 +172,7 @@ export function KnowledgeBase() {
         <StatCard
           label={t("knowledgeBase.jiraProjects")}
           value={selectedProjectKeys.length}
-          icon={() => (
-            <FontAwesomeIcon
-              icon={faJira}
-              style={{ fontSize: 18, color: "#0052CC" }}
-            />
-          )}
+          icon={AssignmentIcon}
           color="#0052CC"
         />
       </Box>

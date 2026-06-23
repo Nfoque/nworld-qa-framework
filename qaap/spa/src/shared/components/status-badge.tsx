@@ -27,9 +27,15 @@ export function StatusBadge({ status, size = "small" }: StatusBadgeProps) {
   const color = STATUS_COLORS[status] ?? ("default" as const);
   const label = t(`status.${status}`, status);
   return (
-    <Chip label={label} color={color} size={size} sx={{
-      fontSize: size === "small" ? "0.75rem" : "1rem",
-      fontWeight: 500, p: 0
-    }} />
+    <Chip
+      label={label}
+      color={color}
+      size={size}
+      sx={{
+        fontSize: size === "small" ? "0.75rem" : "1rem",
+        fontWeight: 500,
+        p: 0,
+      }}
+    />
   );
 }

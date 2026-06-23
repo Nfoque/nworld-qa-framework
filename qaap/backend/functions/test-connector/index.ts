@@ -74,7 +74,8 @@ Deno.serve(async (req) => {
   } else if (connectorId === "jira") {
     const baseUrl = rawCredentials?.baseUrl ?? connector?.credentials?.baseUrl;
     const email = rawCredentials?.email ?? connector?.credentials?.email;
-    const apiToken = rawCredentials?.apiToken ?? connector?.credentials?.apiToken;
+    const apiToken = rawCredentials?.apiToken ??
+      connector?.credentials?.apiToken;
     if (!baseUrl || !email || !apiToken) {
       return error(
         req,

@@ -277,10 +277,7 @@ export function Sidebar() {
                   {!!item.badge && (
                     <Box
                       sx={{
-                        bgcolor:
-                          shouldPulse
-                            ? "#8B5CF6"
-                            : "primary.main",
+                        bgcolor: shouldPulse ? "#8B5CF6" : "primary.main",
                         color: "#fff",
                         fontSize: 10,
                         fontWeight: 700,
@@ -309,14 +306,11 @@ export function Sidebar() {
                     width: 8,
                     height: 8,
                     borderRadius: "50%",
-                    bgcolor:
-                      shouldPulse
-                        ? "error.main"
-                        : "primary.main",
+                    bgcolor: shouldPulse ? "error.main" : "primary.main",
                     ...("pulse" in item &&
                       item.pulse && {
-                      animation: `${pulse} 1.5s ease-in-out infinite`,
-                    }),
+                        animation: `${pulse} 1.5s ease-in-out infinite`,
+                      }),
                   }}
                 />
               )}

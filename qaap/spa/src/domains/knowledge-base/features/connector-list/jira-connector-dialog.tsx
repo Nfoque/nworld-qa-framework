@@ -152,7 +152,12 @@ export function JiraConnectorDialog({
         id: connector.id as string,
         config,
       };
-      if (credentialsChanged && baseUrl.trim() && email.trim() && apiToken.trim()) {
+      if (
+        credentialsChanged &&
+        baseUrl.trim() &&
+        email.trim() &&
+        apiToken.trim()
+      ) {
         payload.credentials = {
           baseUrl: baseUrl.trim(),
           email: email.trim(),
